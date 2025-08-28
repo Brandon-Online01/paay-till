@@ -178,6 +178,9 @@ export const useCartStore = create<CartStore>()(
          */
         clearCart: () => {
             console.log('🧹 Clearing cart - resetting all state...');
+            const state = get();
+            console.log('📊 Items before clearCart:', state.items.length);
+            
             set({
                 items: [],
                 subtotal: 0,
@@ -191,6 +194,9 @@ export const useCartStore = create<CartStore>()(
                 isPaymentModalVisible: false,
                 isReceiptModalVisible: false,
             });
+            
+            const newState = get();
+            console.log('📊 Items after clearCart:', newState.items.length);
             console.log('✅ Cart cleared - all state reset for next transaction');
         },
 
@@ -358,11 +364,18 @@ export const useCartStore = create<CartStore>()(
                 return;
             }
 
-            // Mark order as paid
-            const currentOrder = state.currentOrder;
-            if (!currentOrder) {
-                return;
-            }
+            // Create or use existing order
+            const currentOrder = state.currentOrder || {
+                id: `order-${Date.now()}`,
+                items: state.items,
+                subtotal: state.subtotal,
+                tax: state.tax,
+                discount: state.discount,
+                total: state.total,
+                createdAt: new Date(),
+                payments: [],
+                status: OrderStatus.PENDING,
+            };
 
             const completedOrder: Order = {
                 ...currentOrder,
@@ -385,6 +398,7 @@ export const useCartStore = create<CartStore>()(
 
             // Close payment modal and clear cart immediately after successful payment
             console.log('🧹 Clearing cart and resetting state for next transaction...');
+            console.log('📊 Current cart items before clearing:', state.items.length);
             
             // Immediately clear all cart state for next transaction
             set({
@@ -406,6 +420,10 @@ export const useCartStore = create<CartStore>()(
                 customerName: '',
             });
             
+            // Verify cart is actually cleared
+            const newState = get();
+            console.log('📊 Cart items after clearing:', newState.items.length);
+            console.log('💰 Total after clearing:', newState.total);
             console.log('✅ Cart cleared successfully! Ready for next transaction.');
 
             // Reset UI state for next transaction

@@ -48,6 +48,7 @@ export default function CartSidebar() {
         removeDiscount,
         processPayment,
         setPaymentModalVisible,
+        clearCart,
     } = useCartStore();
     const { setLoadingState } = useUIStore() || {};
 
@@ -180,7 +181,6 @@ export default function CartSidebar() {
 
         // Show success toast
         setTimeout(() => {
-            console.log('🎉 Showing success toast: Ready for Next Sale!');
             if ((global as any).showToast) {
                 (global as any).showToast(
                     'Ready for Next Sale!',
@@ -348,6 +348,14 @@ export default function CartSidebar() {
                     
                     // Small delay to ensure state updates are complete before closing modal
                     setTimeout(() => {
+                        console.log('🔄 Closing split payment modal...');
+                        
+                        // Backup cart clearing - ensure cart is empty for next transaction
+                        if (items.length > 0) {
+                            console.log('⚠️ Cart not cleared by processPayment, clearing manually...');
+                            clearCart();
+                        }
+                        
                         animateModalOut();
                     }, 500);
                 }, 2000);
@@ -373,6 +381,14 @@ export default function CartSidebar() {
                 
                 // Small delay to ensure state updates are complete before closing modal
                 setTimeout(() => {
+                    console.log('🔄 Closing split single payment modal...');
+                    
+                    // Backup cart clearing - ensure cart is empty for next transaction
+                    if (items.length > 0) {
+                        console.log('⚠️ Cart not cleared by processPayment, clearing manually...');
+                        clearCart();
+                    }
+                    
                     animateModalOut();
                 }, 500);
             }, 2000);
@@ -413,6 +429,9 @@ export default function CartSidebar() {
 
         // Simulate payment processing delay
         setTimeout(() => {
+            console.log('💳 Processing cash payment...');
+            console.log('🛒 Items in cart before payment:', items.length);
+            
             // Log comprehensive basket data BEFORE processing payment
             logBasketData([payment], 'Cash');
             
@@ -422,6 +441,14 @@ export default function CartSidebar() {
             
             // Small delay to ensure state updates are complete before closing modal
             setTimeout(() => {
+                console.log('🔄 Closing payment modal...');
+                
+                // Backup cart clearing - ensure cart is empty for next transaction
+                if (items.length > 0) {
+                    console.log('⚠️ Cart not cleared by processPayment, clearing manually...');
+                    clearCart();
+                }
+                
                 animateModalOut();
             }, 500);
         }, 2000);
@@ -446,6 +473,9 @@ export default function CartSidebar() {
 
         // Simulate payment processing delay
         setTimeout(() => {
+            console.log('💳 Processing card payment...');
+            console.log('🛒 Items in cart before payment:', items.length);
+            
             // Log comprehensive basket data BEFORE processing payment
             logBasketData([payment], 'Card');
             
@@ -455,6 +485,14 @@ export default function CartSidebar() {
             
             // Small delay to ensure state updates are complete before closing modal
             setTimeout(() => {
+                console.log('🔄 Closing payment modal...');
+                
+                // Backup cart clearing - ensure cart is empty for next transaction
+                if (items.length > 0) {
+                    console.log('⚠️ Cart not cleared by processPayment, clearing manually...');
+                    clearCart();
+                }
+                
                 animateModalOut();
             }, 500);
         }, 2500);
