@@ -234,4 +234,8 @@ export class TransactionService {
   static async getTransactionStats(filters?: TransactionFilters) {
     return await databaseService.getTransactionStats(filters);
   }
+
+  static async getTransactions(filters?: TransactionFilters): Promise<Transaction[]> {
+    return await databaseService.getTransactions(filters);
+  }
 }
