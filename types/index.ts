@@ -14,3 +14,6 @@ export * from './auth.types';
 
 // Export all transaction-related types
 export * from './transaction.types';
+
+// Export all inventory-related types
+export * from './inventory.types';

@@ -21,6 +21,7 @@ import { useCartStore } from '@/store/cart.store';
 import { useUIStore } from '@/store/ui.store';
 import { ToastUtils } from '@/utils/toast.util';
 import { PaymentType, PaymentMethod } from '@/types/till.types';
+import VoidTokenModal from './void-token-modal';
 
 /**
  * CartSidebar Component - Displays cart items, totals, and handles payment processing
@@ -63,6 +64,10 @@ export default function CartSidebar() {
         'input' | 'cash-processing' | 'card-processing'
     >('input');
     const [isProcessingPayment, setIsProcessingPayment] = useState(false);
+
+    // Void token modal state
+    const [showVoidModal, setShowVoidModal] = useState(false);
+    const [itemToVoid, setItemToVoid] = useState<{id: string, name: string} | null>(null);
 
     // Receipt options state
     const [receiptOptions, setReceiptOptions] = useState({
@@ -518,6 +523,45 @@ export default function CartSidebar() {
         }
     };
 
+    /**
+     * Handle void item request - opens void token modal
+     */
+    const handleVoidItemRequest = (itemId: string, itemName: string) => {
+        setItemToVoid({ id: itemId, name: itemName });
+        setShowVoidModal(true);
+    };
+
+    /**
+     * Handle void confirmation after token verification
+     */
+    const handleVoidConfirmed = () => {
+        if (itemToVoid) {
+            // Remove the item from cart
+            removeItem(itemToVoid.id);
+            
+            // Log additional void information
+            console.log('🗑️ VOID COMPLETED - Item removed from cart:', {
+                itemId: itemToVoid.id,
+                itemName: itemToVoid.name,
+                timestamp: new Date().toISOString(),
+                cartTotal: total,
+                remainingItems: items.length - 1
+            });
+            
+            // Reset void state
+            setItemToVoid(null);
+            setShowVoidModal(false);
+        }
+    };
+
+    /**
+     * Handle void modal close
+     */
+    const handleVoidModalClose = () => {
+        setItemToVoid(null);
+        setShowVoidModal(false);
+    };
+
     return (
         <View className="flex-1 p-1">
             {/* Header */}
@@ -665,9 +709,9 @@ export default function CartSidebar() {
                                         </Pressable>
                                     </View>
 
-                                    {/* Remove Button */}
+                                    {/* Remove Button - Now requires void authorization */}
                                     <Pressable
-                                        onPress={() => removeItem(item.id)}
+                                        onPress={() => handleVoidItemRequest(item.id, item.name)}
                                         className="flex justify-center items-center p-2 ml-4"
                                     >
                                         <X size={30} color="red" />
@@ -1563,6 +1607,14 @@ export default function CartSidebar() {
                     </Pressable>
                 </Animated.View>
             </Modal>
+
+            {/* Void Token Modal */}
+            <VoidTokenModal
+                visible={showVoidModal}
+                onClose={handleVoidModalClose}
+                onVoidConfirmed={handleVoidConfirmed}
+                itemName={itemToVoid?.name || ''}
+            />
         </View>
     );
 }

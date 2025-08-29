@@ -10,12 +10,12 @@ export class TransactionService {
    * Initialize the database (call this when the app starts)
    */
   static async initialize(): Promise<void> {
-    console.log('🔄 Initializing transaction database...');
+    console.log('🔄 db init...');
     try {
       await databaseService.initialize();
-      console.log('✅ Transaction database initialized successfully');
+      console.log('✅ db init success');
     } catch (error) {
-      console.error('❌ Failed to initialize transaction database:', error);
+      console.error('❌ db init failed:', error);
       throw error;
     }
   }
@@ -39,7 +39,7 @@ export class TransactionService {
     receiptOptions?: any;
     additionalMetrics?: any;
   }): Promise<Transaction> {
-    console.log('💾 Saving transaction to database...');
+    console.log('💾 transaction -> db...');
     
     try {
       // Generate unique transaction ID
@@ -88,7 +88,7 @@ export class TransactionService {
       };
 
       const savedTransaction = await databaseService.createTransaction(transaction);
-      console.log(`✅ Transaction ${savedTransaction.transactionID} saved successfully`);
+      console.log(`✅ transaction ${savedTransaction.transactionID} saved successfully`);
       
       return savedTransaction;
     } catch (error) {

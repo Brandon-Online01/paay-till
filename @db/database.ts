@@ -21,9 +21,9 @@ class DatabaseService {
     try {
       this.db = await SQLite.openDatabaseAsync('transactions.db');
       await this.createTables();
-      console.log('Database initialized successfully');
+      console.log('db init success');
     } catch (error) {
-      console.error('Failed to initialize database:', error);
+      console.error('db init failed:', error);
       throw new Error('Database initialization failed');
     }
   }
