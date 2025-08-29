@@ -44,14 +44,14 @@ function DrawerContent() {
                     <View className="justify-center items-center">
                         <View className="justify-center items-center mb-3 w-16 h-16 rounded-full bg-primary">
                             <Text className="text-xl font-bold text-white">
-                                {info?.company?.logo}
+                                {info?.user?.initials}
                             </Text>
                         </View>
                         <Text className="mb-1 text-xl font-bold text-primary">
-                            {info?.company?.name}
+                            {info?.user?.fullName}
                         </Text>
                         <Text className="text-sm text-center text-gray-600 font-primary">
-                            {info?.company?.tagline}
+                            {info?.user?.title}
                         </Text>
                     </View>
                 </View>

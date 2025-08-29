@@ -15,6 +15,7 @@ import Animated, {
     withSpring,
     Easing,
 } from 'react-native-reanimated';
+import info from '../data/info.json';
 
 interface Device {
     id: string;
@@ -185,7 +186,14 @@ export default function DeviceSelectionModal({
         }
     };
 
-    const devices = mockDevices[deviceType] || [];
+    // Get devices from info.json if available, otherwise use mock data
+    const devicesFromInfo = deviceType === 'printer' 
+        ? info?.till?.devices?.printers 
+        : deviceType === 'scanner' 
+        ? info?.till?.devices?.scanners 
+        : [];
+    
+    const devices = devicesFromInfo && devicesFromInfo.length > 0 ? devicesFromInfo : (mockDevices[deviceType] || []);
 
     const handleDeviceSelect = (device: Device) => {
         setSelectedDevice(device);
@@ -210,84 +218,93 @@ export default function DeviceSelectionModal({
     if (!visible) return null;
 
     return (
-        <Modal transparent visible={visible} animationType="none">
-            <View className="flex-1 justify-center items-center bg-black/50">
-                <Animated.View
-                    style={modalAnimatedStyle}
-                    className="bg-white rounded-2xl mx-6 max-h-96"
-                    style={{ width: Math.min(width - 48, 400) }}
+        <Modal transparent visible={visible} animationType="fade" onRequestClose={onClose}>
+            <Pressable 
+                className="flex-1 justify-center items-center bg-black/80"
+                onPress={onClose}
+                style={{ flex: 1 }}
+            >
+                <Pressable
+                    onPress={(e) => e.stopPropagation()}
+                    style={{ width: '90%', maxWidth: 400 }}
                 >
-                    {/* Header */}
-                    <View className="flex-row justify-between items-center p-6 border-b border-gray-200">
-                        <View className="flex-row items-center gap-3">
-                            {getDeviceIcon()}
-                            <Text className="text-xl font-bold text-gray-800 font-primary">
-                                {getModalTitle()}
-                            </Text>
+                    <Animated.View
+                        style={modalAnimatedStyle}
+                        className="bg-white rounded-2xl border border-gray-200 shadow-xl"
+                    >
+                        {/* Header */}
+                        <View className="relative p-6 border-b border-gray-200">
+                            <Pressable
+                                onPress={onClose}
+                                className="absolute top-2 right-2 z-10 justify-center items-center w-12 h-12 rounded-full border border-red-500 bg-red-500/80"
+                            >
+                                <X size={22} color="#ffffff" />
+                            </Pressable>
+
+                            <View className="flex-row items-center gap-3">
+                                {getDeviceIcon()}
+                                <Text className="text-xl font-bold text-gray-800 font-primary">
+                                    {getModalTitle()}
+                                </Text>
+                            </View>
                         </View>
-                        <Pressable
-                            onPress={onClose}
-                            className="p-2 rounded-full bg-gray-100"
-                        >
-                            <X size={20} color="#6B7280" />
-                        </Pressable>
-                    </View>
 
-                    {/* Device List */}
-                    <ScrollView className="max-h-80">
-                        <View className="p-4">
-                            {devices.map((device) => (
-                                <Pressable
-                                    key={device.id}
-                                    onPress={() => handleDeviceSelect(device)}
-                                    className="flex-row items-center justify-between p-4 mb-2 rounded-lg border border-gray-200 bg-gray-50 active:bg-gray-100"
-                                >
-                                    <View className="flex-1">
-                                        <View className="flex-row items-center gap-2 mb-1">
-                                            <Text className="text-lg font-semibold text-gray-800 font-primary">
-                                                {device.name}
-                                            </Text>
-                                            <View
-                                                className="w-3 h-3 rounded-full"
-                                                style={{ backgroundColor: getStatusColor(device.status) }}
-                                            />
-                                        </View>
-                                        <Text className="text-sm text-gray-600 font-primary">
-                                            {device.model}
-                                        </Text>
-                                        <Text
-                                            className="text-xs font-medium mt-1 font-primary"
-                                            style={{ color: getStatusColor(device.status) }}
-                                        >
-                                            {device.status.toUpperCase()}
-                                        </Text>
-                                    </View>
-
-                                    {/* Selection Indicator */}
+                        {/* Device List */}
+                        <ScrollView className="max-h-80">
+                            <View className="p-4 flex-col gap-3">
+                                {devices.map((device) => (
                                     <View
-                                        className={`w-6 h-6 rounded-full border-2 justify-center items-center ${
-                                            selectedDevice?.id === device.id
-                                                ? 'bg-blue-500 border-blue-500'
-                                                : 'border-gray-300'
-                                        }`}
+                                        key={device.id}
+                                        className="flex-row items-center justify-between p-4 rounded-lg border border-gray-200 bg-white"
                                     >
-                                        {selectedDevice?.id === device.id && (
-                                            <Check size={16} color="#FFFFFF" />
-                                        )}
-                                    </View>
-                                </Pressable>
-                            ))}
-                        </View>
-                    </ScrollView>
+                                        <View className="flex-1">
+                                            <View className="flex-row items-center gap-2 mb-1">
+                                                <Text className="text-lg font-semibold text-gray-800 font-primary">
+                                                    {device.name}
+                                                </Text>
+                                                <View
+                                                    className="w-2 h-2 rounded-full"
+                                                    style={{ backgroundColor: getStatusColor(device.status) }}
+                                                />
+                                            </View>
+                                            <Text className="text-sm text-gray-600 font-primary">
+                                                {device.model}
+                                            </Text>
+                                            <Text
+                                                className="text-xs font-medium mt-1 font-primary"
+                                                style={{ color: getStatusColor(device.status) }}
+                                            >
+                                                {device.status.toUpperCase()}
+                                            </Text>
+                                        </View>
 
-                    {/* Footer */}
-                    <View className="p-6 border-t border-gray-200">
-                        <Text className="text-center text-sm text-gray-500 font-primary">
-                            Tap on a device to set it as active
-                        </Text>
-                    </View>
-                </Animated.View>
-            </View>
+                                        {/* Selection Radio Button */}
+                                        <Pressable
+                                            onPress={() => handleDeviceSelect(device)}
+                                            className={`w-6 h-6 rounded-full border-2 justify-center items-center ${
+                                                selectedDevice?.id === device.id || device.isActive
+                                                    ? 'bg-blue-500 border-blue-500'
+                                                    : 'border-gray-300'
+                                            }`}
+                                        >
+                                            {(selectedDevice?.id === device.id || device.isActive) && (
+                                                <Check size={14} color="#FFFFFF" />
+                                            )}
+                                        </Pressable>
+                                    </View>
+                                ))}
+                                
+                                {/* Tap instruction */}
+                                <Text className="text-center text-sm text-gray-500 font-primary mt-2">
+                                    Tap on a device to set it as active
+                                </Text>
+                            </View>
+                        </ScrollView>
+
+
+                    </Animated.View>
+                </Pressable>
+            </Pressable>
         </Modal>
     );
 }

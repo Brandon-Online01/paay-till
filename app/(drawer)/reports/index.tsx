@@ -4,7 +4,6 @@ import {
     Search,
     Filter,
     ChevronDown,
-    Calendar,
     DollarSign,
     ShoppingBag,
     TrendingUp,
@@ -75,11 +74,6 @@ export default function Reports() {
     const handleRefresh = useCallback(async () => {
         await refreshData();
     }, [refreshData]);
-
-    const handleClearCache = useCallback(() => {
-        clearCache();
-        loadData();
-    }, [clearCache, loadData]);
 
     useEffect(() => {
         // Only load if we don't have recent data
@@ -160,12 +154,6 @@ export default function Reports() {
                              className="p-2 rounded-lg bg-blue-100"
                          >
                              <RotateCcw size={20} color="#2563eb" />
-                         </Pressable>
-                         <Pressable
-                             onPress={handleClearCache}
-                             className="px-3 py-2 rounded-lg bg-gray-100"
-                         >
-                             <Text className="text-sm text-gray-700 font-primary">Clear Cache</Text>
                          </Pressable>
                      </View>
                  </View>

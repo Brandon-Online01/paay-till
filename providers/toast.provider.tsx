@@ -3,7 +3,6 @@ import {
     View,
     Text,
     Animated,
-    Dimensions,
     SafeAreaView,
     StyleSheet,
 } from 'react-native';
