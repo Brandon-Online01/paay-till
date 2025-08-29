@@ -177,7 +177,7 @@ export default function Settings() {
 
     const renderSettingsSection = (section: SettingsSection) => (
         <View key={section.id} className="flex-col gap-4">
-            <View className="flex-row items-center gap-3">
+            <View className="flex-row gap-3 items-center">
                 {section.icon}
                 <Text className="text-lg font-semibold text-gray-900 font-primary">
                     {section.title}
@@ -200,7 +200,7 @@ export default function Settings() {
                                 {item.title}
                             </Text>
                             {item.description && (
-                                <Text className="text-sm text-gray-600 font-primary mt-1">
+                                <Text className="mt-1 text-sm text-gray-600 font-primary">
                                     {item.description}
                                 </Text>
                             )}
@@ -215,7 +215,7 @@ export default function Settings() {
     return (
         <BaseProvider>
             <ScrollView className="flex-1">
-                <View className="flex-col gap-6 px-6 py-6">
+                <View className="flex-col gap-6 px-6">
                     {/* Header */}
                     <View>
                         <Text className="text-2xl font-bold text-gray-900 font-primary">
@@ -232,15 +232,15 @@ export default function Settings() {
                             Account Details
                         </Text>
 
-                        <View className="bg-white rounded-lg border border-gray-200 p-6 mt-4">
+                        <View className="p-6 mt-4 bg-white rounded-lg border border-gray-200">
                             <View className="flex-col gap-6">
                                 {/* Profile Picture */}
                                 <View>
-                                    <Text className="text-sm font-semibold text-gray-700 mb-3 font-primary">
+                                    <Text className="mb-3 text-sm font-semibold text-gray-700 font-primary">
                                         Profile Picture
                                     </Text>
-                                    <View className="flex-row items-center gap-4">
-                                        <View className="w-16 h-16 rounded-full bg-primary items-center justify-center">
+                                    <View className="flex-row gap-4 items-center">
+                                        <View className="justify-center items-center w-16 h-16 rounded-full bg-primary">
                                             <Text className="text-xl font-bold text-white font-primary">
                                                 {user?.initials || 'BN'}
                                             </Text>
@@ -258,32 +258,32 @@ export default function Settings() {
                                             </Pressable>
                                         </View>
                                     </View>
-                                    <Text className="text-xs text-gray-500 mt-2 font-primary">
+                                    <Text className="mt-2 text-xs text-gray-500 font-primary">
                                         PNG, JPEG under 15MB
                                     </Text>
                                 </View>
 
                                 {/* Full Name */}
                                 <View>
-                                    <Text className="text-sm font-semibold text-gray-700 mb-3 font-primary">
+                                    <Text className="mb-3 text-sm font-semibold text-gray-700 font-primary">
                                         Full name
                                     </Text>
                                     <View className="flex-row gap-4">
                                         <View className="flex-1">
-                                            <Text className="text-xs text-gray-600 mb-2 font-primary">
+                                            <Text className="mb-2 text-xs text-gray-600 font-primary">
                                                 First name
                                             </Text>
-                                            <View className="p-3 border border-gray-300 rounded-lg">
+                                            <View className="p-3 rounded-lg border border-gray-300">
                                                 <Text className="text-gray-900 font-primary">
                                                     {user?.firstName || 'Brandon'}
                                                 </Text>
                                             </View>
                                         </View>
                                         <View className="flex-1">
-                                            <Text className="text-xs text-gray-600 mb-2 font-primary">
+                                            <Text className="mb-2 text-xs text-gray-600 font-primary">
                                                 Last name
                                             </Text>
-                                            <View className="p-3 border border-gray-300 rounded-lg">
+                                            <View className="p-3 rounded-lg border border-gray-300">
                                                 <Text className="text-gray-900 font-primary">
                                                     {user?.lastName || 'Nkawu'}
                                                 </Text>
@@ -294,23 +294,23 @@ export default function Settings() {
 
                                 {/* Contact Email */}
                                 <View>
-                                    <Text className="text-sm font-semibold text-gray-700 mb-2 font-primary">
+                                    <Text className="mb-2 text-sm font-semibold text-gray-700 font-primary">
                                         Contact email
                                     </Text>
-                                    <Text className="text-xs text-gray-600 mb-3 font-primary">
+                                    <Text className="mb-3 text-xs text-gray-600 font-primary">
                                         Manage your accounts email address for the
                                         invoices.
                                     </Text>
-                                    <View className="flex-row items-center gap-3">
-                                        <View className="flex-1 flex-row items-center p-3 border border-gray-300 rounded-lg">
+                                    <View className="flex-row gap-3 items-center">
+                                        <View className="flex-row flex-1 items-center p-3 rounded-lg border border-gray-300">
                                             <Mail size={16} color="#6b7280" />
                                             <Text className="ml-2 text-gray-900 font-primary">
                                                 {user?.email ||
                                                     'brandon.nkawu@orrbit.co.za'}
                                             </Text>
                                         </View>
-                                        <Pressable className="flex-row items-center gap-2 px-4 py-3 border border-blue-200 rounded-lg">
-                                            <Text className="text-blue-600 font-semibold font-primary">
+                                        <Pressable className="flex-row gap-2 items-center px-4 py-3 rounded-lg border border-blue-200">
+                                            <Text className="font-semibold text-blue-600 font-primary">
                                                 Add another email
                                             </Text>
                                         </Pressable>
@@ -319,18 +319,18 @@ export default function Settings() {
 
                                 {/* Password */}
                                 <View>
-                                    <Text className="text-sm font-semibold text-gray-700 mb-2 font-primary">
+                                    <Text className="mb-2 text-sm font-semibold text-gray-700 font-primary">
                                         Password
                                     </Text>
-                                    <Text className="text-xs text-gray-600 mb-3 font-primary">
+                                    <Text className="mb-3 text-xs text-gray-600 font-primary">
                                         Modify your current password.
                                     </Text>
                                     <View className="flex-row gap-4">
                                         <View className="flex-1">
-                                            <Text className="text-xs text-gray-600 mb-2 font-primary">
+                                            <Text className="mb-2 text-xs text-gray-600 font-primary">
                                                 Current password
                                             </Text>
-                                            <View className="flex-row items-center p-3 border border-gray-300 rounded-lg">
+                                            <View className="flex-row items-center p-3 rounded-lg border border-gray-300">
                                                 <Text className="flex-1 text-gray-900 font-primary">
                                                     {showPassword
                                                         ? '12345678'
@@ -356,10 +356,10 @@ export default function Settings() {
                                             </View>
                                         </View>
                                         <View className="flex-1">
-                                            <Text className="text-xs text-gray-600 mb-2 font-primary">
+                                            <Text className="mb-2 text-xs text-gray-600 font-primary">
                                                 New password
                                             </Text>
-                                            <View className="flex-row items-center p-3 border border-gray-300 rounded-lg">
+                                            <View className="flex-row items-center p-3 rounded-lg border border-gray-300">
                                                 <Text className="flex-1 text-gray-900 font-primary">
                                                     {showNewPassword
                                                         ? '••••••••'
@@ -396,7 +396,7 @@ export default function Settings() {
                     <View className="flex-col gap-6">
                         {/* General Section */}
                         <View>
-                            <Text className="mb-4 text-xs font-semibold text-gray-500 uppercase tracking-wide font-primary">
+                            <Text className="mb-4 text-xs font-semibold tracking-wide text-gray-500 uppercase font-primary">
                                 GENERAL
                             </Text>
                             <View className="flex-col gap-6">
@@ -406,7 +406,7 @@ export default function Settings() {
 
                         {/* System Section */}
                         <View>
-                            <Text className="mb-4 text-xs font-semibold text-gray-500 uppercase tracking-wide font-primary">
+                            <Text className="mb-4 text-xs font-semibold tracking-wide text-gray-500 uppercase font-primary">
                                 SYSTEM
                             </Text>
                             <View className="flex-col gap-6">

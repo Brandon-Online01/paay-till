@@ -79,16 +79,18 @@ export default function TransactionDetailModal({
             animationType="fade"
             onRequestClose={onClose}
         >
-            <Pressable
-                className="flex-1 justify-center items-center bg-black/80"
-                onPress={onClose}
+            <View
+                className="flex-1 justify-center items-center bg-black-900/80 overflow-scroll"
                 style={{ flex: 1 }}
             >
-                <Pressable
-                    onPress={(e) => e.stopPropagation()}
+                <View
+                    className="flex-1 justify-center items-center overflow-scroll"
                     style={{ width: '90%', maxWidth: 600 }}
                 >
-                                        <View className="bg-white rounded-2xl border border-gray-200 shadow-xl" style={{ height: '70%', width: '100%' }}>
+                    <View
+                        className="bg-white rounded-2xl border border-gray-200 shadow-xl"
+                        style={{ height: '70%', width: '100%' }}
+                    >
                         {/* Header */}
                         <View className="relative px-6 pt-6 pb-4 border-b border-gray-200">
                             <Pressable
@@ -108,7 +110,10 @@ export default function TransactionDetailModal({
                             </View>
                         </View>
 
-                         <ScrollView className="flex-1 p-6" showsVerticalScrollIndicator={true}>
+                        <ScrollView
+                            className="flex-1 p-6"
+                            showsVerticalScrollIndicator={true}
+                        >
                             {/* Transaction Info */}
                             <View className="mb-6 p-4 bg-gray-50 rounded-lg">
                                 <View className="flex-row justify-between items-center mb-2">
@@ -347,8 +352,8 @@ export default function TransactionDetailModal({
                             )}
                         </ScrollView>
                     </View>
-                </Pressable>
-            </Pressable>
+                </View>
+            </View>
         </Modal>
     );
 }

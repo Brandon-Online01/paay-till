@@ -21,8 +21,9 @@ interface Device {
     id: string;
     name: string;
     model: string;
-    status: 'connected' | 'connecting' | 'disconnected';
-    type: 'printer' | 'scanner' | 'cloud';
+    status: 'connected' | 'connecting' | 'disconnected' | string;
+    type: 'printer' | 'scanner' | 'cloud' | string;
+    isActive?: boolean;
 }
 
 interface DeviceSelectionModalProps {
@@ -187,18 +188,22 @@ export default function DeviceSelectionModal({
     };
 
     // Get devices from info.json if available, otherwise use mock data
-    const devicesFromInfo = deviceType === 'printer' 
-        ? info?.till?.devices?.printers 
-        : deviceType === 'scanner' 
-        ? info?.till?.devices?.scanners 
-        : [];
-    
-    const devices = devicesFromInfo && devicesFromInfo.length > 0 ? devicesFromInfo : (mockDevices[deviceType] || []);
+    const devicesFromInfo =
+        deviceType === 'printer'
+            ? info?.till?.devices?.printers
+            : deviceType === 'scanner'
+              ? info?.till?.devices?.scanners
+              : [];
+
+    const devices =
+        devicesFromInfo && devicesFromInfo.length > 0
+            ? devicesFromInfo
+            : mockDevices[deviceType] || [];
 
     const handleDeviceSelect = (device: Device) => {
         setSelectedDevice(device);
         onDeviceSelect(device);
-        
+
         // Show toast
         if ((global as any).showToast) {
             (global as any).showToast(
@@ -208,7 +213,7 @@ export default function DeviceSelectionModal({
                 '✅'
             );
         }
-        
+
         // Close modal after short delay
         setTimeout(() => {
             onClose();
@@ -218,19 +223,20 @@ export default function DeviceSelectionModal({
     if (!visible) return null;
 
     return (
-        <Modal transparent visible={visible} animationType="fade" onRequestClose={onClose}>
-            <Pressable 
-                className="flex-1 justify-center items-center bg-black/80"
-                onPress={onClose}
+        <Modal
+            transparent
+            visible={visible}
+            animationType="fade"
+            onRequestClose={onClose}
+        >
+            <View
+                className="flex-1 justify-center items-center bg-black-900/80"
                 style={{ flex: 1 }}
             >
-                <Pressable
-                    onPress={(e) => e.stopPropagation()}
-                    style={{ width: '90%', maxWidth: 400 }}
-                >
+                <View style={{ width: '90%', maxWidth: 600 }}>
                     <Animated.View
                         style={modalAnimatedStyle}
-                        className="bg-white rounded-2xl border border-gray-200 shadow-xl"
+                        className="bg-white rounded-2xl border border-gray-200 shadow-xl w-full"
                     >
                         {/* Header */}
                         <View className="relative p-6 border-b border-gray-200">
@@ -264,7 +270,12 @@ export default function DeviceSelectionModal({
                                                 </Text>
                                                 <View
                                                     className="w-2 h-2 rounded-full"
-                                                    style={{ backgroundColor: getStatusColor(device.status) }}
+                                                    style={{
+                                                        backgroundColor:
+                                                            getStatusColor(
+                                                                device.status
+                                                            ),
+                                                    }}
                                                 />
                                             </View>
                                             <Text className="text-sm text-gray-600 font-primary">
@@ -272,7 +283,11 @@ export default function DeviceSelectionModal({
                                             </Text>
                                             <Text
                                                 className="text-xs font-medium mt-1 font-primary"
-                                                style={{ color: getStatusColor(device.status) }}
+                                                style={{
+                                                    color: getStatusColor(
+                                                        device.status
+                                                    ),
+                                                }}
                                             >
                                                 {device.status.toUpperCase()}
                                             </Text>
@@ -280,31 +295,37 @@ export default function DeviceSelectionModal({
 
                                         {/* Selection Radio Button */}
                                         <Pressable
-                                            onPress={() => handleDeviceSelect(device)}
+                                            onPress={() =>
+                                                handleDeviceSelect(device)
+                                            }
                                             className={`w-6 h-6 rounded-full border-2 justify-center items-center ${
-                                                selectedDevice?.id === device.id || device.isActive
+                                                selectedDevice?.id ===
+                                                    device.id || device.isActive
                                                     ? 'bg-blue-500 border-blue-500'
                                                     : 'border-gray-300'
                                             }`}
                                         >
-                                            {(selectedDevice?.id === device.id || device.isActive) && (
-                                                <Check size={14} color="#FFFFFF" />
+                                            {(selectedDevice?.id ===
+                                                device.id ||
+                                                device.isActive) && (
+                                                <Check
+                                                    size={14}
+                                                    color="#FFFFFF"
+                                                />
                                             )}
                                         </Pressable>
                                     </View>
                                 ))}
-                                
+
                                 {/* Tap instruction */}
                                 <Text className="text-center text-sm text-gray-500 font-primary mt-2">
                                     Tap on a device to set it as active
                                 </Text>
                             </View>
                         </ScrollView>
-
-
                     </Animated.View>
-                </Pressable>
-            </Pressable>
+                </View>
+            </View>
         </Modal>
     );
 }

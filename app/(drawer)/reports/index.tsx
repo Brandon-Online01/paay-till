@@ -1,4 +1,11 @@
-import { Text, View, ScrollView, Pressable, TextInput, RefreshControl } from 'react-native';
+import {
+    Text,
+    View,
+    ScrollView,
+    Pressable,
+    TextInput,
+    RefreshControl,
+} from 'react-native';
 import { useState, useEffect, useCallback } from 'react';
 import {
     Search,
@@ -59,8 +66,10 @@ export default function Reports() {
         try {
             const allTransactions = await TransactionService.getTransactions();
             // Sort by most recent first for performance
-            const sortedTransactions = allTransactions.sort((a, b) => 
-                new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+            const sortedTransactions = allTransactions.sort(
+                (a, b) =>
+                    new Date(b.createdAt).getTime() -
+                    new Date(a.createdAt).getTime()
             );
             setTransactions(sortedTransactions);
         } catch (error) {
@@ -77,7 +86,10 @@ export default function Reports() {
 
     useEffect(() => {
         // Only load if we don't have recent data
-        if (!lastUpdated || new Date().getTime() - new Date(lastUpdated).getTime() > 30000) {
+        if (
+            !lastUpdated ||
+            new Date().getTime() - new Date(lastUpdated).getTime() > 30000
+        ) {
             loadData();
         }
     }, [loadData, lastUpdated]);
@@ -134,37 +146,38 @@ export default function Reports() {
 
     return (
         <BaseProvider>
-                         {/* Header */}
-             <View className="px-6 py-4 border-b border-gray-200 bg-white">
-                 <View className="flex-row justify-between items-center">
-                     <View>
-                         <Text className="text-2xl font-bold text-gray-900 font-primary">
-                             Sales Reports
-                         </Text>
-                         {lastUpdated && (
-                             <Text className="text-sm text-gray-500 font-primary">
-                                 Last updated: {new Date(lastUpdated).toLocaleTimeString()}
-                             </Text>
-                         )}
-                     </View>
-                     <View className="flex-row gap-2">
-                         <Pressable
-                             onPress={handleRefresh}
-                             disabled={isRefreshing}
-                             className="p-2 rounded-lg bg-blue-100"
-                         >
-                             <RotateCcw size={20} color="#2563eb" />
-                         </Pressable>
-                     </View>
-                 </View>
-             </View>
+            {/* Header */}
+            <View className="px-6">
+                <View className="flex-row justify-between items-center">
+                    <View>
+                        <Text className="text-2xl font-bold text-gray-900 font-primary">
+                            Sales Reports
+                        </Text>
+                        {lastUpdated && (
+                            <Text className="text-sm text-gray-500 font-primary">
+                                Last updated:{' '}
+                                {new Date(lastUpdated).toLocaleTimeString()}
+                            </Text>
+                        )}
+                    </View>
+                    <View className="flex-row gap-2">
+                        <Pressable
+                            onPress={handleRefresh}
+                            disabled={isRefreshing}
+                            className="p-2 bg-blue-100 rounded-lg"
+                        >
+                            <RotateCcw size={20} color="#2563eb" />
+                        </Pressable>
+                    </View>
+                </View>
+            </View>
 
             {/* Metric Cards - All on one line */}
             <View className="px-6 py-4">
                 <View className="flex-row gap-3">
                     {/* Total Sales Card */}
                     <View className="flex-1 p-3 bg-white rounded-lg border border-gray-200">
-                        <View className="flex-row items-center gap-2 mb-2">
+                        <View className="flex-row gap-2 items-center mb-2">
                             <DollarSign size={16} color="#059669" />
                             <Text className="text-xs text-gray-600 font-primary">
                                 Total Sales
@@ -181,7 +194,7 @@ export default function Reports() {
 
                     {/* Sales Count Card */}
                     <View className="flex-1 p-3 bg-white rounded-lg border border-gray-200">
-                        <View className="flex-row items-center gap-2 mb-2">
+                        <View className="flex-row gap-2 items-center mb-2">
                             <ShoppingBag size={16} color="#2563eb" />
                             <Text className="text-xs text-gray-600 font-primary">
                                 Sales
@@ -197,7 +210,7 @@ export default function Reports() {
 
                     {/* Average Order Card */}
                     <View className="flex-1 p-3 bg-white rounded-lg border border-gray-200">
-                        <View className="flex-row items-center gap-2 mb-2">
+                        <View className="flex-row gap-2 items-center mb-2">
                             <TrendingUp size={16} color="#7c3aed" />
                             <Text className="text-xs text-gray-600 font-primary">
                                 Avg Order
@@ -214,7 +227,7 @@ export default function Reports() {
 
                     {/* Net Sales Card */}
                     <View className="flex-1 p-3 bg-white rounded-lg border border-gray-200">
-                        <View className="flex-row items-center gap-2 mb-2">
+                        <View className="flex-row gap-2 items-center mb-2">
                             <Package size={16} color="#dc2626" />
                             <Text className="text-xs text-gray-600 font-primary">
                                 Net Sales
@@ -232,15 +245,15 @@ export default function Reports() {
 
             {/* Search and Filters */}
             <View className="px-6 py-4">
-                <View className="flex-row items-center gap-4">
+                <View className="flex-row gap-4 items-center">
                     {/* Search Bar */}
-                    <View className="flex-1 flex-row items-center rounded-lg p-3 border border-gray-200 bg-white">
+                    <View className="flex-row flex-1 items-center p-3 bg-white rounded-lg border border-gray-200">
                         <Search size={20} color="#6b7280" />
                         <TextInput
                             placeholder="search sales, customers..."
                             value={searchQuery}
                             onChangeText={setSearchQuery}
-                            className="flex-1 ml-2 p-2 text-gray-900 font-primary"
+                            className="flex-1 p-2 ml-2 text-gray-900 font-primary"
                         />
                     </View>
 
@@ -250,18 +263,18 @@ export default function Reports() {
                             onPress={() =>
                                 setShowSortDropdown(!showSortDropdown)
                             }
-                            className="flex-row items-center gap-2 p-4 border w-36 border-gray-200 bg-white rounded-lg"
+                            className="flex-row gap-2 items-center p-4 w-36 bg-white rounded-lg border border-gray-200"
                         >
                             <Text className="text-gray-700 font-primary">
                                 {SORT_OPTIONS.find(
                                     (opt) => opt.value === sortBy
                                 )?.label || 'Daily'}
-                </Text>
+                            </Text>
                             <ChevronDown size={16} color="#6b7280" />
                         </Pressable>
 
                         {showSortDropdown && (
-                            <View className="absolute top-16 right-0 bg-white border border-gray-200 rounded-lg shadow-lg z-10 min-w-32">
+                            <View className="absolute right-0 top-16 z-10 bg-white rounded-lg border border-gray-200 shadow-lg min-w-32">
                                 {SORT_OPTIONS.map((option) => (
                                     <Pressable
                                         key={option.value}
@@ -272,7 +285,7 @@ export default function Reports() {
                                     >
                                         <Text className="text-gray-700 font-primary">
                                             {option.label}
-                </Text>
+                                        </Text>
                                     </Pressable>
                                 ))}
                             </View>
@@ -282,7 +295,7 @@ export default function Reports() {
                     {/* Filter Button */}
                     <Pressable
                         onPress={() => setShowFilterModal(true)}
-                        className="flex-row items-center justify-center gap-2 p-4 border w-36 border-blue-200 bg-blue-600 rounded-lg"
+                        className="flex-row gap-2 justify-center items-center p-4 w-36 bg-blue-600 rounded-lg border border-blue-200"
                     >
                         <Filter size={16} color="white" />
                         <Text className="text-white font-primary">Filter</Text>
@@ -290,27 +303,26 @@ export default function Reports() {
                 </View>
             </View>
 
-
-                         <ScrollView 
-                 className="flex-1"
-                 refreshControl={
-                     <RefreshControl
-                         refreshing={isRefreshing}
-                         onRefresh={handleRefresh}
-                         colors={['#2563eb']}
-                         tintColor="#2563eb"
-                     />
-                 }
-             >
-                 {/* Transaction List */}
-                 <View className="px-6 py-4">
-                     {isLoading && !isRefreshing ? (
-                         <View className="flex-1 justify-center items-center py-12">
-                             <Text className="text-gray-500 font-primary">
-                                 Loading sales...
-                             </Text>
-                         </View>
-                     ) : error ? (
+            <ScrollView
+                className="flex-1"
+                refreshControl={
+                    <RefreshControl
+                        refreshing={isRefreshing}
+                        onRefresh={handleRefresh}
+                        colors={['#2563eb']}
+                        tintColor="#2563eb"
+                    />
+                }
+            >
+                {/* Transaction List */}
+                <View className="px-6 py-4">
+                    {isLoading && !isRefreshing ? (
+                        <View className="flex-1 justify-center items-center py-12">
+                            <Text className="text-gray-500 font-primary">
+                                Loading sales...
+                            </Text>
+                        </View>
+                    ) : error ? (
                         <View className="flex-1 justify-center items-center py-12">
                             <Text className="text-red-500 font-primary">
                                 {error}
@@ -332,7 +344,7 @@ export default function Reports() {
                                     onPress={() =>
                                         handleTransactionPress(transaction)
                                     }
-                                    className="mb-4 p-4 bg-white rounded-lg border border-gray-200 active:bg-gray-50"
+                                    className="p-4 mb-4 bg-white rounded-lg border border-gray-200 active:bg-gray-50"
                                 >
                                     {/* Header Row */}
                                     <View className="flex-row justify-between items-start mb-3">
@@ -443,8 +455,8 @@ export default function Reports() {
                                     </View>
 
                                     {/* Status Options */}
-                                    <View className="mt-3 pt-3 border-t border-gray-100">
-                                        <Text className="text-xs text-gray-600 mb-2 font-primary">
+                                    <View className="pt-3 mt-3 border-t border-gray-100">
+                                        <Text className="mb-2 text-xs text-gray-600 font-primary">
                                             Status:
                                         </Text>
                                         <View className="flex-row gap-4">
@@ -457,7 +469,7 @@ export default function Reports() {
                                             ].map((status) => (
                                                 <View
                                                     key={status}
-                                                    className="flex-row items-center gap-1"
+                                                    className="flex-row gap-1 items-center"
                                                 >
                                                     <View
                                                         className={`w-3 h-3 rounded-full border-2 ${
