@@ -78,9 +78,12 @@ export default function FilterModal({ visible, onClose }: FilterModalProps) {
           <Text className="text-xl font-bold text-gray-900 font-primary">
             Filter Sales
           </Text>
-          <Pressable onPress={onClose} className="p-2">
-            <X size={24} color="#6b7280" />
-          </Pressable>
+                                  <Pressable 
+                            onPress={onClose}
+                            className="justify-center items-center w-12 h-12 rounded-full border border-red-500 bg-red-500/80"
+                        >
+                            <X size={22} color="#ffffff" />
+                        </Pressable>
         </View>
 
         <ScrollView className="flex-1 p-6">
@@ -211,25 +214,25 @@ export default function FilterModal({ visible, onClose }: FilterModalProps) {
           </View>
         </ScrollView>
 
-        {/* Footer */}
-        <View className="flex-row gap-4 p-6 border-t border-gray-200">
-          <Pressable
-            onPress={handleClearFilters}
-            className="flex-1 py-3 border border-gray-300 rounded-lg"
-          >
-            <Text className="text-center text-gray-700 font-semibold font-primary">
-              Clear All
-            </Text>
-          </Pressable>
-          <Pressable
-            onPress={handleApplyFilters}
-            className="flex-1 py-3 bg-blue-600 rounded-lg"
-          >
-            <Text className="text-center text-white font-semibold font-primary">
-              Apply Filters
-            </Text>
-          </Pressable>
-        </View>
+                        {/* Footer */}
+                <View className="flex-row gap-4 p-6 border-t border-gray-200">
+                    <Pressable
+                        onPress={handleClearFilters}
+                        className="flex-1 py-3 bg-red-500 rounded-lg"
+                    >
+                        <Text className="text-center text-white font-semibold font-primary">
+                            Clear All
+                        </Text>
+                    </Pressable>
+                    <Pressable
+                        onPress={handleApplyFilters}
+                        className="flex-1 py-3 bg-blue-600 rounded-lg"
+                    >
+                        <Text className="text-center text-white font-semibold font-primary">
+                            Apply Filters
+                        </Text>
+                    </Pressable>
+                </View>
       </View>
     </Modal>
   );

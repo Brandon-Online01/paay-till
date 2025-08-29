@@ -187,7 +187,7 @@ export default function ProductGrid() {
     }, [filteredItems.length, numColumns]);
 
     return (
-        <Animated.View className="flex-1 px-4 bg-gray-200/20" style={containerAnimatedStyle}>
+        <Animated.View className="flex-1 px-4" style={containerAnimatedStyle}>
             <FlatList
                 data={filteredItems}
                 renderItem={({ item, index }) => renderItem({ item, index })}

@@ -64,30 +64,43 @@ export default function TransactionDetailModal({
     }
   };
 
-  return (
-    <Modal
-      visible={visible}
-      animationType="slide"
-      presentationStyle="pageSheet"
-      onRequestClose={onClose}
-    >
-      <View className="flex-1 bg-white">
-        {/* Header */}
-        <View className="flex-row justify-between items-center p-6 border-b border-gray-200">
-          <View>
-            <Text className="text-xl font-bold text-gray-900 font-primary">
-              Sale Details
-            </Text>
-            <Text className="text-sm text-gray-600 font-primary">
-              {transaction.transactionID}
-            </Text>
-          </View>
-          <Pressable onPress={onClose} className="p-2">
-            <X size={24} color="#6b7280" />
-          </Pressable>
-        </View>
+      return (
+        <Modal
+            visible={visible}
+            transparent={true}
+            animationType="fade"
+            onRequestClose={onClose}
+        >
+            <Pressable 
+                className="flex-1 justify-center items-center bg-black/80"
+                onPress={onClose}
+                style={{ flex: 1 }}
+            >
+                <Pressable
+                    onPress={(e) => e.stopPropagation()}
+                    style={{ width: '90%', maxWidth: 600 }}
+                >
+                    <View className="bg-white rounded-2xl border border-gray-200 shadow-xl max-h-96">
+                        {/* Header */}
+                        <View className="relative px-6 pt-6 pb-4 border-b border-gray-200">
+                            <Pressable
+                                onPress={onClose}
+                                className="absolute top-2 right-2 z-10 justify-center items-center w-12 h-12 rounded-full border border-red-500 bg-red-500/80"
+                            >
+                                <X size={22} color="#ffffff" />
+                            </Pressable>
 
-        <ScrollView className="flex-1 p-6">
+                            <View>
+                                <Text className="text-xl font-bold text-gray-900 font-primary">
+                                    Sale Details
+                                </Text>
+                                <Text className="text-sm text-gray-600 font-primary">
+                                    {transaction.transactionID}
+                                </Text>
+                            </View>
+                        </View>
+
+                                <ScrollView className="flex-1 p-6 max-h-80">
           {/* Transaction Info */}
           <View className="mb-6 p-4 bg-gray-50 rounded-lg">
             <View className="flex-row justify-between items-center mb-2">
@@ -268,8 +281,10 @@ export default function TransactionDetailModal({
               </View>
             </View>
           )}
-        </ScrollView>
-      </View>
-    </Modal>
+                                </ScrollView>
+                    </View>
+                </Pressable>
+            </Pressable>
+        </Modal>
   );
 }

@@ -13,6 +13,7 @@ import {
 import { Text, View, Pressable } from 'react-native';
 import { useEffect, useState } from 'react';
 import { NetworkUtils, NetworkStatus } from '../utils/network.util';
+import DeviceSelectionModal from './device-selection-modal';
 import info from '../data/info.json';
 
 export default function Header() {
@@ -22,6 +23,10 @@ export default function Header() {
     
     // Network monitoring state
     const [networkStatus, setNetworkStatus] = useState<NetworkStatus | null>(null);
+    
+    // Device selection modal state
+    const [showDeviceModal, setShowDeviceModal] = useState(false);
+    const [selectedDeviceType, setSelectedDeviceType] = useState<'printer' | 'scanner' | 'cloud'>('printer');
 
     useEffect(() => {
         // Start network monitoring with simplified logging
@@ -81,8 +86,19 @@ export default function Header() {
     // Get connectivity data from info.json
     const connectivity = info?.till?.connectivity;
 
+    const handleDeviceIconPress = (deviceType: 'printer' | 'scanner') => {
+        setSelectedDeviceType(deviceType);
+        setShowDeviceModal(true);
+    };
+
+    const handleDeviceSelect = (device: any) => {
+        console.log('Selected device:', device);
+        // Handle device selection logic here
+        setShowDeviceModal(false);
+    };
+
     return (
-        <View className="flex-row justify-between items-center px-6 py-4 bg-gray-200/20">
+        <View className="flex-row justify-between items-center px-6 py-4">
             <View className="flex-row gap-2 items-center">
                 <Pressable
                     onPress={toggleDrawer}
@@ -113,20 +129,24 @@ export default function Header() {
                     |
                 </Text>
                 <View className="flex-row gap-3 items-center">
-                    <PrinterCheck
-                        size={23}
-                        color={getConnectivityColor(
-                            connectivity?.printer?.status || 'disconnected'
-                        )}
-                        strokeWidth={1.9}
-                    />
-                    <ScanLine
-                        size={23}
-                        color={getConnectivityColor(
-                            connectivity?.scanner?.status || 'disconnected'
-                        )}
-                        strokeWidth={1.9}
-                    />
+                    <Pressable onPress={() => handleDeviceIconPress('printer')}>
+                        <PrinterCheck
+                            size={23}
+                            color={getConnectivityColor(
+                                connectivity?.printer?.status || 'disconnected'
+                            )}
+                            strokeWidth={1.9}
+                        />
+                    </Pressable>
+                    <Pressable onPress={() => handleDeviceIconPress('scanner')}>
+                        <ScanLine
+                            size={23}
+                            color={getConnectivityColor(
+                                connectivity?.scanner?.status || 'disconnected'
+                            )}
+                            strokeWidth={1.9}
+                        />
+                    </Pressable>
                 </View>
             </View>
             <View className="flex-row items-center space-x-4">
@@ -136,11 +156,19 @@ export default function Header() {
                 >
                     <View className="justify-center items-center w-14 h-14 rounded-full bg-primary">
                         <Text className="text-lg font-semibold text-white font-primary">
-                            {info?.company?.logo}
+                            {info?.user?.initials || info?.company?.logo}
                         </Text>
                     </View>
                 </Link>
             </View>
+
+            {/* Device Selection Modal */}
+            <DeviceSelectionModal
+                visible={showDeviceModal}
+                onClose={() => setShowDeviceModal(false)}
+                deviceType={selectedDeviceType}
+                onDeviceSelect={handleDeviceSelect}
+            />
         </View>
     );
 }

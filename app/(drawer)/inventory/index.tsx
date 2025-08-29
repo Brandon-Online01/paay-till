@@ -4,7 +4,7 @@ import BaseProvider from '@/providers/base.provider';
 export default function Settings() {
     return (
         <BaseProvider>
-            <View className="flex-1 gap-6 justify-center items-center px-6 bg-gray-200/20">
+            <View className="flex-1 gap-6 justify-center items-center px-6">
                 <Text className="mb-8 text-xl font-bold text-center text-gray-800 font-primary">
                     Inventory Page
                 </Text>

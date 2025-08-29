@@ -170,7 +170,7 @@ export default function Categories() {
     };
 
     return (
-        <Animated.View className="px-4 mb-4 bg-gray-200/20" style={containerAnimatedStyle}>
+        <Animated.View className="px-4 mb-4" style={containerAnimatedStyle}>
             <FlatList
                 data={categories}
                 renderItem={({ item, index }) => renderCategory({ item, index })}

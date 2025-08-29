@@ -5,6 +5,16 @@
         "tagline": "The ultimate POS solution for SMEs, designed for effortless setup and intuitive use, delivering groundbreaking accessibility like never before.",
         "description": "The ultimate POS solution for SMEs, designed for effortless setup and intuitive use, delivering groundbreaking accessibility like never before."
     },
+    "user": {
+        "fullName": "Brandon Nkawu",
+        "firstName": "Brandon",
+        "lastName": "Nkawu",
+        "initials": "BN",
+        "title": "Software Engineer | Orrbit Technologies",
+        "email": "brandon.nkawu@orrbit.co.za",
+        "phone": "+27 11 234 5678",
+        "avatar": "BN"
+    },
     "till": {
         "branch": {
             "name": "Midrand",
@@ -31,6 +41,60 @@
                 "name": "Cloud Sync",
                 "lastSync": "2024-01-15T10:30:00Z"
             }
+        },
+        "devices": {
+            "printers": [
+                {
+                    "id": "printer-1",
+                    "name": "Receipt Printer",
+                    "model": "Epson TM-20",
+                    "status": "connected",
+                    "type": "printer",
+                    "isActive": true
+                },
+                {
+                    "id": "printer-2",
+                    "name": "Label Printer",
+                    "model": "Brother QL-800",
+                    "status": "disconnected",
+                    "type": "printer",
+                    "isActive": false
+                },
+                {
+                    "id": "printer-3",
+                    "name": "Thermal Printer",
+                    "model": "Star TSP143III",
+                    "status": "connecting",
+                    "type": "printer",
+                    "isActive": false
+                }
+            ],
+            "scanners": [
+                {
+                    "id": "scanner-1",
+                    "name": "Barcode Scanner",
+                    "model": "Honeywell 1470",
+                    "status": "connected",
+                    "type": "scanner",
+                    "isActive": true
+                },
+                {
+                    "id": "scanner-2",
+                    "name": "QR Code Scanner",
+                    "model": "Zebra DS2208",
+                    "status": "disconnected",
+                    "type": "scanner",
+                    "isActive": false
+                },
+                {
+                    "id": "scanner-3",
+                    "name": "Handheld Scanner",
+                    "model": "Symbol LS2208",
+                    "status": "connecting",
+                    "type": "scanner",
+                    "isActive": false
+                }
+            ]
         },
         "categories": [
             { "id": "all", "name": "All Items", "icon": "🍽️" },

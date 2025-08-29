@@ -519,7 +519,7 @@ export default function CartSidebar() {
     };
 
     return (
-        <View className="flex-1 p-1 bg-gray-200/20">
+        <View className="flex-1 p-1">
             {/* Header */}
             <View className="px-4 py-3 bg-blue-500 rounded border-b border-gray-200">
                 <Text className="text-xl font-bold text-white font-primary">

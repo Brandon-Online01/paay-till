@@ -36,6 +36,7 @@ interface ReportsState {
   
   // UI State
   isLoading: boolean;
+  isRefreshing: boolean;
   error: string | null;
   searchQuery: string;
   sortBy: SortPeriod;
@@ -43,12 +44,14 @@ interface ReportsState {
   showFilterModal: boolean;
   selectedTransaction: Transaction | null;
   showTransactionModal: boolean;
+  lastUpdated: string | null;
   
   // Actions
   setTransactions: (transactions: Transaction[]) => void;
   setFilteredTransactions: (transactions: Transaction[]) => void;
   setMetrics: (metrics: SalesMetrics) => void;
   setLoading: (loading: boolean) => void;
+  setRefreshing: (refreshing: boolean) => void;
   setError: (error: string | null) => void;
   setSearchQuery: (query: string) => void;
   setSortBy: (sort: SortPeriod) => void;
@@ -57,6 +60,8 @@ interface ReportsState {
   setSelectedTransaction: (transaction: Transaction | null) => void;
   setShowTransactionModal: (show: boolean) => void;
   clearState: () => void;
+  clearCache: () => void;
+  refreshData: () => Promise<void>;
   
   // Computed Actions
   applyFiltersAndSort: () => void;
@@ -82,6 +87,7 @@ export const useReportsStore = create<ReportsState>((set, get) => ({
   filteredTransactions: [],
   metrics: null,
   isLoading: false,
+  isRefreshing: false,
   error: null,
   searchQuery: '',
   sortBy: 'daily',
@@ -89,10 +95,15 @@ export const useReportsStore = create<ReportsState>((set, get) => ({
   showFilterModal: false,
   selectedTransaction: null,
   showTransactionModal: false,
+  lastUpdated: null,
   
   // Actions
   setTransactions: (transactions) => {
-    set({ transactions });
+    set({ 
+      transactions, 
+      lastUpdated: new Date().toISOString(),
+      error: null 
+    });
     get().applyFiltersAndSort();
     get().calculateMetrics();
   },
@@ -105,6 +116,8 @@ export const useReportsStore = create<ReportsState>((set, get) => ({
   setMetrics: (metrics) => set({ metrics }),
   
   setLoading: (isLoading) => set({ isLoading }),
+  
+  setRefreshing: (isRefreshing) => set({ isRefreshing }),
   
   setError: (error) => set({ error }),
   
@@ -134,6 +147,7 @@ export const useReportsStore = create<ReportsState>((set, get) => ({
     filteredTransactions: [],
     metrics: null,
     isLoading: false,
+    isRefreshing: false,
     error: null,
     searchQuery: '',
     sortBy: 'daily',
@@ -141,7 +155,43 @@ export const useReportsStore = create<ReportsState>((set, get) => ({
     showFilterModal: false,
     selectedTransaction: null,
     showTransactionModal: false,
+    lastUpdated: null,
   }),
+  
+  clearCache: () => {
+    set({ 
+      transactions: [], 
+      filteredTransactions: [], 
+      metrics: null,
+      lastUpdated: null 
+    });
+  },
+  
+  refreshData: async () => {
+    const { TransactionService } = await import('@/@db/transaction.service');
+    
+    set({ isRefreshing: true, error: null });
+    try {
+      const allTransactions = await TransactionService.getTransactions();
+      // Sort by most recent first for fast loading
+      const sortedTransactions = allTransactions.sort((a, b) => 
+        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      );
+      
+      set({ 
+        transactions: sortedTransactions,
+        lastUpdated: new Date().toISOString(),
+        error: null 
+      });
+      get().applyFiltersAndSort();
+      get().calculateMetrics();
+    } catch (error) {
+      console.error('Failed to refresh transactions:', error);
+      set({ error: 'Failed to refresh transactions' });
+    } finally {
+      set({ isRefreshing: false });
+    }
+  },
   
   applyFiltersAndSort: () => {
     const { transactions, searchQuery, sortBy, filters } = get();

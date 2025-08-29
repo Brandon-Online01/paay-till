@@ -35,7 +35,7 @@ export default function TillPage() {
             <BaseProvider>
                 <View className="flex-1 bg-gray-50">
                     {/* Full Width Content Area when basket is empty */}
-                    <View className="flex-1 bg-white">
+                    <View className="flex-1">
                         {/* Search Bar */}
                         <SearchBar />
 
@@ -60,7 +60,7 @@ export default function TillPage() {
      */
     return (
         <BaseProvider>
-            <View className={`flex-1 p-2 bg-gray-200/20 ${flexDirection}`}>
+            <View className={`flex-1 p-2 ${flexDirection}`}>
                 {/* Cart/Order Sidebar - Left side on desktop, top on mobile */}
                 <View
                     className={`${isMobile ? 'w-full h-2/5' : 'w-1/3 h-full'}`}
