@@ -177,9 +177,7 @@ export const useCartStore = create<CartStore>()(
          * Clear all items from the cart and reset order state
          */
         clearCart: () => {
-            console.log('🧹 Clearing cart - resetting all state...');
-            const state = get();
-            console.log('📊 Items before clearCart:', state.items.length);
+            console.log('🧹 Cart cleared - ready for next transaction');
             
             set({
                 items: [],
@@ -194,10 +192,6 @@ export const useCartStore = create<CartStore>()(
                 isPaymentModalVisible: false,
                 isReceiptModalVisible: false,
             });
-            
-            const newState = get();
-            console.log('📊 Items after clearCart:', newState.items.length);
-            console.log('✅ Cart cleared - all state reset for next transaction');
         },
 
         /**
@@ -352,7 +346,7 @@ export const useCartStore = create<CartStore>()(
         /**
          * Process payment and complete the order
          */
-        processPayment: (payments: PaymentMethod[]) => {
+        processPayment: async (payments: PaymentMethod[]) => {
             const state = get();
 
             const totalPaid = payments.reduce(
@@ -391,16 +385,49 @@ export const useCartStore = create<CartStore>()(
                 completedAt: new Date(),
             };
 
-            // Payment calculation variables handled in cart-sidebar.tsx logging
+            // Calculate change amount (for cash payments)
+            const changeAmount = Math.max(0, totalPaid - state.total);
 
-            // Basic transaction completion logging
-            console.log(`✅ Transaction ${completedOrder.id} completed successfully`);
+            // Save transaction to database
+            try {
+                const { TransactionService } = await import('../@db/transaction.service');
+                
+                await TransactionService.saveTransaction({
+                    cashierID: 'current-cashier', // TODO: Get from auth context
+                    orderID: completedOrder.id,
+                    items: state.items,
+                    paymentMethods: payments.map(payment => ({
+                        type: payment.type as any,
+                        amount: payment.amount,
+                        reference: payment.reference,
+                    })),
+                    subtotal: state.subtotal,
+                    tax: state.tax,
+                    discount: state.discount,
+                    totalAmount: state.total,
+                    change: changeAmount,
+                    customerName: state.customerName,
+                    currency: state.currency,
+                    currencySymbol: state.symbol,
+                    additionalMetrics: {
+                        itemCount: state.items.length,
+                        paymentCount: payments.length,
+                        deviceType: 'till',
+                        location: state.tillConfig?.branch?.name || 'Unknown',
+                    },
+                });
 
-            // Close payment modal and clear cart immediately after successful payment
-            console.log('🧹 Clearing cart and resetting state for next transaction...');
-            console.log('📊 Current cart items before clearing:', state.items.length);
+                console.log(`💾 Transaction saved to database successfully`);
+            } catch (error) {
+                console.error('❌ Failed to save transaction to database:', error);
+                // Don't block the payment flow if database save fails
+                // TODO: Add retry mechanism or queue for offline storage
+            }
+
+            // Transaction completion
+            console.log(`✅ Transaction ${completedOrder.id} completed - ${state.symbol}${completedOrder.total.toFixed(2)}`);
             
-            // Immediately clear all cart state for next transaction
+            // Clear cart immediately after successful payment
             set({
                 // Order completion
                 currentOrder: completedOrder,
@@ -419,19 +446,11 @@ export const useCartStore = create<CartStore>()(
                 splitPayment: undefined,
                 customerName: '',
             });
-            
-            // Verify cart is actually cleared
-            const newState = get();
-            console.log('📊 Cart items after clearing:', newState.items.length);
-            console.log('💰 Total after clearing:', newState.total);
-            console.log('✅ Cart cleared successfully! Ready for next transaction.');
 
             // Reset UI state for next transaction
             if (typeof window !== 'undefined' && (global as any).resetUIState) {
                 (global as any).resetUIState();
             }
-
-
         },
 
         /**

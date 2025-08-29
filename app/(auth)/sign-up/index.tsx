@@ -32,24 +32,77 @@ export default function SignUp() {
         pin?: string;
     }>({});
 
-    // Animation values
+    // Enhanced animation values for staggered entry
+    const leftPanelOpacity = useSharedValue(0);
+    const leftPanelScale = useSharedValue(0.8);
+    const leftPanelTranslateX = useSharedValue(-100);
+    
+    const headerOpacity = useSharedValue(0);
+    const headerTranslateY = useSharedValue(30);
+    
     const formOpacity = useSharedValue(0);
     const formTranslateY = useSharedValue(50);
-    const leftPanelScale = useSharedValue(0.8);
-    const buttonScale = useSharedValue(1);
+    
+    const inputsOpacity = useSharedValue(0);
+    const inputsTranslateY = useSharedValue(20);
+    
+    const buttonOpacity = useSharedValue(0);
+    const buttonScale = useSharedValue(0.8);
+    
+    const linksOpacity = useSharedValue(0);
+    const linksTranslateY = useSharedValue(20);
+    
+    const logoScale = useSharedValue(0);
+    const logoRotate = useSharedValue(-45);
 
     useEffect(() => {
         // Clear forms when component mounts
         clearForms();
 
-        // Start entrance animations
-        formOpacity.value = withTiming(1, {
-            duration: 800,
-            easing: Easing.out(Easing.exp),
-        });
-        formTranslateY.value = withSpring(0, { damping: 15, stiffness: 100 });
-        leftPanelScale.value = withSpring(1, { damping: 12, stiffness: 120 });
-    }, [clearForms, formOpacity, formTranslateY, leftPanelScale]);
+        // Staggered entrance animations with proper delays
+        // 1. Left panel slides in and scales
+        setTimeout(() => {
+            leftPanelOpacity.value = withTiming(1, { duration: 600, easing: Easing.out(Easing.exp) });
+            leftPanelTranslateX.value = withSpring(0, { damping: 15, stiffness: 100 });
+            leftPanelScale.value = withSpring(1, { damping: 12, stiffness: 120 });
+        }, 100);
+
+        // 2. Logo appears with scale and rotation
+        setTimeout(() => {
+            logoScale.value = withSpring(1, { damping: 10, stiffness: 150 });
+            logoRotate.value = withTiming(0, { duration: 800, easing: Easing.out(Easing.back(1.2)) });
+        }, 300);
+
+        // 3. Header text fades in from top
+        setTimeout(() => {
+            headerOpacity.value = withTiming(1, { duration: 500, easing: Easing.out(Easing.exp) });
+            headerTranslateY.value = withSpring(0, { damping: 15, stiffness: 100 });
+        }, 600);
+
+        // 4. Form container appears
+        setTimeout(() => {
+            formOpacity.value = withTiming(1, { duration: 600, easing: Easing.out(Easing.exp) });
+            formTranslateY.value = withSpring(0, { damping: 15, stiffness: 100 });
+        }, 800);
+
+        // 5. Input fields slide in
+        setTimeout(() => {
+            inputsOpacity.value = withTiming(1, { duration: 500, easing: Easing.out(Easing.exp) });
+            inputsTranslateY.value = withSpring(0, { damping: 15, stiffness: 100 });
+        }, 1000);
+
+        // 6. Button appears with scale
+        setTimeout(() => {
+            buttonOpacity.value = withTiming(1, { duration: 500, easing: Easing.out(Easing.exp) });
+            buttonScale.value = withSpring(1, { damping: 12, stiffness: 150 });
+        }, 1200);
+
+        // 7. Footer links fade in
+        setTimeout(() => {
+            linksOpacity.value = withTiming(1, { duration: 500, easing: Easing.out(Easing.exp) });
+            linksTranslateY.value = withSpring(0, { damping: 15, stiffness: 100 });
+        }, 1400);
+    }, [clearForms]);
 
     const validateForm = () => {
         const newErrors: {
@@ -82,18 +135,45 @@ export default function SignUp() {
         return Object.keys(newErrors).length === 0;
     };
 
-    // Animated styles
+    // Enhanced animated styles for staggered entry
+    const leftPanelAnimatedStyle = useAnimatedStyle(() => ({
+        opacity: leftPanelOpacity.value,
+        transform: [
+            { translateX: leftPanelTranslateX.value },
+            { scale: leftPanelScale.value }
+        ],
+    }));
+
+    const logoAnimatedStyle = useAnimatedStyle(() => ({
+        transform: [
+            { scale: logoScale.value },
+            { rotate: `${logoRotate.value}deg` }
+        ],
+    }));
+
+    const headerAnimatedStyle = useAnimatedStyle(() => ({
+        opacity: headerOpacity.value,
+        transform: [{ translateY: headerTranslateY.value }],
+    }));
+
     const formAnimatedStyle = useAnimatedStyle(() => ({
         opacity: formOpacity.value,
         transform: [{ translateY: formTranslateY.value }],
     }));
 
-    const leftPanelAnimatedStyle = useAnimatedStyle(() => ({
-        transform: [{ scale: leftPanelScale.value }],
+    const inputsAnimatedStyle = useAnimatedStyle(() => ({
+        opacity: inputsOpacity.value,
+        transform: [{ translateY: inputsTranslateY.value }],
     }));
 
     const buttonAnimatedStyle = useAnimatedStyle(() => ({
+        opacity: buttonOpacity.value,
         transform: [{ scale: buttonScale.value }],
+    }));
+
+    const linksAnimatedStyle = useAnimatedStyle(() => ({
+        opacity: linksOpacity.value,
+        transform: [{ translateY: linksTranslateY.value }],
     }));
 
     const handleSignUp = async () => {
@@ -137,7 +217,7 @@ export default function SignUp() {
                         resizeMode="cover"
                     >
                         <View className="flex flex-col gap-2 justify-center items-center p-6 space-y-2 rounded-lg bg-black/40">
-                            <View className="flex flex-col gap-2 items-center">
+                            <Animated.View className="flex flex-col gap-2 items-center" style={logoAnimatedStyle}>
                                 <Image
                                     source={require('../../../assets/images/logo.png')}
                                     className="rounded-2xl"
@@ -148,7 +228,7 @@ export default function SignUp() {
                                         height: 200,
                                     }}
                                 />
-                            </View>
+                            </Animated.View>
                             <Text className="px-4 -mt-14 max-w-2xl text-xl text-center text-white/80 font-primary">
                                 {info?.company?.tagline}
                             </Text>
@@ -171,7 +251,7 @@ export default function SignUp() {
                     </View>
                     <View className="flex flex-col gap-10 justify-center items-center p-2 w-full h-full">
                         {/* Header */}
-                        <View className="space-y-2">
+                        <Animated.View className="space-y-2" style={headerAnimatedStyle}>
                             <Text className="text-3xl font-bold text-center text-primary font-primary">
                                 {info?.auth?.signUp?.title ||
                                     'Create An Account'}
@@ -180,64 +260,66 @@ export default function SignUp() {
                                 {info?.auth?.signUp?.subtitle ||
                                     'Join us today'}
                             </Text>
-                        </View>
+                        </Animated.View>
 
                         {/* Form */}
-                        <View className="flex flex-col gap-6 justify-center items-center w-full">
-                            {/* Business Name Field */}
-                            <View className="flex flex-col gap-1 w-full">
-                                <Text className="font-semibold text-gray-700 uppercase text-md font-primary">
-                                    Trading Name
-                                </Text>
-                                <View className="relative flex-row justify-center items-center w-full">
-                                    <TextInput
-                                        className={`w-full p-6 border rounded-lg text-base font-primary ${
-                                            errors.businessName
-                                                ? 'border-red-500'
-                                                : 'border-gray-300'
-                                        }`}
-                                        placeholder="Your Business Name"
-                                        value={signUpForm.businessName || ''}
-                                        onChangeText={(businessName) =>
-                                            updateSignUpForm({ businessName })
-                                        }
-                                        autoCapitalize="words"
-                                    />
-                                </View>
-                                {errors.businessName && (
-                                    <Text className="text-sm text-red-600 font-primary">
-                                        {errors.businessName}
+                        <Animated.View className="flex flex-col gap-6 justify-center items-center w-full" style={formAnimatedStyle}>
+                            <Animated.View style={inputsAnimatedStyle}>
+                                {/* Business Name Field */}
+                                <View className="flex flex-col gap-1 w-full mb-6">
+                                    <Text className="font-semibold text-gray-700 uppercase text-md font-primary">
+                                        Trading Name
                                     </Text>
-                                )}
-                            </View>
+                                    <View className="relative flex-row justify-center items-center w-full">
+                                        <TextInput
+                                            className={`w-full p-6 border rounded-lg text-base font-primary ${
+                                                errors.businessName
+                                                    ? 'border-red-500'
+                                                    : 'border-gray-300'
+                                            }`}
+                                            placeholder="Your Business Name"
+                                            value={signUpForm.businessName || ''}
+                                            onChangeText={(businessName) =>
+                                                updateSignUpForm({ businessName })
+                                            }
+                                            autoCapitalize="words"
+                                        />
+                                    </View>
+                                    {errors.businessName && (
+                                        <Text className="text-sm text-red-600 font-primary">
+                                            {errors.businessName}
+                                        </Text>
+                                    )}
+                                </View>
 
-                            {/* Business Email Field */}
-                            <View className="flex flex-col gap-1 w-full">
-                                <Text className="font-semibold text-gray-700 uppercase text-md font-primary">
-                                    Business Email
-                                </Text>
-                                <View className="relative flex-row justify-center items-center w-full">
-                                    <TextInput
-                                        className={`w-full p-6 border rounded-lg text-base font-primary ${
-                                            errors.businessEmail
-                                                ? 'border-red-500'
-                                                : 'border-gray-300'
-                                        }`}
-                                        placeholder="business@example.com"
-                                        value={signUpForm.businessEmail || ''}
-                                        onChangeText={(businessEmail) =>
-                                            updateSignUpForm({ businessEmail })
-                                        }
-                                        keyboardType="email-address"
-                                        autoCapitalize="none"
-                                    />
-                                </View>
-                                {errors.businessEmail && (
-                                    <Text className="text-sm text-red-600 font-primary">
-                                        {errors.businessEmail}
+                                {/* Business Email Field */}
+                                <View className="flex flex-col gap-1 w-full">
+                                    <Text className="font-semibold text-gray-700 uppercase text-md font-primary">
+                                        Business Email
                                     </Text>
-                                )}
-                            </View>
+                                    <View className="relative flex-row justify-center items-center w-full">
+                                        <TextInput
+                                            className={`w-full p-6 border rounded-lg text-base font-primary ${
+                                                errors.businessEmail
+                                                    ? 'border-red-500'
+                                                    : 'border-gray-300'
+                                            }`}
+                                            placeholder="business@example.com"
+                                            value={signUpForm.businessEmail || ''}
+                                            onChangeText={(businessEmail) =>
+                                                updateSignUpForm({ businessEmail })
+                                            }
+                                            keyboardType="email-address"
+                                            autoCapitalize="none"
+                                        />
+                                    </View>
+                                    {errors.businessEmail && (
+                                        <Text className="text-sm text-red-600 font-primary">
+                                            {errors.businessEmail}
+                                        </Text>
+                                    )}
+                                </View>
+                            </Animated.View>
 
                             {/* Sign Up Button */}
                             <Animated.View
@@ -272,10 +354,10 @@ export default function SignUp() {
                                     {authState.error}
                                 </Text>
                             )}
-                        </View>
+                        </Animated.View>
 
                         {/* Links */}
-                        <View className="absolute right-0 bottom-0 left-0">
+                        <Animated.View className="absolute right-0 bottom-0 left-0" style={linksAnimatedStyle}>
                             <View className="flex-row gap-1 justify-center items-center">
                                 <Text className="text-gray-600 font-primary">
                                     Already have an account?
@@ -291,7 +373,7 @@ export default function SignUp() {
                                     </Pressable>
                                 </Link>
                             </View>
-                        </View>
+                        </Animated.View>
                     </View>
                 </Animated.View>
             </View>

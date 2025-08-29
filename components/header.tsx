@@ -11,12 +11,46 @@ import {
     useDrawerStatus,
 } from '@react-navigation/drawer';
 import { Text, View, Pressable } from 'react-native';
+import { useEffect, useState } from 'react';
+import { NetworkUtils, NetworkStatus } from '../utils/network.util';
 import info from '../data/info.json';
 
 export default function Header() {
     const navigation = useNavigation<DrawerNavigationProp<any>>();
     const drawerStatus = useDrawerStatus();
     const isDrawerOpen = drawerStatus === 'open';
+    
+    // Network monitoring state
+    const [networkStatus, setNetworkStatus] = useState<NetworkStatus | null>(null);
+
+    useEffect(() => {
+        // Start network monitoring with simplified logging
+        const stopMonitoring = NetworkUtils.startMonitoring({
+            enableSpeedTest: false, // Disable speed tests for better performance
+            logToConsole: false, // We'll handle our own simplified logging
+            onStatusChange: (status) => {
+                setNetworkStatus(status);
+                
+                // Simplified network status logging
+                const connectionType = NetworkUtils.getConnectionTypeName(status.connectionType);
+                const emoji = NetworkUtils.getNetworkStatusEmoji(status);
+                console.log(`${emoji} Network: ${connectionType} - ${status.isConnected ? 'Connected' : 'Disconnected'}`);
+            },
+        });
+
+        // Get initial network status
+        NetworkUtils.getCurrentStatus().then(status => {
+            setNetworkStatus(status);
+            const connectionType = NetworkUtils.getConnectionTypeName(status.connectionType);
+            const emoji = NetworkUtils.getNetworkStatusEmoji(status);
+            console.log(`${emoji} Network: ${connectionType} - ${status.isConnected ? 'Connected' : 'Disconnected'}`);
+        });
+
+        // Cleanup on unmount
+        return () => {
+            stopMonitoring();
+        };
+    }, []);
 
     const toggleDrawer = () => {
         if (isDrawerOpen) {
@@ -27,7 +61,12 @@ export default function Header() {
     };
 
     // Get color based on connectivity status
-    const getConnectivityColor = (status: string): string => {
+    const getConnectivityColor = (status: string, isNetworkConnected?: boolean): string => {
+        // If we have real network status, use it; otherwise fall back to info.json
+        if (isNetworkConnected !== undefined) {
+            return isNetworkConnected ? '#1c8370' : '#FC4A4A';
+        }
+        
         switch (status) {
             case 'connected':
                 return '#1c8370'; // green-700
@@ -61,7 +100,8 @@ export default function Header() {
                     <MapPinHouse
                         size={20}
                         color={getConnectivityColor(
-                            connectivity?.cloud?.status || 'disconnected'
+                            connectivity?.cloud?.status || 'disconnected',
+                            networkStatus?.isConnected
                         )}
                         strokeWidth={1.9}
                     />

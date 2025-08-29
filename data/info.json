@@ -1086,6 +1086,14 @@
         "settings": {
             "label": "Settings",
             "icon": "settings"
+        },
+        "reports": {
+            "label": "Reports",
+            "icon": "chart-bar"
+        },
+        "inventory": {
+            "label": "Inventory",
+            "icon": "receipt"
         }
     },
     "auth": {

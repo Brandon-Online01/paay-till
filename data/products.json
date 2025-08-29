@@ -1,0 +1,1820 @@
+[
+    {
+        "id": "1",
+        "name": "Samsung Galaxy Phone",
+        "category": "electronics",
+        "price": 8999.0,
+        "image": "📱",
+        "description": "Latest Samsung Galaxy smartphone with advanced features",
+        "badge": "special",
+        "variants": {
+            "colors": [
+                { "name": "Black", "price": 0 },
+                { "name": "Blue", "price": 0 },
+                { "name": "Silver", "price": 100 }
+            ],
+            "sizes": [
+                { "name": "128GB", "price": 0 },
+                { "name": "256GB", "price": 1500 },
+                { "name": "512GB", "price": 3000 }
+            ]
+        }
+    },
+    {
+        "id": "2",
+        "name": "Wireless Headphones",
+        "category": "electronics",
+        "price": 1299.0,
+        "image": "🎧",
+        "description": "Premium wireless Bluetooth headphones",
+        "badge": "20% off",
+        "variants": {
+            "colors": [
+                { "name": "Black", "price": 0 },
+                { "name": "White", "price": 50 },
+                { "name": "Red", "price": 100 }
+            ]
+        }
+    },
+    {
+        "id": "3",
+        "name": "Laptop Computer",
+        "category": "electronics",
+        "price": 15999.0,
+        "image": "💻",
+        "description": "High-performance laptop for work and gaming",
+        "badge": null
+    },
+    {
+        "id": "4",
+        "name": "Smart Watch",
+        "category": "electronics",
+        "price": 2499.0,
+        "image": "⌚",
+        "description": "Fitness tracking smartwatch",
+        "badge": "limited",
+        "variants": {
+            "colors": [
+                { "name": "Black", "price": 0 },
+                { "name": "Silver", "price": 200 },
+                { "name": "Gold", "price": 500 }
+            ]
+        }
+    },
+    {
+        "id": "5",
+        "name": "USB Cable",
+        "category": "electronics",
+        "price": 89.0,
+        "image": "🔌",
+        "description": "Universal USB charging cable",
+        "badge": null
+    },
+    {
+        "id": "6",
+        "name": "Power Bank",
+        "category": "electronics",
+        "price": 599.0,
+        "image": "🔋",
+        "description": "Portable power bank 10000mAh",
+        "badge": "special"
+    },
+    {
+        "id": "7",
+        "name": "T-Shirt",
+        "category": "clothing",
+        "price": 199.0,
+        "image": "👕",
+        "description": "Comfortable cotton t-shirt",
+        "badge": null,
+        "variants": {
+            "sizes": [
+                { "name": "Small", "price": 0 },
+                { "name": "Medium", "price": 0 },
+                { "name": "Large", "price": 20 },
+                { "name": "XL", "price": 30 }
+            ],
+            "colors": [
+                { "name": "White", "price": 0 },
+                { "name": "Black", "price": 10 },
+                { "name": "Red", "price": 15 },
+                { "name": "Blue", "price": 15 }
+            ]
+        }
+    },
+    {
+        "id": "8",
+        "name": "Jeans",
+        "category": "clothing",
+        "price": 699.0,
+        "image": "👖",
+        "description": "Classic denim jeans",
+        "badge": "special",
+        "variants": {
+            "sizes": [
+                { "name": "28", "price": 0 },
+                { "name": "30", "price": 0 },
+                { "name": "32", "price": 0 },
+                { "name": "34", "price": 50 }
+            ],
+            "colors": [
+                { "name": "Dark Blue", "price": 0 },
+                { "name": "Light Blue", "price": 50 },
+                { "name": "Black", "price": 100 }
+            ]
+        }
+    },
+    {
+        "id": "9",
+        "name": "Sneakers",
+        "category": "clothing",
+        "price": 1299.0,
+        "image": "👟",
+        "description": "Comfortable sports sneakers",
+        "badge": "20% off",
+        "variants": {
+            "sizes": [
+                { "name": "6", "price": 0 },
+                { "name": "7", "price": 0 },
+                { "name": "8", "price": 0 },
+                { "name": "9", "price": 50 },
+                { "name": "10", "price": 50 }
+            ],
+            "colors": [
+                { "name": "White", "price": 0 },
+                { "name": "Black", "price": 100 },
+                { "name": "Red", "price": 150 }
+            ]
+        }
+    },
+    {
+        "id": "10",
+        "name": "Jacket",
+        "category": "clothing",
+        "price": 899.0,
+        "image": "🧥",
+        "description": "Warm winter jacket",
+        "badge": null,
+        "variants": {
+            "sizes": [
+                { "name": "Small", "price": 0 },
+                { "name": "Medium", "price": 0 },
+                { "name": "Large", "price": 100 }
+            ]
+        }
+    },
+    {
+        "id": "11",
+        "name": "Cap",
+        "category": "clothing",
+        "price": 149.0,
+        "image": "🧢",
+        "description": "Stylish baseball cap",
+        "badge": null
+    },
+    {
+        "id": "12",
+        "name": "Socks",
+        "category": "clothing",
+        "price": 59.0,
+        "image": "🧦",
+        "description": "Cotton sports socks",
+        "badge": "limited"
+    },
+    {
+        "id": "13",
+        "name": "Pizza Slice",
+        "category": "food",
+        "price": 45.0,
+        "image": "🍕",
+        "description": "Delicious cheese pizza slice",
+        "badge": null,
+        "variants": {
+            "flavors": [
+                { "name": "Margherita", "price": 0 },
+                { "name": "Pepperoni", "price": 15 },
+                { "name": "Meat Lovers", "price": 25 }
+            ],
+            "sizes": [
+                { "name": "Regular", "price": 0 },
+                { "name": "Large", "price": 20 }
+            ]
+        }
+    },
+    {
+        "id": "14",
+        "name": "Burger",
+        "category": "food",
+        "price": 89.0,
+        "image": "🍔",
+        "description": "Juicy beef burger with fresh ingredients",
+        "badge": "special",
+        "variants": {
+            "flavors": [
+                { "name": "Classic Beef", "price": 0 },
+                { "name": "Cheese Burger", "price": 20 },
+                { "name": "Chicken Burger", "price": 15 },
+                { "name": "Veggie Burger", "price": 10 }
+            ]
+        }
+    },
+    {
+        "id": "15",
+        "name": "Chocolate Bar",
+        "category": "food",
+        "price": 25.0,
+        "image": "🍫",
+        "description": "Premium milk chocolate bar",
+        "badge": null,
+        "variants": {
+            "flavors": [
+                { "name": "Milk Chocolate", "price": 0 },
+                { "name": "Dark Chocolate", "price": 5 },
+                { "name": "White Chocolate", "price": 5 }
+            ],
+            "sizes": [
+                { "name": "50g", "price": 0 },
+                { "name": "100g", "price": 15 }
+            ]
+        }
+    },
+    {
+        "id": "16",
+        "name": "Sandwich",
+        "category": "food",
+        "price": 65.0,
+        "image": "🥪",
+        "description": "Fresh deli sandwich",
+        "badge": null
+    },
+    {
+        "id": "17",
+        "name": "Chips",
+        "category": "food",
+        "price": 18.0,
+        "image": "🍟",
+        "description": "Crispy potato chips",
+        "badge": "20% off"
+    },
+    {
+        "id": "18",
+        "name": "Ice Cream",
+        "category": "food",
+        "price": 35.0,
+        "image": "🍦",
+        "description": "Creamy vanilla ice cream",
+        "badge": null,
+        "variants": {
+            "flavors": [
+                { "name": "Vanilla", "price": 0 },
+                { "name": "Chocolate", "price": 5 },
+                { "name": "Strawberry", "price": 5 }
+            ]
+        }
+    },
+    {
+        "id": "19",
+        "name": "Coffee",
+        "category": "beverages",
+        "price": 35.0,
+        "image": "☕",
+        "description": "Freshly brewed coffee",
+        "badge": null,
+        "variants": {
+            "sizes": [
+                { "name": "Small", "price": 0 },
+                { "name": "Medium", "price": 15 },
+                { "name": "Large", "price": 25 }
+            ],
+            "flavors": [
+                { "name": "Black Coffee", "price": 0 },
+                { "name": "Latte", "price": 20 },
+                { "name": "Cappuccino", "price": 18 },
+                { "name": "Mocha", "price": 25 }
+            ]
+        }
+    },
+    {
+        "id": "20",
+        "name": "Espresso",
+        "category": "beverages",
+        "price": 18.0,
+        "image": "☕",
+        "description": "Strong espresso",
+        "badge": null
+    },
+    {
+        "id": "21",
+        "name": "Soft Drink",
+        "category": "beverages",
+        "price": 28.0,
+        "image": "🥤",
+        "description": "Refreshing carbonated soft drink",
+        "badge": "20% off",
+        "variants": {
+            "flavors": [
+                { "name": "Coca Cola", "price": 0 },
+                { "name": "Pepsi", "price": 0 },
+                { "name": "Sprite", "price": 0 },
+                { "name": "Fanta", "price": 3 }
+            ],
+            "sizes": [
+                { "name": "330ml", "price": 0 },
+                { "name": "500ml", "price": 10 },
+                { "name": "1L", "price": 25 }
+            ]
+        }
+    },
+    {
+        "id": "22",
+        "name": "Water",
+        "category": "beverages",
+        "price": 15.0,
+        "image": "💧",
+        "description": "Pure drinking water",
+        "badge": null
+    },
+    {
+        "id": "23",
+        "name": "Juice",
+        "category": "beverages",
+        "price": 35.0,
+        "image": "🧃",
+        "description": "Fresh fruit juice",
+        "badge": "special",
+        "variants": {
+            "flavors": [
+                { "name": "Orange", "price": 0 },
+                { "name": "Apple", "price": 5 },
+                { "name": "Grape", "price": 8 }
+            ]
+        }
+    },
+    {
+        "id": "24",
+        "name": "Energy Drink",
+        "category": "beverages",
+        "price": 45.0,
+        "image": "⚡",
+        "description": "High-energy drink",
+        "badge": "limited"
+    },
+    {
+        "id": "25",
+        "name": "Action Figure",
+        "category": "toys",
+        "price": 299.0,
+        "image": "🧸",
+        "description": "Popular superhero action figure",
+        "badge": "limited",
+        "variants": {
+            "flavors": [
+                { "name": "Superman", "price": 0 },
+                { "name": "Batman", "price": 50 },
+                { "name": "Spider-Man", "price": 30 }
+            ]
+        }
+    },
+    {
+        "id": "26",
+        "name": "Board Game",
+        "category": "toys",
+        "price": 499.0,
+        "image": "🎲",
+        "description": "Fun family board game",
+        "badge": null,
+        "variants": {
+            "flavors": [
+                { "name": "Monopoly", "price": 0 },
+                { "name": "Scrabble", "price": 50 },
+                { "name": "Chess", "price": 100 }
+            ]
+        }
+    },
+    {
+        "id": "27",
+        "name": "Puzzle",
+        "category": "toys",
+        "price": 189.0,
+        "image": "🧩",
+        "description": "1000-piece jigsaw puzzle",
+        "badge": null
+    },
+    {
+        "id": "28",
+        "name": "Building Blocks",
+        "category": "toys",
+        "price": 399.0,
+        "image": "🧱",
+        "description": "Educational building blocks set",
+        "badge": "special"
+    },
+    {
+        "id": "29",
+        "name": "Doll",
+        "category": "toys",
+        "price": 249.0,
+        "image": "🪆",
+        "description": "Beautiful collectible doll",
+        "badge": null
+    },
+    {
+        "id": "30",
+        "name": "RC Car",
+        "category": "toys",
+        "price": 899.0,
+        "image": "🚗",
+        "description": "Remote control racing car",
+        "badge": "20% off"
+    },
+    {
+        "id": "31",
+        "name": "Hammer",
+        "category": "tools",
+        "price": 149.0,
+        "image": "🔨",
+        "description": "Heavy-duty claw hammer",
+        "badge": null,
+        "variants": {
+            "sizes": [
+                { "name": "8oz", "price": 0 },
+                { "name": "16oz", "price": 50 },
+                { "name": "24oz", "price": 100 }
+            ]
+        }
+    },
+    {
+        "id": "32",
+        "name": "Screwdriver Set",
+        "category": "tools",
+        "price": 89.0,
+        "image": "🔧",
+        "description": "Professional screwdriver set",
+        "badge": "special",
+        "variants": {
+            "sizes": [
+                { "name": "5-piece", "price": 0 },
+                { "name": "10-piece", "price": 50 },
+                { "name": "20-piece", "price": 120 }
+            ]
+        }
+    },
+    {
+        "id": "33",
+        "name": "Drill",
+        "category": "tools",
+        "price": 799.0,
+        "image": "🪚",
+        "description": "Electric power drill",
+        "badge": null
+    },
+    {
+        "id": "34",
+        "name": "Saw",
+        "category": "tools",
+        "price": 299.0,
+        "image": "🪚",
+        "description": "Hand saw for cutting",
+        "badge": "limited"
+    },
+    {
+        "id": "35",
+        "name": "Wrench Set",
+        "category": "tools",
+        "price": 199.0,
+        "image": "🔧",
+        "description": "Complete wrench set",
+        "badge": null
+    },
+    {
+        "id": "36",
+        "name": "Toolbox",
+        "category": "tools",
+        "price": 349.0,
+        "image": "🧰",
+        "description": "Heavy-duty toolbox",
+        "badge": "special"
+    },
+    {
+        "id": "37",
+        "name": "Plant Pot",
+        "category": "home",
+        "price": 79.0,
+        "image": "🪴",
+        "description": "Ceramic plant pot for indoor plants",
+        "badge": null,
+        "variants": {
+            "sizes": [
+                { "name": "Small", "price": 0 },
+                { "name": "Medium", "price": 30 },
+                { "name": "Large", "price": 70 }
+            ],
+            "colors": [
+                { "name": "White", "price": 0 },
+                { "name": "Terracotta", "price": 15 },
+                { "name": "Black", "price": 20 }
+            ]
+        }
+    },
+    {
+        "id": "38",
+        "name": "Garden Hose",
+        "category": "home",
+        "price": 189.0,
+        "image": "🌊",
+        "description": "Flexible garden hose 20m",
+        "badge": null
+    },
+    {
+        "id": "39",
+        "name": "Light Bulb",
+        "category": "home",
+        "price": 45.0,
+        "image": "💡",
+        "description": "LED energy-saving bulb",
+        "badge": "20% off"
+    },
+    {
+        "id": "40",
+        "name": "Candle",
+        "category": "home",
+        "price": 89.0,
+        "image": "🕯️",
+        "description": "Scented aromatherapy candle",
+        "badge": "special",
+        "variants": {
+            "flavors": [
+                { "name": "Vanilla", "price": 0 },
+                { "name": "Lavender", "price": 20 },
+                { "name": "Rose", "price": 25 }
+            ]
+        }
+    },
+    {
+        "id": "41",
+        "name": "Pillow",
+        "category": "home",
+        "price": 149.0,
+        "image": "🛏️",
+        "description": "Comfortable memory foam pillow",
+        "badge": null
+    },
+    {
+        "id": "42",
+        "name": "Blanket",
+        "category": "home",
+        "price": 299.0,
+        "image": "🧶",
+        "description": "Soft wool blanket",
+        "badge": "limited"
+    },
+    {
+        "id": "43",
+        "name": "Shampoo",
+        "category": "health",
+        "price": 65.0,
+        "image": "🧴",
+        "description": "Moisturizing shampoo for all hair types",
+        "badge": null,
+        "variants": {
+            "sizes": [
+                { "name": "250ml", "price": 0 },
+                { "name": "500ml", "price": 35 },
+                { "name": "1L", "price": 80 }
+            ],
+            "flavors": [
+                { "name": "Normal Hair", "price": 0 },
+                { "name": "Dry Hair", "price": 10 },
+                { "name": "Anti-Dandruff", "price": 15 }
+            ]
+        }
+    },
+    {
+        "id": "44",
+        "name": "Toothpaste",
+        "category": "health",
+        "price": 25.0,
+        "image": "🦷",
+        "description": "Fluoride toothpaste",
+        "badge": null
+    },
+    {
+        "id": "45",
+        "name": "Soap",
+        "category": "health",
+        "price": 18.0,
+        "image": "🧼",
+        "description": "Antibacterial hand soap",
+        "badge": "special"
+    },
+    {
+        "id": "46",
+        "name": "Vitamins",
+        "category": "health",
+        "price": 199.0,
+        "image": "💊",
+        "description": "Daily multivitamin tablets",
+        "badge": null
+    },
+    {
+        "id": "47",
+        "name": "Face Cream",
+        "category": "health",
+        "price": 129.0,
+        "image": "🧴",
+        "description": "Moisturizing face cream",
+        "badge": "20% off"
+    },
+    {
+        "id": "48",
+        "name": "Perfume",
+        "category": "health",
+        "price": 499.0,
+        "image": "🌸",
+        "description": "Luxury fragrance perfume",
+        "badge": "limited",
+        "variants": {
+            "flavors": [
+                { "name": "Floral", "price": 0 },
+                { "name": "Citrus", "price": 100 },
+                { "name": "Woody", "price": 150 }
+            ]
+        }
+    },
+    {
+        "id": "49",
+        "name": "Football",
+        "category": "sports",
+        "price": 299.0,
+        "image": "⚽",
+        "description": "Professional quality football",
+        "badge": "special",
+        "variants": {
+            "sizes": [
+                { "name": "Size 3", "price": 0 },
+                { "name": "Size 4", "price": 50 },
+                { "name": "Size 5", "price": 100 }
+            ]
+        }
+    },
+    {
+        "id": "50",
+        "name": "Basketball",
+        "category": "sports",
+        "price": 349.0,
+        "image": "🏀",
+        "description": "Official size basketball",
+        "badge": null
+    },
+    {
+        "id": "51",
+        "name": "Tennis Racket",
+        "category": "sports",
+        "price": 899.0,
+        "image": "🎾",
+        "description": "Professional tennis racket",
+        "badge": "20% off"
+    },
+    {
+        "id": "52",
+        "name": "Gym Weights",
+        "category": "sports",
+        "price": 599.0,
+        "image": "🏋️",
+        "description": "Adjustable dumbbells",
+        "badge": null,
+        "variants": {
+            "sizes": [
+                { "name": "5kg", "price": 0 },
+                { "name": "10kg", "price": 200 },
+                { "name": "15kg", "price": 400 }
+            ]
+        }
+    },
+    {
+        "id": "53",
+        "name": "Yoga Mat",
+        "category": "sports",
+        "price": 189.0,
+        "image": "🧘",
+        "description": "Non-slip yoga exercise mat",
+        "badge": "special"
+    },
+    {
+        "id": "54",
+        "name": "Swimming Goggles",
+        "category": "sports",
+        "price": 149.0,
+        "image": "🥽",
+        "description": "Professional swimming goggles",
+        "badge": null
+    },
+    {
+        "id": "85",
+        "name": "iPhone 15 Pro",
+        "category": "electronics",
+        "price": 12999.0,
+        "image": "📱",
+        "description": "Latest iPhone with ProRAW camera",
+        "badge": "new"
+    },
+    {
+        "id": "86",
+        "name": "MacBook Air",
+        "category": "electronics",
+        "price": 18999.0,
+        "image": "💻",
+        "description": "M2 chip MacBook Air ultralight",
+        "badge": "special"
+    },
+    {
+        "id": "87",
+        "name": "AirPods Pro",
+        "category": "electronics",
+        "price": 3999.0,
+        "image": "🎧",
+        "description": "Active noise cancellation earbuds",
+        "badge": "limited"
+    },
+    {
+        "id": "88",
+        "name": "iPad Pro",
+        "category": "electronics",
+        "price": 15999.0,
+        "image": "📱",
+        "description": "12.9-inch iPad Pro with M2 chip",
+        "badge": null
+    },
+    {
+        "id": "89",
+        "name": "Apple Watch Ultra",
+        "category": "electronics",
+        "price": 11999.0,
+        "image": "⌚",
+        "description": "Rugged smartwatch for adventurers",
+        "badge": "new"
+    },
+    {
+        "id": "90",
+        "name": "Gaming Monitor",
+        "category": "electronics",
+        "price": 4999.0,
+        "image": "🖥️",
+        "description": "27-inch 4K gaming monitor 144Hz",
+        "badge": "20% off"
+    },
+    {
+        "id": "91",
+        "name": "Mechanical Keyboard",
+        "category": "electronics",
+        "price": 1299.0,
+        "image": "⌨️",
+        "description": "RGB mechanical gaming keyboard",
+        "badge": null
+    },
+    {
+        "id": "92",
+        "name": "Gaming Mouse",
+        "category": "electronics",
+        "price": 699.0,
+        "image": "🖱️",
+        "description": "High-precision gaming mouse",
+        "badge": "special"
+    },
+    {
+        "id": "93",
+        "name": "Webcam HD",
+        "category": "electronics",
+        "price": 899.0,
+        "image": "📷",
+        "description": "1080p webcam for streaming",
+        "badge": null
+    },
+    {
+        "id": "94",
+        "name": "Bluetooth Speaker",
+        "category": "electronics",
+        "price": 799.0,
+        "image": "🔊",
+        "description": "Portable waterproof speaker",
+        "badge": "limited"
+    },
+    {
+        "id": "95",
+        "name": "External SSD",
+        "category": "electronics",
+        "price": 1599.0,
+        "image": "💾",
+        "description": "1TB external SSD drive",
+        "badge": null
+    },
+    {
+        "id": "96",
+        "name": "Wireless Charger",
+        "category": "electronics",
+        "price": 299.0,
+        "image": "🔌",
+        "description": "Fast wireless charging pad",
+        "badge": "20% off"
+    },
+    {
+        "id": "97",
+        "name": "Cable Organizer",
+        "category": "electronics",
+        "price": 89.0,
+        "image": "🔗",
+        "description": "Desktop cable management system",
+        "badge": null
+    },
+    {
+        "id": "98",
+        "name": "Phone Case",
+        "category": "electronics",
+        "price": 199.0,
+        "image": "📱",
+        "description": "Protective phone case with grip",
+        "badge": "special"
+    },
+    {
+        "id": "99",
+        "name": "Screen Protector",
+        "category": "electronics",
+        "price": 149.0,
+        "image": "📱",
+        "description": "Tempered glass screen protector",
+        "badge": null
+    },
+    {
+        "id": "100",
+        "name": "Hoodie",
+        "category": "clothing",
+        "price": 449.0,
+        "image": "👕",
+        "description": "Comfortable cotton hoodie",
+        "badge": "new"
+    },
+    {
+        "id": "101",
+        "name": "Polo Shirt",
+        "category": "clothing",
+        "price": 299.0,
+        "image": "👕",
+        "description": "Classic polo shirt",
+        "badge": null
+    },
+    {
+        "id": "102",
+        "name": "Dress Shirt",
+        "category": "clothing",
+        "price": 399.0,
+        "image": "👔",
+        "description": "Formal dress shirt",
+        "badge": "special"
+    },
+    {
+        "id": "103",
+        "name": "Chinos",
+        "category": "clothing",
+        "price": 549.0,
+        "image": "👖",
+        "description": "Smart casual chino pants",
+        "badge": null
+    },
+    {
+        "id": "104",
+        "name": "Shorts",
+        "category": "clothing",
+        "price": 249.0,
+        "image": "🩳",
+        "description": "Summer casual shorts",
+        "badge": "20% off"
+    },
+    {
+        "id": "105",
+        "name": "Running Shoes",
+        "category": "clothing",
+        "price": 1799.0,
+        "image": "👟",
+        "description": "Lightweight running sneakers",
+        "badge": "limited"
+    },
+    {
+        "id": "106",
+        "name": "Formal Shoes",
+        "category": "clothing",
+        "price": 1299.0,
+        "image": "👞",
+        "description": "Leather formal dress shoes",
+        "badge": null
+    },
+    {
+        "id": "107",
+        "name": "Sandals",
+        "category": "clothing",
+        "price": 399.0,
+        "image": "👡",
+        "description": "Comfortable summer sandals",
+        "badge": "special"
+    },
+    {
+        "id": "108",
+        "name": "Belt",
+        "category": "clothing",
+        "price": 299.0,
+        "image": "👔",
+        "description": "Genuine leather belt",
+        "badge": null
+    },
+    {
+        "id": "109",
+        "name": "Wallet",
+        "category": "clothing",
+        "price": 399.0,
+        "image": "👛",
+        "description": "Slim leather wallet",
+        "badge": "new"
+    },
+    {
+        "id": "110",
+        "name": "Sunglasses",
+        "category": "clothing",
+        "price": 499.0,
+        "image": "🕶️",
+        "description": "UV protection sunglasses",
+        "badge": "20% off"
+    },
+    {
+        "id": "111",
+        "name": "Watch",
+        "category": "clothing",
+        "price": 899.0,
+        "image": "⌚",
+        "description": "Classic analog wristwatch",
+        "badge": null
+    },
+    {
+        "id": "112",
+        "name": "Scarf",
+        "category": "clothing",
+        "price": 199.0,
+        "image": "🧣",
+        "description": "Warm winter scarf",
+        "badge": "limited"
+    },
+    {
+        "id": "113",
+        "name": "Gloves",
+        "category": "clothing",
+        "price": 149.0,
+        "image": "🧤",
+        "description": "Insulated winter gloves",
+        "badge": null
+    },
+    {
+        "id": "114",
+        "name": "Underwear",
+        "category": "clothing",
+        "price": 99.0,
+        "image": "🩲",
+        "description": "Cotton boxer briefs pack",
+        "badge": "special"
+    },
+    {
+        "id": "115",
+        "name": "Pasta",
+        "category": "food",
+        "price": 32.0,
+        "image": "🍝",
+        "description": "Italian spaghetti pasta",
+        "badge": null
+    },
+    {
+        "id": "116",
+        "name": "Rice",
+        "category": "food",
+        "price": 45.0,
+        "image": "🍚",
+        "description": "Premium jasmine rice 2kg",
+        "badge": "special"
+    },
+    {
+        "id": "117",
+        "name": "Bread",
+        "category": "food",
+        "price": 28.0,
+        "image": "🍞",
+        "description": "Fresh whole wheat bread",
+        "badge": null
+    },
+    {
+        "id": "118",
+        "name": "Milk",
+        "category": "food",
+        "price": 35.0,
+        "image": "🥛",
+        "description": "Fresh full cream milk 1L",
+        "badge": "20% off"
+    },
+    {
+        "id": "119",
+        "name": "Eggs",
+        "category": "food",
+        "price": 42.0,
+        "image": "🥚",
+        "description": "Free-range eggs dozen",
+        "badge": null
+    },
+    {
+        "id": "120",
+        "name": "Cheese",
+        "category": "food",
+        "price": 89.0,
+        "image": "🧀",
+        "description": "Aged cheddar cheese block",
+        "badge": "limited"
+    },
+    {
+        "id": "121",
+        "name": "Yogurt",
+        "category": "food",
+        "price": 39.0,
+        "image": "🥛",
+        "description": "Greek style natural yogurt",
+        "badge": null
+    },
+    {
+        "id": "122",
+        "name": "Butter",
+        "category": "food",
+        "price": 55.0,
+        "image": "🧈",
+        "description": "Creamy salted butter 500g",
+        "badge": "special"
+    },
+    {
+        "id": "123",
+        "name": "Chicken Breast",
+        "category": "food",
+        "price": 89.0,
+        "image": "🍗",
+        "description": "Fresh chicken breast 1kg",
+        "badge": null
+    },
+    {
+        "id": "124",
+        "name": "Ground Beef",
+        "category": "food",
+        "price": 95.0,
+        "image": "🥩",
+        "description": "Lean ground beef 500g",
+        "badge": "new"
+    },
+    {
+        "id": "125",
+        "name": "Salmon",
+        "category": "food",
+        "price": 199.0,
+        "image": "🐟",
+        "description": "Fresh Atlantic salmon fillet",
+        "badge": "20% off"
+    },
+    {
+        "id": "126",
+        "name": "Bananas",
+        "category": "food",
+        "price": 25.0,
+        "image": "🍌",
+        "description": "Ripe yellow bananas 1kg",
+        "badge": null
+    },
+    {
+        "id": "127",
+        "name": "Apples",
+        "category": "food",
+        "price": 35.0,
+        "image": "🍎",
+        "description": "Crisp red apples 1kg",
+        "badge": "limited"
+    },
+    {
+        "id": "128",
+        "name": "Oranges",
+        "category": "food",
+        "price": 29.0,
+        "image": "🍊",
+        "description": "Juicy navel oranges 1kg",
+        "badge": null
+    },
+    {
+        "id": "129",
+        "name": "Carrots",
+        "category": "food",
+        "price": 19.0,
+        "image": "🥕",
+        "description": "Fresh baby carrots 500g",
+        "badge": "special"
+    },
+    {
+        "id": "130",
+        "name": "Potatoes",
+        "category": "food",
+        "price": 22.0,
+        "image": "🥔",
+        "description": "Russet potatoes 2kg",
+        "badge": null
+    },
+    {
+        "id": "131",
+        "name": "Green Tea",
+        "category": "beverages",
+        "price": 45.0,
+        "image": "🍵",
+        "description": "Organic green tea bags",
+        "badge": "new"
+    },
+    {
+        "id": "132",
+        "name": "Black Tea",
+        "category": "beverages",
+        "price": 39.0,
+        "image": "☕",
+        "description": "Premium black tea bags",
+        "badge": null
+    },
+    {
+        "id": "133",
+        "name": "Hot Chocolate",
+        "category": "beverages",
+        "price": 55.0,
+        "image": "☕",
+        "description": "Rich hot chocolate powder",
+        "badge": "20% off"
+    },
+    {
+        "id": "134",
+        "name": "Smoothie",
+        "category": "beverages",
+        "price": 49.0,
+        "image": "🥤",
+        "description": "Mixed berry smoothie bottle",
+        "badge": "limited"
+    },
+    {
+        "id": "135",
+        "name": "Sports Drink",
+        "category": "beverages",
+        "price": 32.0,
+        "image": "🥤",
+        "description": "Electrolyte sports drink",
+        "badge": null
+    },
+    {
+        "id": "136",
+        "name": "Coconut Water",
+        "category": "beverages",
+        "price": 38.0,
+        "image": "🥥",
+        "description": "Natural coconut water 500ml",
+        "badge": "special"
+    },
+    {
+        "id": "137",
+        "name": "Protein Shake",
+        "category": "beverages",
+        "price": 65.0,
+        "image": "🥛",
+        "description": "Vanilla protein shake",
+        "badge": null
+    },
+    {
+        "id": "138",
+        "name": "Iced Tea",
+        "category": "beverages",
+        "price": 29.0,
+        "image": "🧊",
+        "description": "Peach iced tea bottle",
+        "badge": "new"
+    },
+    {
+        "id": "139",
+        "name": "Sparkling Water",
+        "category": "beverages",
+        "price": 22.0,
+        "image": "💧",
+        "description": "Lemon sparkling water",
+        "badge": "20% off"
+    },
+    {
+        "id": "140",
+        "name": "Wine",
+        "category": "beverages",
+        "price": 199.0,
+        "image": "🍷",
+        "description": "Red wine bottle Cabernet",
+        "badge": "limited"
+    },
+    {
+        "id": "141",
+        "name": "Beer",
+        "category": "beverages",
+        "price": 35.0,
+        "image": "🍺",
+        "description": "Craft beer bottle 500ml",
+        "badge": null
+    },
+    {
+        "id": "142",
+        "name": "Toy Car",
+        "category": "toys",
+        "price": 199.0,
+        "image": "🚗",
+        "description": "Die-cast toy car collection",
+        "badge": "special"
+    },
+    {
+        "id": "143",
+        "name": "Lego Set",
+        "category": "toys",
+        "price": 899.0,
+        "image": "🧱",
+        "description": "Creative building blocks set",
+        "badge": null
+    },
+    {
+        "id": "144",
+        "name": "Teddy Bear",
+        "category": "toys",
+        "price": 299.0,
+        "image": "🧸",
+        "description": "Soft plush teddy bear",
+        "badge": "new"
+    },
+    {
+        "id": "145",
+        "name": "Coloring Book",
+        "category": "toys",
+        "price": 49.0,
+        "image": "🎨",
+        "description": "Adult coloring book set",
+        "badge": "20% off"
+    },
+    {
+        "id": "146",
+        "name": "Playing Cards",
+        "category": "toys",
+        "price": 89.0,
+        "image": "🎴",
+        "description": "Premium poker playing cards",
+        "badge": null
+    },
+    {
+        "id": "147",
+        "name": "Video Game",
+        "category": "toys",
+        "price": 699.0,
+        "image": "🎮",
+        "description": "Latest adventure video game",
+        "badge": "limited"
+    },
+    {
+        "id": "148",
+        "name": "Basketball Game",
+        "category": "toys",
+        "price": 399.0,
+        "image": "🏀",
+        "description": "Tabletop basketball game",
+        "badge": null
+    },
+    {
+        "id": "149",
+        "name": "Kite",
+        "category": "toys",
+        "price": 149.0,
+        "image": "🪁",
+        "description": "Colorful diamond kite",
+        "badge": "special"
+    },
+    {
+        "id": "150",
+        "name": "Rubik's Cube",
+        "category": "toys",
+        "price": 99.0,
+        "image": "🧩",
+        "description": "Classic 3x3 puzzle cube",
+        "badge": null
+    },
+    {
+        "id": "151",
+        "name": "Magic 8 Ball",
+        "category": "toys",
+        "price": 129.0,
+        "image": "🎱",
+        "description": "Fortune telling magic ball",
+        "badge": "new"
+    },
+    {
+        "id": "152",
+        "name": "Yo-Yo",
+        "category": "toys",
+        "price": 79.0,
+        "image": "🪀",
+        "description": "Professional wooden yo-yo",
+        "badge": "20% off"
+    },
+    {
+        "id": "153",
+        "name": "Pliers",
+        "category": "tools",
+        "price": 159.0,
+        "image": "🔧",
+        "description": "Multi-purpose pliers set",
+        "badge": "limited"
+    },
+    {
+        "id": "154",
+        "name": "Measuring Tape",
+        "category": "tools",
+        "price": 99.0,
+        "image": "📏",
+        "description": "25ft steel measuring tape",
+        "badge": null
+    },
+    {
+        "id": "155",
+        "name": "Level",
+        "category": "tools",
+        "price": 189.0,
+        "image": "📐",
+        "description": "Professional spirit level",
+        "badge": "special"
+    },
+    {
+        "id": "156",
+        "name": "Safety Glasses",
+        "category": "tools",
+        "price": 79.0,
+        "image": "🥽",
+        "description": "Protective safety eyewear",
+        "badge": null
+    },
+    {
+        "id": "157",
+        "name": "Work Gloves",
+        "category": "tools",
+        "price": 89.0,
+        "image": "🧤",
+        "description": "Heavy-duty work gloves",
+        "badge": "new"
+    },
+    {
+        "id": "158",
+        "name": "Tool Belt",
+        "category": "tools",
+        "price": 299.0,
+        "image": "🦺",
+        "description": "Leather carpenter tool belt",
+        "badge": "20% off"
+    },
+    {
+        "id": "159",
+        "name": "Utility Knife",
+        "category": "tools",
+        "price": 69.0,
+        "image": "🔪",
+        "description": "Retractable utility knife",
+        "badge": null
+    },
+    {
+        "id": "160",
+        "name": "Flashlight",
+        "category": "tools",
+        "price": 149.0,
+        "image": "🔦",
+        "description": "LED rechargeable flashlight",
+        "badge": "limited"
+    },
+    {
+        "id": "161",
+        "name": "Extension Cord",
+        "category": "tools",
+        "price": 199.0,
+        "image": "🔌",
+        "description": "Heavy-duty extension cord 15m",
+        "badge": null
+    },
+    {
+        "id": "162",
+        "name": "Ladder",
+        "category": "tools",
+        "price": 899.0,
+        "image": "🪜",
+        "description": "Aluminum step ladder 2m",
+        "badge": "special"
+    },
+    {
+        "id": "163",
+        "name": "Paint Brush",
+        "category": "tools",
+        "price": 59.0,
+        "image": "🖌️",
+        "description": "Professional paint brush set",
+        "badge": null
+    },
+    {
+        "id": "164",
+        "name": "Vacuum Cleaner",
+        "category": "home",
+        "price": 1999.0,
+        "image": "🧹",
+        "description": "Bagless vacuum cleaner",
+        "badge": "new"
+    },
+    {
+        "id": "165",
+        "name": "Mop",
+        "category": "home",
+        "price": 149.0,
+        "image": "🧽",
+        "description": "Microfiber spin mop system",
+        "badge": "20% off"
+    },
+    {
+        "id": "166",
+        "name": "Cleaning Spray",
+        "category": "home",
+        "price": 45.0,
+        "image": "🧴",
+        "description": "All-purpose cleaning spray",
+        "badge": null
+    },
+    {
+        "id": "167",
+        "name": "Laundry Detergent",
+        "category": "home",
+        "price": 89.0,
+        "image": "🧴",
+        "description": "Concentrated laundry detergent",
+        "badge": "limited"
+    },
+    {
+        "id": "168",
+        "name": "Dish Soap",
+        "category": "home",
+        "price": 35.0,
+        "image": "🧴",
+        "description": "Gentle dish washing liquid",
+        "badge": null
+    },
+    {
+        "id": "169",
+        "name": "Toilet Paper",
+        "category": "home",
+        "price": 99.0,
+        "image": "🧻",
+        "description": "Soft toilet paper 12-pack",
+        "badge": "special"
+    },
+    {
+        "id": "170",
+        "name": "Paper Towels",
+        "category": "home",
+        "price": 79.0,
+        "image": "🧻",
+        "description": "Absorbent paper towels 6-pack",
+        "badge": null
+    },
+    {
+        "id": "171",
+        "name": "Garbage Bags",
+        "category": "home",
+        "price": 59.0,
+        "image": "🗑️",
+        "description": "Heavy-duty garbage bags",
+        "badge": "new"
+    },
+    {
+        "id": "172",
+        "name": "Air Freshener",
+        "category": "home",
+        "price": 39.0,
+        "image": "🌸",
+        "description": "Automatic air freshener",
+        "badge": "20% off"
+    },
+    {
+        "id": "173",
+        "name": "Storage Box",
+        "category": "home",
+        "price": 199.0,
+        "image": "📦",
+        "description": "Clear plastic storage container",
+        "badge": null
+    },
+    {
+        "id": "174",
+        "name": "Hangers",
+        "category": "home",
+        "price": 89.0,
+        "image": "👔",
+        "description": "Velvet non-slip hangers 20-pack",
+        "badge": "limited"
+    },
+    {
+        "id": "175",
+        "name": "Conditioner",
+        "category": "health",
+        "price": 69.0,
+        "image": "🧴",
+        "description": "Moisturizing hair conditioner",
+        "badge": null
+    },
+    {
+        "id": "176",
+        "name": "Body Wash",
+        "category": "health",
+        "price": 55.0,
+        "image": "🧴",
+        "description": "Refreshing body wash gel",
+        "badge": "special"
+    },
+    {
+        "id": "177",
+        "name": "Deodorant",
+        "category": "health",
+        "price": 39.0,
+        "image": "🧴",
+        "description": "24-hour protection deodorant",
+        "badge": null
+    },
+    {
+        "id": "178",
+        "name": "Sunscreen",
+        "category": "health",
+        "price": 89.0,
+        "image": "☀️",
+        "description": "SPF 50+ sunscreen lotion",
+        "badge": "new"
+    },
+    {
+        "id": "179",
+        "name": "Hand Cream",
+        "category": "health",
+        "price": 49.0,
+        "image": "🧴",
+        "description": "Moisturizing hand cream",
+        "badge": "20% off"
+    },
+    {
+        "id": "180",
+        "name": "Lip Balm",
+        "category": "health",
+        "price": 29.0,
+        "image": "💄",
+        "description": "Hydrating lip balm stick",
+        "badge": null
+    },
+    {
+        "id": "181",
+        "name": "Razor",
+        "category": "health",
+        "price": 99.0,
+        "image": "🪒",
+        "description": "5-blade safety razor",
+        "badge": "limited"
+    },
+    {
+        "id": "182",
+        "name": "Shaving Cream",
+        "category": "health",
+        "price": 45.0,
+        "image": "🧴",
+        "description": "Rich shaving cream foam",
+        "badge": null
+    },
+    {
+        "id": "183",
+        "name": "Cotton Swabs",
+        "category": "health",
+        "price": 35.0,
+        "image": "🧴",
+        "description": "Biodegradable cotton swabs",
+        "badge": "special"
+    },
+    {
+        "id": "184",
+        "name": "Nail Clippers",
+        "category": "health",
+        "price": 59.0,
+        "image": "✂️",
+        "description": "Stainless steel nail clippers",
+        "badge": null
+    },
+    {
+        "id": "185",
+        "name": "Hair Brush",
+        "category": "health",
+        "price": 89.0,
+        "image": "🪥",
+        "description": "Natural bristle hair brush",
+        "badge": "new"
+    },
+    {
+        "id": "186",
+        "name": "Cricket Ball",
+        "category": "sports",
+        "price": 199.0,
+        "image": "🏏",
+        "description": "Leather cricket ball",
+        "badge": "20% off"
+    },
+    {
+        "id": "187",
+        "name": "Rugby Ball",
+        "category": "sports",
+        "price": 299.0,
+        "image": "🏈",
+        "description": "Official size rugby ball",
+        "badge": null
+    },
+    {
+        "id": "188",
+        "name": "Golf Ball",
+        "category": "sports",
+        "price": 89.0,
+        "image": "⛳",
+        "description": "Professional golf balls 12-pack",
+        "badge": "limited"
+    },
+    {
+        "id": "189",
+        "name": "Table Tennis Bat",
+        "category": "sports",
+        "price": 199.0,
+        "image": "🏓",
+        "description": "Competition ping pong paddle",
+        "badge": null
+    },
+    {
+        "id": "190",
+        "name": "Badminton Racket",
+        "category": "sports",
+        "price": 399.0,
+        "image": "🏸",
+        "description": "Carbon fiber badminton racket",
+        "badge": "special"
+    },
+    {
+        "id": "191",
+        "name": "Boxing Gloves",
+        "category": "sports",
+        "price": 499.0,
+        "image": "🥊",
+        "description": "Professional boxing gloves 12oz",
+        "badge": null
+    },
+    {
+        "id": "192",
+        "name": "Resistance Bands",
+        "category": "sports",
+        "price": 149.0,
+        "image": "🏋️",
+        "description": "Exercise resistance bands set",
+        "badge": "new"
+    },
+    {
+        "id": "193",
+        "name": "Jump Rope",
+        "category": "sports",
+        "price": 99.0,
+        "image": "🪢",
+        "description": "Speed jump rope with counter",
+        "badge": "20% off"
+    },
+    {
+        "id": "194",
+        "name": "Water Bottle",
+        "category": "sports",
+        "price": 199.0,
+        "image": "🥤",
+        "description": "Insulated sports water bottle",
+        "badge": null
+    },
+    {
+        "id": "195",
+        "name": "Protein Powder",
+        "category": "sports",
+        "price": 599.0,
+        "image": "🥛",
+        "description": "Whey protein powder 2kg",
+        "badge": "limited"
+    },
+    {
+        "id": "196",
+        "name": "Exercise Ball",
+        "category": "sports",
+        "price": 199.0,
+        "image": "⚽",
+        "description": "Swiss exercise stability ball",
+        "badge": null
+    },
+    {
+        "id": "197",
+        "name": "Foam Roller",
+        "category": "sports",
+        "price": 299.0,
+        "image": "🧘",
+        "description": "High-density foam roller",
+        "badge": "special"
+    },
+    {
+        "id": "198",
+        "name": "Car Oil",
+        "category": "automotive",
+        "price": 189.0,
+        "image": "🛢️",
+        "description": "Premium engine oil for cars",
+        "badge": null,
+        "variants": {
+            "sizes": [
+                { "name": "1L", "price": 0 },
+                { "name": "4L", "price": 200 },
+                { "name": "5L", "price": 280 }
+            ],
+            "flavors": [
+                { "name": "5W-30", "price": 0 },
+                { "name": "10W-40", "price": 20 },
+                { "name": "15W-50", "price": 40 }
+            ]
+        }
+    },
+    {
+        "id": "199",
+        "name": "Car Battery",
+        "category": "automotive",
+        "price": 1299.0,
+        "image": "🔋",
+        "description": "12V car battery",
+        "badge": "special"
+    },
+    {
+        "id": "200",
+        "name": "Tire",
+        "category": "automotive",
+        "price": 899.0,
+        "image": "🛞",
+        "description": "All-season car tire",
+        "badge": null
+    },
+    {
+        "id": "201",
+        "name": "Car Polish",
+        "category": "automotive",
+        "price": 89.0,
+        "image": "✨",
+        "description": "Premium car wax polish",
+        "badge": "20% off"
+    },
+    {
+        "id": "202",
+        "name": "Air Freshener",
+        "category": "automotive",
+        "price": 35.0,
+        "image": "🌸",
+        "description": "Car air freshener",
+        "badge": null,
+        "variants": {
+            "flavors": [
+                { "name": "Vanilla", "price": 0 },
+                { "name": "Pine", "price": 5 },
+                { "name": "Ocean", "price": 8 }
+            ]
+        }
+    },
+    {
+        "id": "203",
+        "name": "Car Cover",
+        "category": "automotive",
+        "price": 599.0,
+        "image": "🚗",
+        "description": "Waterproof car cover",
+        "badge": "limited"
+    },
+    {
+        "id": "204",
+        "name": "Jumper Cables",
+        "category": "automotive",
+        "price": 299.0,
+        "image": "🔌",
+        "description": "Heavy-duty jumper cables",
+        "badge": null
+    },
+    {
+        "id": "205",
+        "name": "Tire Gauge",
+        "category": "automotive",
+        "price": 89.0,
+        "image": "🔧",
+        "description": "Digital tire pressure gauge",
+        "badge": "new"
+    }
+]

@@ -1,4 +1,12 @@
 import { View, Text, Pressable, FlatList } from 'react-native';
+import { useEffect, useCallback } from 'react';
+import Animated, {
+    useSharedValue,
+    useAnimatedStyle,
+    withTiming,
+    withSpring,
+    Easing,
+} from 'react-native-reanimated';
 import { useMenuStore } from '@/store/menu.store';
 import { useCartStore } from '@/store/cart.store';
 
@@ -17,35 +25,46 @@ interface CategoryItem {
 }
 
 /**
- * Categories Component - Horizontal scrolling list of product categories
- *
- * Features:
- * - FlatList for optimized horizontal scrolling
- * - Visual selection states
- * - Item count display
- * - Responsive touch targets
+ * Individual Category Item Component with animation
  */
-export default function Categories() {
-    const { categories } = useMenuStore();
-    const { selectedCategory, setSelectedCategory } = useCartStore();
+function CategoryItemComponent({ 
+    item, 
+    index, 
+    isSelected, 
+    onPress 
+}: { 
+    item: CategoryItem; 
+    index: number; 
+    isSelected: boolean; 
+    onPress: (id: string) => void; 
+}) {
+    // Individual category animation values
+    const itemOpacity = useSharedValue(0);
+    const itemScale = useSharedValue(0.8);
+    const itemTranslateY = useSharedValue(10);
 
-    /**
-     * Render individual category item
-     * @param item - Category item to render
-     * @returns JSX element for the category button
-     */
-    const renderCategory = ({ item }: { item: CategoryItem }) => {
-        // Validate category data
-        if (!item?.id || !item?.name) {
-            console.warn('Invalid category data:', item);
-            return null;
-        }
+    // Staggered animation for each category
+    useEffect(() => {
+        const delay = index * 100 + 300; // Stagger by 100ms each, start after 300ms
+        setTimeout(() => {
+            itemOpacity.value = withTiming(1, { duration: 400, easing: Easing.out(Easing.exp) });
+            itemScale.value = withSpring(1, { damping: 12, stiffness: 150 });
+            itemTranslateY.value = withSpring(0, { damping: 15, stiffness: 100 });
+        }, delay);
+    }, [index]);
 
-        const isSelected = selectedCategory === item.id;
+    const itemAnimatedStyle = useAnimatedStyle(() => ({
+        opacity: itemOpacity.value,
+        transform: [
+            { scale: itemScale.value },
+            { translateY: itemTranslateY.value }
+        ],
+    }));
 
-        return (
+    return (
+        <Animated.View style={itemAnimatedStyle}>
             <Pressable
-                onPress={() => setSelectedCategory(item.id)}
+                onPress={() => onPress(item.id)}
                 className={`min-w-[120px] px-4 py-3 rounded-xl border mr-3 ${
                     isSelected
                         ? 'bg-blue-500 border-blue-500'
@@ -72,8 +91,66 @@ export default function Categories() {
                     </Text>
                 </View>
             </Pressable>
+        </Animated.View>
+    );
+}
+
+/**
+ * Categories Component - Horizontal scrolling list of product categories with staggered animations
+ *
+ * Features:
+ * - FlatList for optimized horizontal scrolling
+ * - Visual selection states
+ * - Item count display
+ * - Responsive touch targets
+ * - Staggered entrance animations
+ */
+export default function Categories() {
+    const { categories } = useMenuStore();
+    const { selectedCategory, setSelectedCategory } = useCartStore();
+
+    // Animation values for staggered category entrance
+    const containerOpacity = useSharedValue(0);
+    const containerTranslateY = useSharedValue(-20);
+
+    useEffect(() => {
+        // Container animation
+        setTimeout(() => {
+            containerOpacity.value = withTiming(1, { duration: 600, easing: Easing.out(Easing.exp) });
+            containerTranslateY.value = withSpring(0, { damping: 15, stiffness: 100 });
+        }, 100);
+    }, []);
+
+    // Animated style for container
+    const containerAnimatedStyle = useAnimatedStyle(() => ({
+        opacity: containerOpacity.value,
+        transform: [{ translateY: containerTranslateY.value }],
+    }));
+
+    /**
+     * Render individual category item
+     * @param item - Category item to render
+     * @param index - Index for staggered animation delay
+     * @returns JSX element for the category button
+     */
+    const renderCategory = useCallback(({ item, index }: { item: CategoryItem; index: number }) => {
+        // Validate category data
+        if (!item?.id || !item?.name) {
+            console.warn('Invalid category data:', item);
+            return null;
+        }
+
+        const isSelected = selectedCategory === item.id;
+
+        return (
+            <CategoryItemComponent
+                item={item}
+                index={index}
+                isSelected={isSelected}
+                onPress={setSelectedCategory}
+            />
         );
-    };
+    }, [selectedCategory, setSelectedCategory]);
 
     /**
      * Get key for FlatList item
@@ -93,10 +170,10 @@ export default function Categories() {
     };
 
     return (
-        <View className="px-4 mb-4 bg-gray-200/20">
+        <Animated.View className="px-4 mb-4 bg-gray-200/20" style={containerAnimatedStyle}>
             <FlatList
                 data={categories}
-                renderItem={renderCategory}
+                renderItem={({ item, index }) => renderCategory({ item, index })}
                 keyExtractor={getCategoryKey}
                 horizontal={true}
                 showsHorizontalScrollIndicator={false}
@@ -110,6 +187,6 @@ export default function Categories() {
                 removeClippedSubviews={true}
                 updateCellsBatchingPeriod={50}
             />
-        </View>
+        </Animated.View>
     );
 }

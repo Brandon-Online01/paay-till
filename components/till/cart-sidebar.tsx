@@ -84,100 +84,18 @@ export default function CartSidebar() {
     const modalScale = useRef(new Animated.Value(0.9)).current;
 
     /**
-     * Comprehensive basket data logging function
-     * Logs complete transaction details including items, prices, payments, and change
+     * Simplified transaction logging
      */
     const logBasketData = (payments: PaymentMethod[], paymentType: string) => {
-        const totalPaid = payments.reduce((sum, payment) => sum + payment.amount, 0);
+        const totalPaid = payments.reduce(
+            (sum, payment) => sum + payment.amount,
+            0
+        );
         const changeGiven = Math.max(0, totalPaid - total);
-        const cashTendered = payments.find(p => p.type.toLowerCase() === 'cash')?.amount || 0;
 
-        // ===================================================================
-        // 🛒 CRITICAL BASKET DATA LOGGING - COMPREHENSIVE TRANSACTION LOG
-        // ===================================================================
-        console.log('');
-        console.log('================== TRANSACTION COMPLETED ==================');
-        console.log(`🛒 BASKET & PAYMENT DETAILS - ${paymentType.toUpperCase()} PAYMENT:`);
-        console.log('===========================================================');
-        console.log(`📧 Transaction ID: #${String(Date.now()).slice(-6)}`);
-        console.log(`⏰ Timestamp: ${new Date().toISOString()}`);
-        console.log(`🏪 Branch: Midrand`);
-        console.log('');
-        
-        // BASKET ITEMS DETAILED LOG
-        console.log('📦 BASKET ITEMS:');
-        console.log('───────────────────────────────────────────────────');
-        items.forEach((item, index) => {
-            const lineTotal = (item.calculatedPrice ?? item.price) * item.quantity;
-            console.log(`${index + 1}. ${item.name} (${item.category})`);
-            console.log(`   Quantity: ${item.quantity}`);
-            console.log(`   Unit Price: ${symbol}${item.price.toFixed(2)}`);
-            if (item.variantPrice && item.variantPrice > 0) {
-                console.log(`   Variant Price: ${symbol}${item.variantPrice.toFixed(2)}`);
-            }
-            console.log(`   Final Unit Price: ${symbol}${(item.calculatedPrice ?? item.price).toFixed(2)}`);
-            console.log(`   Line Total: ${symbol}${lineTotal.toFixed(2)}`);
-            if (item.selectedVariants) {
-                if (item.selectedVariants.size) console.log(`   Size: ${item.selectedVariants.size}`);
-                if (item.selectedVariants.flavor) console.log(`   Flavor: ${item.selectedVariants.flavor}`);
-                if (item.selectedVariants.color) console.log(`   Color: ${item.selectedVariants.color}`);
-            }
-            if (item.notes) console.log(`   Notes: ${item.notes}`);
-            if (item.badge) console.log(`   Badge: ${item.badge}`);
-            console.log('');
-        });
-        
-        // PAYMENT BREAKDOWN
-        console.log('💰 PAYMENT BREAKDOWN:');
-        console.log('───────────────────────────────────────────────────');
-        console.log(`Subtotal: ${symbol}${subtotal.toFixed(2)}`);
-        console.log(`Tax (10%): ${symbol}${tax.toFixed(2)}`);
-        if (discount > 0) {
-            console.log(`Discount: -${symbol}${discount.toFixed(2)}`);
-        }
-        console.log(`TOTAL DUE: ${symbol}${total.toFixed(2)}`);
-        console.log('');
-        
-        // PAYMENT METHODS DETAILED LOG
-        console.log('💳 PAYMENT METHODS USED:');
-        console.log('───────────────────────────────────────────────────');
-        payments.forEach((payment, index) => {
-            console.log(`${index + 1}. ${payment.type.toUpperCase()}: ${symbol}${payment.amount.toFixed(2)}`);
-            if (payment.reference) {
-                console.log(`   Reference: ${payment.reference}`);
-            }
-        });
-        console.log(`Total Paid: ${symbol}${totalPaid.toFixed(2)}`);
-        
-        // CASH TENDERED AND CHANGE
-        if (cashTendered > 0) {
-            console.log('');
-            console.log('💵 CASH TRANSACTION DETAILS:');
-            console.log('───────────────────────────────────────────────────');
-            console.log(`Cash Tendered: ${symbol}${cashTendered.toFixed(2)}`);
-            console.log(`Amount Due: ${symbol}${total.toFixed(2)}`);
-            console.log(`Change Given: ${symbol}${changeGiven.toFixed(2)}`);
-        }
-        
-        // CUSTOMER INFO
-        console.log('');
-        console.log('👤 CUSTOMER INFO:');
-        console.log('───────────────────────────────────────────────────');
-        console.log(`Customer: Walk-in Customer`);
-        
-        if (splitPayment) {
-            console.log('');
-            console.log('🔄 SPLIT PAYMENT DETAILS:');
-            console.log('───────────────────────────────────────────────────');
-            console.log(`Cash Amount: ${symbol}${splitPayment.cashAmount.toFixed(2)}`);
-            console.log(`Card Amount: ${symbol}${splitPayment.cardAmount.toFixed(2)}`);
-            console.log(`Total Split: ${symbol}${splitPayment.totalAmount.toFixed(2)}`);
-        }
-        
-        console.log('===========================================================');
-        console.log('🎉 TRANSACTION SUCCESSFULLY COMPLETED');
-        console.log('===========================================================');
-        console.log('');
+        console.log(
+            `💰 ${paymentType} Payment: ${symbol}${total.toFixed(2)} | Items: ${items.length} | Change: ${symbol}${changeGiven.toFixed(2)} | items: ${items?.map((item) => item.name).join(', ')}`
+        );
 
         // Show success toast
         setTimeout(() => {
@@ -306,7 +224,7 @@ export default function CartSidebar() {
     /**
      * Handle split payment calculation and processing
      */
-    const handleSplitPayment = () => {
+    const handleSplitPayment = async () => {
         // Validate receipt options first
         if (!validateReceiptOptions()) {
             return;
@@ -315,7 +233,12 @@ export default function CartSidebar() {
         const cash = parseFloat(cashAmount) || 0;
         const card = parseFloat(cardAmount) || 0;
 
-        if (cash + card !== total) {
+        // Update split payment calculation before validation
+        const { calculateSplitPayment } = useCartStore.getState();
+        calculateSplitPayment(cash, card);
+
+        const tolerance = 0.01; // Allow 1 cent tolerance for rounding
+        if (Math.abs(cash + card - total) > tolerance) {
             ToastUtils.error('Split payment amounts do not match total');
             return;
         }
@@ -328,11 +251,11 @@ export default function CartSidebar() {
             setSplitPaymentStep('cash-processing');
 
             // Simulate cash processing delay
-            setTimeout(() => {
+            setTimeout(async () => {
                 setSplitPaymentStep('card-processing');
 
-                                // Simulate card processing delay
-                setTimeout(() => {
+                // Simulate card processing delay
+                setTimeout(async () => {
                     const payments: PaymentMethod[] = [
                         { type: PaymentType.CASH, amount: cash },
                         { type: PaymentType.CARD, amount: card },
@@ -340,22 +263,19 @@ export default function CartSidebar() {
 
                     // Log comprehensive basket data BEFORE processing payment
                     logBasketData(payments, 'Split');
-                    
+
                     // Process payment and handle cleanup
-                    processPayment(payments);
+                    await processPayment(payments);
                     setSplitPaymentStep('input');
                     setIsProcessingPayment(false);
-                    
+
                     // Small delay to ensure state updates are complete before closing modal
                     setTimeout(() => {
-                        console.log('🔄 Closing split payment modal...');
-                        
                         // Backup cart clearing - ensure cart is empty for next transaction
                         if (items.length > 0) {
-                            console.log('⚠️ Cart not cleared by processPayment, clearing manually...');
                             clearCart();
                         }
-                        
+
                         animateModalOut();
                     }, 500);
                 }, 2000);
@@ -371,24 +291,21 @@ export default function CartSidebar() {
             }
 
             // Simulate payment processing delay
-            setTimeout(() => {
+            setTimeout(async () => {
                 // Log comprehensive basket data BEFORE processing payment
                 logBasketData(payments, 'Split Single');
-                
+
                 // Process payment and handle cleanup
-                processPayment(payments);
+                await processPayment(payments);
                 setIsProcessingPayment(false);
-                
+
                 // Small delay to ensure state updates are complete before closing modal
                 setTimeout(() => {
-                    console.log('🔄 Closing split single payment modal...');
-                    
                     // Backup cart clearing - ensure cart is empty for next transaction
                     if (items.length > 0) {
-                        console.log('⚠️ Cart not cleared by processPayment, clearing manually...');
                         clearCart();
                     }
-                    
+
                     animateModalOut();
                 }, 500);
             }, 2000);
@@ -398,7 +315,7 @@ export default function CartSidebar() {
     /**
      * Handle cash payment processing with change calculation
      */
-    const handleCashPayment = () => {
+    const handleCashPayment = async () => {
         // Validate receipt options first
         if (!validateReceiptOptions()) {
             return;
@@ -414,7 +331,7 @@ export default function CartSidebar() {
         }
 
         const change = cash - total;
-        
+
         const payment: PaymentMethod = {
             type: PaymentType.CASH,
             amount: cash,
@@ -428,27 +345,21 @@ export default function CartSidebar() {
         setLoadingState?.('payment', true);
 
         // Simulate payment processing delay
-        setTimeout(() => {
-            console.log('💳 Processing cash payment...');
-            console.log('🛒 Items in cart before payment:', items.length);
-            
-            // Log comprehensive basket data BEFORE processing payment
+        setTimeout(async () => {
+            // Log simplified transaction data
             logBasketData([payment], 'Cash');
-            
+
             // Process payment and handle cleanup
-            processPayment([payment]);
+            await processPayment([payment]);
             setIsProcessingPayment(false);
-            
+
             // Small delay to ensure state updates are complete before closing modal
             setTimeout(() => {
-                console.log('🔄 Closing payment modal...');
-                
                 // Backup cart clearing - ensure cart is empty for next transaction
                 if (items.length > 0) {
-                    console.log('⚠️ Cart not cleared by processPayment, clearing manually...');
                     clearCart();
                 }
-                
+
                 animateModalOut();
             }, 500);
         }, 2000);
@@ -457,7 +368,7 @@ export default function CartSidebar() {
     /**
      * Handle card payment processing
      */
-    const handleCardPayment = () => {
+    const handleCardPayment = async () => {
         // Validate receipt options first
         if (!validateReceiptOptions()) {
             return;
@@ -472,27 +383,21 @@ export default function CartSidebar() {
         setLoadingState?.('payment', true);
 
         // Simulate payment processing delay
-        setTimeout(() => {
-            console.log('💳 Processing card payment...');
-            console.log('🛒 Items in cart before payment:', items.length);
-            
-            // Log comprehensive basket data BEFORE processing payment
+        setTimeout(async () => {
+            // Log simplified transaction data
             logBasketData([payment], 'Card');
-            
+
             // Process payment and handle cleanup
-            processPayment([payment]);
+            await processPayment([payment]);
             setIsProcessingPayment(false);
-            
+
             // Small delay to ensure state updates are complete before closing modal
             setTimeout(() => {
-                console.log('🔄 Closing payment modal...');
-                
                 // Backup cart clearing - ensure cart is empty for next transaction
                 if (items.length > 0) {
-                    console.log('⚠️ Cart not cleared by processPayment, clearing manually...');
                     clearCart();
                 }
-                
+
                 animateModalOut();
             }, 500);
         }, 2500);
@@ -507,6 +412,10 @@ export default function CartSidebar() {
             const cash = parseFloat(value) || 0;
             const remaining = Math.max(0, total - cash);
             setCardAmount(remaining.toFixed(2));
+
+            // Update split payment calculation
+            const { calculateSplitPayment } = useCartStore.getState();
+            calculateSplitPayment(cash, remaining);
         }
     };
 
@@ -602,6 +511,10 @@ export default function CartSidebar() {
             const card = parseFloat(value) || 0;
             const remaining = Math.max(0, total - card);
             setCashAmount(remaining.toFixed(2));
+
+            // Update split payment calculation
+            const { calculateSplitPayment } = useCartStore.getState();
+            calculateSplitPayment(remaining, card);
         }
     };
 
@@ -872,7 +785,7 @@ export default function CartSidebar() {
                         backgroundColor: 'rgba(0, 0, 0, 0.7)',
                     }}
                 >
-                    <Pressable 
+                    <Pressable
                         className="flex-1 justify-center items-center p-6"
                         onPress={() => animateModalOut()}
                         style={{ flex: 1 }}
@@ -881,230 +794,353 @@ export default function CartSidebar() {
                             onPress={(e) => e.stopPropagation()}
                             style={{ width: '100%', maxWidth: 400 }}
                         >
-                        <Animated.View
-                            style={{
-                                transform: [{ scale: modalScale }],
-                            }}
-                            className="bg-white rounded-2xl border border-gray-200 shadow-xl"
-                        >
-                            {/* Modal Header */}
-                            <View className="relative px-6 pt-6 pb-4">
-                                <Pressable
-                                    onPress={() =>
-                                        setPaymentModalVisible(false)
-                                    }
-                                    className="absolute top-2 right-2 z-10 justify-center items-center w-12 h-12 rounded-full border border-red-500 bg-red-500/80"
-                                >
-                                    <X size={22} color="#ffffff" />
-                                </Pressable>
+                            <Animated.View
+                                style={{
+                                    transform: [{ scale: modalScale }],
+                                }}
+                                className="bg-white rounded-2xl border border-gray-200 shadow-xl"
+                            >
+                                {/* Modal Header */}
+                                <View className="relative px-6 pt-6 pb-4">
+                                    <Pressable
+                                        onPress={() =>
+                                            setPaymentModalVisible(false)
+                                        }
+                                        className="absolute top-2 right-2 z-10 justify-center items-center w-12 h-12 rounded-full border border-red-500 bg-red-500/80"
+                                    >
+                                        <X size={22} color="#ffffff" />
+                                    </Pressable>
 
-                                <Text className="mb-2 text-2xl font-bold text-gray-900 font-primary">
-                                    Complete your payment
-                                </Text>
-                                <View className="flex flex-row justify-center items-center p-4 my-4 bg-gray-50 rounded-xl">
-                                    <Text className="mr-2 text-sm font-semibold text-gray-600 font-primary">
-                                        Total Amount:
+                                    <Text className="mb-2 text-2xl font-bold text-gray-900 font-primary">
+                                        Complete your payment
                                     </Text>
-                                    <Text className="text-2xl font-bold text-blue-600 font-primary">
-                                        {symbol}
-                                        {total.toFixed(2)}
-                                    </Text>
+                                    <View className="flex flex-row justify-center items-center p-4 my-4 bg-gray-50 rounded-xl">
+                                        <Text className="mr-2 text-sm font-semibold text-gray-600 font-primary">
+                                            Total Amount:
+                                        </Text>
+                                        <Text className="text-2xl font-bold text-blue-600 font-primary">
+                                            {symbol}
+                                            {total.toFixed(2)}
+                                        </Text>
+                                    </View>
                                 </View>
-                            </View>
 
-                            {/* Modal Content */}
-                            <View className="px-6 pb-6">
-                                {(selectedPaymentType as PaymentType) ===
-                                PaymentType.SPLIT ? (
-                                    /* Split Payment View */
-                                    <View className="space-y-4">
-                                        {/* Split Payment Processing Steps */}
-                                        {splitPaymentStep ===
-                                            'cash-processing' && (
-                                            <View className="p-6 mb-4 bg-blue-50 rounded-xl border border-blue-200">
-                                                <View className="items-center">
-                                                    <View className="justify-center items-center mb-4 w-16 h-16 bg-blue-100 rounded-full">
-                                                        <Text className="text-2xl">
-                                                            💵
+                                {/* Modal Content */}
+                                <View className="px-6 pb-6">
+                                    {(selectedPaymentType as PaymentType) ===
+                                    PaymentType.SPLIT ? (
+                                        /* Split Payment View */
+                                        <View className="space-y-4">
+                                            {/* Split Payment Processing Steps */}
+                                            {splitPaymentStep ===
+                                                'cash-processing' && (
+                                                <View className="p-6 mb-4 bg-blue-50 rounded-xl border border-blue-200">
+                                                    <View className="items-center">
+                                                        <View className="justify-center items-center mb-4 w-16 h-16 bg-blue-100 rounded-full">
+                                                            <Text className="text-2xl">
+                                                                💵
+                                                            </Text>
+                                                        </View>
+                                                        <Text className="mb-2 text-lg font-bold text-center text-blue-900 font-primary">
+                                                            Processing Cash
+                                                            Payment
+                                                        </Text>
+                                                        <Text className="text-center text-blue-700 font-primary">
+                                                            Please wait while we
+                                                            process the cash
+                                                            payment...
                                                         </Text>
                                                     </View>
-                                                    <Text className="mb-2 text-lg font-bold text-center text-blue-900 font-primary">
-                                                        Processing Cash Payment
-                                                    </Text>
-                                                    <Text className="text-center text-blue-700 font-primary">
-                                                        Please wait while we
-                                                        process the cash
-                                                        payment...
-                                                    </Text>
                                                 </View>
-                                            </View>
-                                        )}
+                                            )}
 
-                                        {splitPaymentStep ===
-                                            'card-processing' && (
-                                            <View className="p-6 mb-4 bg-green-50 rounded-xl border border-green-200">
-                                                <View className="items-center">
-                                                    <View className="justify-center items-center mb-4 w-16 h-16 bg-green-100 rounded-full">
-                                                        <Text className="text-2xl">
-                                                            💳
+                                            {splitPaymentStep ===
+                                                'card-processing' && (
+                                                <View className="p-6 mb-4 bg-green-50 rounded-xl border border-green-200">
+                                                    <View className="items-center">
+                                                        <View className="justify-center items-center mb-4 w-16 h-16 bg-green-100 rounded-full">
+                                                            <Text className="text-2xl">
+                                                                💳
+                                                            </Text>
+                                                        </View>
+                                                        <Text className="mb-2 text-lg font-bold text-center text-green-900 font-primary">
+                                                            Cash Payment
+                                                            Complete
+                                                        </Text>
+                                                        <Text className="text-center text-green-700 font-primary">
+                                                            Cash payment
+                                                            accepted. Now
+                                                            processing card
+                                                            payment...
                                                         </Text>
                                                     </View>
-                                                    <Text className="mb-2 text-lg font-bold text-center text-green-900 font-primary">
-                                                        Cash Payment Complete
+                                                </View>
+                                            )}
+
+                                            {splitPaymentStep === 'input' && (
+                                                <>
+                                                    <View className="flex flex-row justify-center items-center p-4 mb-4 bg-amber-50 rounded-xl">
+                                                        <Text className="mr-2 text-sm font-semibold text-gray-600 font-primary">
+                                                            Total Amount:
+                                                        </Text>
+                                                        <Text className="text-xl font-bold text-amber-600 font-primary">
+                                                            {symbol}
+                                                            {total.toFixed(2)}
+                                                        </Text>
+                                                    </View>
+
+                                                    <View className="p-4 bg-amber-50 rounded-xl border border-amber-200">
+                                                        <View className="flex-row items-center mb-3">
+                                                            <View className="justify-center items-center mr-4 w-12 h-12 bg-amber-100 rounded-xl">
+                                                                <Split
+                                                                    size={24}
+                                                                    color="#F59E0B"
+                                                                />
+                                                            </View>
+                                                            <View className="flex-1">
+                                                                <Text className="text-lg font-bold text-gray-900 font-primary">
+                                                                    Split
+                                                                    Payment
+                                                                </Text>
+                                                                <Text className="text-gray-600 font-primary">
+                                                                    Divide
+                                                                    payment
+                                                                    between cash
+                                                                    and card
+                                                                </Text>
+                                                            </View>
+                                                        </View>
+                                                    </View>
+
+                                                    <View className="mt-6 space-y-4">
+                                                        <View>
+                                                            <Text className="mb-2 text-sm font-semibold text-gray-700 font-primary">
+                                                                Cash Amount
+                                                            </Text>
+                                                            <TextInput
+                                                                value={
+                                                                    cashAmount
+                                                                }
+                                                                onChangeText={
+                                                                    handleCashAmountChange
+                                                                }
+                                                                placeholder="0.00"
+                                                                keyboardType="numeric"
+                                                                className="p-4 text-lg rounded-xl border border-gray-200 font-primary"
+                                                            />
+                                                        </View>
+
+                                                        <View>
+                                                            <Text className="mb-2 text-sm font-semibold text-gray-700 font-primary">
+                                                                Card Amount
+                                                            </Text>
+                                                            <TextInput
+                                                                value={
+                                                                    cardAmount
+                                                                }
+                                                                onChangeText={
+                                                                    handleCardAmountChange
+                                                                }
+                                                                placeholder="0.00"
+                                                                keyboardType="numeric"
+                                                                className="p-4 text-lg rounded-xl border border-gray-200 font-primary"
+                                                            />
+                                                        </View>
+                                                    </View>
+                                                </>
+                                            )}
+
+                                            {splitPayment &&
+                                                splitPayment?.difference !==
+                                                    0 && (
+                                                    <View className="p-3 bg-red-50 rounded-xl border border-red-200">
+                                                        <Text className="font-semibold text-center text-red-700 font-primary">
+                                                            Amount mismatch:{' '}
+                                                            {symbol}
+                                                            {Math.abs(
+                                                                splitPayment?.difference
+                                                            ).toFixed(2)}
+                                                            {splitPayment?.difference >
+                                                            0
+                                                                ? ' short'
+                                                                : ' over'}
+                                                        </Text>
+                                                    </View>
+                                                )}
+
+                                            <View className="flex-row gap-3 mt-6">
+                                                <Pressable
+                                                    onPress={() =>
+                                                        setSelectedPaymentType(
+                                                            null
+                                                        )
+                                                    }
+                                                    className="flex-1 items-center py-4 bg-red-500 rounded-xl"
+                                                    disabled={
+                                                        isProcessingPayment
+                                                    }
+                                                >
+                                                    <Text className="font-semibold text-white font-primary">
+                                                        Cancel
                                                     </Text>
-                                                    <Text className="text-center text-green-700 font-primary">
-                                                        Cash payment accepted.
-                                                        Now processing card
-                                                        payment...
+                                                </Pressable>
+                                                <Pressable
+                                                    onPress={handleSplitPayment}
+                                                    className={`flex-1 items-center rounded-xl py-4 ${
+                                                        splitPayment?.difference ===
+                                                            0 &&
+                                                        !isProcessingPayment
+                                                            ? 'bg-green-500'
+                                                            : 'bg-gray-300'
+                                                    }`}
+                                                    disabled={
+                                                        splitPayment?.difference !==
+                                                            0 ||
+                                                        isProcessingPayment
+                                                    }
+                                                >
+                                                    <Text className="font-semibold text-white font-primary">
+                                                        Pay
                                                     </Text>
+                                                </Pressable>
+                                            </View>
+                                        </View>
+                                    ) : (selectedPaymentType as PaymentType) ===
+                                      PaymentType.CASH ? (
+                                        /* Cash Payment View */
+                                        <View className="flex flex-col gap-2">
+                                            <View className="p-4 bg-green-50 rounded-xl border border-green-200">
+                                                <View className="flex-row items-center mb-3">
+                                                    <View className="justify-center items-center mr-4 w-12 h-12 bg-green-100 rounded-xl">
+                                                        <DollarSign
+                                                            size={24}
+                                                            color="#10B981"
+                                                        />
+                                                    </View>
+                                                    <View className="flex-1">
+                                                        <Text className="text-lg font-bold text-gray-900 font-primary">
+                                                            Cash Payment
+                                                        </Text>
+                                                        <Text className="text-gray-600 font-primary">
+                                                            Enter the cash
+                                                            amount received
+                                                        </Text>
+                                                    </View>
                                                 </View>
                                             </View>
-                                        )}
 
-                                        {splitPaymentStep === 'input' && (
-                                            <>
-                                                <View className="flex flex-row justify-center items-center p-4 mb-4 bg-amber-50 rounded-xl">
+                                            <View className="flex flex-col gap-2 justify-start">
+                                                <View className="flex flex-row justify-center items-center p-4 mb-4 bg-blue-50 rounded-xl">
                                                     <Text className="mr-2 text-sm font-semibold text-gray-600 font-primary">
-                                                        Total Amount:
+                                                        Total Due:
                                                     </Text>
-                                                    <Text className="text-xl font-bold text-amber-600 font-primary">
+                                                    <Text className="text-xl font-bold text-blue-600 font-primary">
                                                         {symbol}
                                                         {total.toFixed(2)}
                                                     </Text>
                                                 </View>
 
-                                                <View className="p-4 bg-amber-50 rounded-xl border border-amber-200">
-                                                    <View className="flex-row items-center mb-3">
-                                                        <View className="justify-center items-center mr-4 w-12 h-12 bg-amber-100 rounded-xl">
-                                                            <Split
-                                                                size={24}
-                                                                color="#F59E0B"
-                                                            />
-                                                        </View>
-                                                        <View className="flex-1">
-                                                            <Text className="text-lg font-bold text-gray-900 font-primary">
-                                                                Split Payment
-                                                            </Text>
-                                                            <Text className="text-gray-600 font-primary">
-                                                                Divide payment
-                                                                between cash and
-                                                                card
-                                                            </Text>
-                                                        </View>
-                                                    </View>
+                                                <View className="flex flex-col justify-start">
+                                                    <Text className="mb-2 text-sm font-semibold text-gray-700 font-primary">
+                                                        Cash Received ({symbol})
+                                                    </Text>
+                                                    <TextInput
+                                                        value={cashAmount}
+                                                        onChangeText={
+                                                            setCashAmount
+                                                        }
+                                                        placeholder="0.00"
+                                                        keyboardType="numeric"
+                                                        className="p-4 text-xl rounded-xl border border-gray-200 font-primary"
+                                                        autoFocus
+                                                    />
                                                 </View>
 
-                                                <View className="mt-6 space-y-4">
-                                                    <View>
-                                                        <Text className="mb-2 text-sm font-semibold text-gray-700 font-primary">
-                                                            Cash Amount
+                                                <View className="p-4 bg-green-50 rounded-xl border border-green-200">
+                                                    <View className="flex-row justify-between items-center">
+                                                        <Text className="text-lg font-semibold text-gray-700 font-primary">
+                                                            Change Due
                                                         </Text>
-                                                        <TextInput
-                                                            value={cashAmount}
-                                                            onChangeText={
-                                                                handleCashAmountChange
-                                                            }
-                                                            placeholder="0.00"
-                                                            keyboardType="numeric"
-                                                            className="p-4 text-lg rounded-xl border border-gray-200 font-primary"
-                                                        />
-                                                    </View>
-
-                                                    <View>
-                                                        <Text className="mb-2 text-sm font-semibold text-gray-700 font-primary">
-                                                            Card Amount
+                                                        <Text
+                                                            className={`text-2xl font-bold font-primary ${
+                                                                (parseFloat(
+                                                                    cashAmount
+                                                                ) || 0) >= total
+                                                                    ? 'text-green-600'
+                                                                    : 'text-red-600'
+                                                            }`}
+                                                        >
+                                                            {symbol}
+                                                            {Math.max(
+                                                                0,
+                                                                (parseFloat(
+                                                                    cashAmount
+                                                                ) || 0) - total
+                                                            ).toFixed(2)}
                                                         </Text>
-                                                        <TextInput
-                                                            value={cardAmount}
-                                                            onChangeText={
-                                                                handleCardAmountChange
-                                                            }
-                                                            placeholder="0.00"
-                                                            keyboardType="numeric"
-                                                            className="p-4 text-lg rounded-xl border border-gray-200 font-primary"
-                                                        />
                                                     </View>
                                                 </View>
-                                            </>
-                                        )}
+                                            </View>
 
-                                        {splitPayment &&
-                                            splitPayment?.difference !== 0 && (
-                                                <View className="p-3 bg-red-50 rounded-xl border border-red-200">
-                                                    <Text className="font-semibold text-center text-red-700 font-primary">
-                                                        Amount mismatch:{' '}
-                                                        {symbol}
-                                                        {Math.abs(
-                                                            splitPayment?.difference
-                                                        ).toFixed(2)}
-                                                        {splitPayment?.difference >
-                                                        0
-                                                            ? ' short'
-                                                            : ' over'}
+                                            {/* Loading Indicator */}
+                                            {isProcessingPayment && (
+                                                <View className="flex-row justify-center items-center p-4 mb-4 bg-blue-50 rounded-xl border border-blue-200">
+                                                    <ActivityIndicator
+                                                        size="small"
+                                                        color="#3B82F6"
+                                                    />
+                                                    <Text className="ml-3 text-blue-700 font-primary">
+                                                        Processing payment...
                                                     </Text>
                                                 </View>
                                             )}
 
-                                        <View className="flex-row gap-3 mt-6">
-                                            <Pressable
-                                                onPress={() =>
-                                                    setSelectedPaymentType(null)
-                                                }
-                                                className="flex-1 items-center py-4 bg-red-500 rounded-xl"
-                                                disabled={isProcessingPayment}
-                                            >
-                                                <Text className="font-semibold text-white font-primary">
-                                                    Cancel
-                                                </Text>
-                                            </Pressable>
-                                            <Pressable
-                                                onPress={handleSplitPayment}
-                                                className={`flex-1 items-center rounded-xl py-4 ${
-                                                    splitPayment?.difference ===
-                                                        0 &&
-                                                    !isProcessingPayment
-                                                        ? 'bg-green-500'
-                                                        : 'bg-gray-300'
-                                                }`}
-                                                disabled={
-                                                    splitPayment?.difference !==
-                                                        0 || isProcessingPayment
-                                                }
-                                            >
-                                                <Text className="font-semibold text-white font-primary">
-                                                    Pay
-                                                </Text>
-                                            </Pressable>
-                                        </View>
-                                    </View>
-                                ) : (selectedPaymentType as PaymentType) ===
-                                  PaymentType.CASH ? (
-                                    /* Cash Payment View */
-                                    <View className="flex flex-col gap-2">
-                                        <View className="p-4 bg-green-50 rounded-xl border border-green-200">
-                                            <View className="flex-row items-center mb-3">
-                                                <View className="justify-center items-center mr-4 w-12 h-12 bg-green-100 rounded-xl">
-                                                    <DollarSign
-                                                        size={24}
-                                                        color="#10B981"
-                                                    />
-                                                </View>
-                                                <View className="flex-1">
-                                                    <Text className="text-lg font-bold text-gray-900 font-primary">
-                                                        Cash Payment
+                                            <View className="flex-row gap-3 mt-6">
+                                                <Pressable
+                                                    onPress={() =>
+                                                        setSelectedPaymentType(
+                                                            null
+                                                        )
+                                                    }
+                                                    className="flex-1 items-center py-4 bg-red-500 rounded-xl"
+                                                    disabled={
+                                                        isProcessingPayment
+                                                    }
+                                                >
+                                                    <Text className="font-semibold text-white font-primary">
+                                                        Cancel
                                                     </Text>
-                                                    <Text className="text-gray-600 font-primary">
-                                                        Enter the cash amount
-                                                        received
+                                                </Pressable>
+                                                <Pressable
+                                                    onPress={handleCashPayment}
+                                                    className={`flex-1 items-center rounded-xl py-4 ${
+                                                        (parseFloat(
+                                                            cashAmount
+                                                        ) || 0) >= total &&
+                                                        !isProcessingPayment
+                                                            ? 'bg-green-500'
+                                                            : 'bg-gray-300'
+                                                    }`}
+                                                    disabled={
+                                                        (parseFloat(
+                                                            cashAmount
+                                                        ) || 0) < total ||
+                                                        isProcessingPayment
+                                                    }
+                                                >
+                                                    <Text className="font-semibold text-white font-primary">
+                                                        Pay
                                                     </Text>
-                                                </View>
+                                                </Pressable>
                                             </View>
                                         </View>
-
-                                        <View className="flex flex-col gap-2 justify-start">
+                                    ) : (selectedPaymentType as PaymentType) ===
+                                      PaymentType.CARD ? (
+                                        /* Card Payment View */
+                                        <View className="space-y-4">
                                             <View className="flex flex-row justify-center items-center p-4 mb-4 bg-blue-50 rounded-xl">
                                                 <Text className="mr-2 text-sm font-semibold text-gray-600 font-primary">
-                                                    Total Due:
+                                                    Amount to Pay:
                                                 </Text>
                                                 <Text className="text-xl font-bold text-blue-600 font-primary">
                                                     {symbol}
@@ -1112,491 +1148,417 @@ export default function CartSidebar() {
                                                 </Text>
                                             </View>
 
-                                            <View className="flex flex-col justify-start">
-                                                <Text className="mb-2 text-sm font-semibold text-gray-700 font-primary">
-                                                    Cash Received ({symbol})
-                                                </Text>
-                                                <TextInput
-                                                    value={cashAmount}
-                                                    onChangeText={setCashAmount}
-                                                    placeholder="0.00"
-                                                    keyboardType="numeric"
-                                                    className="p-4 text-xl rounded-xl border border-gray-200 font-primary"
-                                                    autoFocus
-                                                />
+                                            <View className="p-4 bg-blue-50 rounded-xl border border-blue-200">
+                                                <View className="flex-row items-center mb-3">
+                                                    <View className="justify-center items-center mr-4 w-12 h-12 bg-blue-100 rounded-xl">
+                                                        <CreditCard
+                                                            size={24}
+                                                            color="#3B82F6"
+                                                        />
+                                                    </View>
+                                                    <View className="flex-1">
+                                                        <Text className="text-lg font-bold text-gray-900 font-primary">
+                                                            Card Payment
+                                                        </Text>
+                                                        <Text className="text-gray-600 font-primary">
+                                                            Prepare card for
+                                                            payment
+                                                        </Text>
+                                                    </View>
+                                                </View>
                                             </View>
 
-                                            <View className="p-4 bg-green-50 rounded-xl border border-green-200">
-                                                <View className="flex-row justify-between items-center">
-                                                    <Text className="text-lg font-semibold text-gray-700 font-primary">
-                                                        Change Due
-                                                    </Text>
-                                                    <Text
-                                                        className={`text-2xl font-bold font-primary ${
-                                                            (parseFloat(
-                                                                cashAmount
-                                                            ) || 0) >= total
-                                                                ? 'text-green-600'
-                                                                : 'text-red-600'
-                                                        }`}
-                                                    >
-                                                        {symbol}
-                                                        {Math.max(
-                                                            0,
-                                                            (parseFloat(
-                                                                cashAmount
-                                                            ) || 0) - total
-                                                        ).toFixed(2)}
+                                            <View className="p-6 mt-6 bg-gray-50 rounded-xl border border-gray-200">
+                                                <View className="items-center">
+                                                    <View className="justify-center items-center mb-4 w-20 h-20 bg-blue-100 rounded-full">
+                                                        <CreditCard
+                                                            size={32}
+                                                            color="#3B82F6"
+                                                        />
+                                                    </View>
+                                                    <View className="flex flex-row gap-2">
+                                                        <Text className="mb-2 text-lg font-bold text-center text-gray-900 font-primary">
+                                                            Amount
+                                                        </Text>
+                                                        <Text className="mb-2 text-xl font-bold text-center text-gray-900 font-primary">
+                                                            {symbol}
+                                                            {total.toFixed(2)}
+                                                        </Text>
+                                                    </View>
+                                                    <Text className="text-center text-gray-600 font-primary">
+                                                        Tap or insert card on
+                                                        the machine when ready
                                                     </Text>
                                                 </View>
                                             </View>
-                                        </View>
 
-                                        {/* Loading Indicator */}
-                                        {isProcessingPayment && (
-                                            <View className="flex-row justify-center items-center p-4 mb-4 bg-blue-50 rounded-xl border border-blue-200">
-                                                <ActivityIndicator
-                                                    size="small"
-                                                    color="#3B82F6"
-                                                />
-                                                <Text className="ml-3 text-blue-700 font-primary">
-                                                    Processing payment...
-                                                </Text>
-                                            </View>
-                                        )}
-
-                                        <View className="flex-row gap-3 mt-6">
-                                            <Pressable
-                                                onPress={() =>
-                                                    setSelectedPaymentType(null)
-                                                }
-                                                className="flex-1 items-center py-4 bg-red-500 rounded-xl"
-                                                disabled={isProcessingPayment}
-                                            >
-                                                <Text className="font-semibold text-white font-primary">
-                                                    Cancel
-                                                </Text>
-                                            </Pressable>
-                                            <Pressable
-                                                onPress={handleCashPayment}
-                                                className={`flex-1 items-center rounded-xl py-4 ${
-                                                    (parseFloat(cashAmount) ||
-                                                        0) >= total &&
-                                                    !isProcessingPayment
-                                                        ? 'bg-green-500'
-                                                        : 'bg-gray-300'
-                                                }`}
-                                                disabled={
-                                                    (parseFloat(cashAmount) ||
-                                                        0) < total ||
-                                                    isProcessingPayment
-                                                }
-                                            >
-                                                <Text className="font-semibold text-white font-primary">
-                                                    Pay
-                                                </Text>
-                                            </Pressable>
-                                        </View>
-                                    </View>
-                                ) : (selectedPaymentType as PaymentType) ===
-                                  PaymentType.CARD ? (
-                                    /* Card Payment View */
-                                    <View className="space-y-4">
-                                        <View className="flex flex-row justify-center items-center p-4 mb-4 bg-blue-50 rounded-xl">
-                                            <Text className="mr-2 text-sm font-semibold text-gray-600 font-primary">
-                                                Amount to Pay:
-                                            </Text>
-                                            <Text className="text-xl font-bold text-blue-600 font-primary">
-                                                {symbol}
-                                                {total.toFixed(2)}
-                                            </Text>
-                                        </View>
-
-                                        <View className="p-4 bg-blue-50 rounded-xl border border-blue-200">
-                                            <View className="flex-row items-center mb-3">
-                                                <View className="justify-center items-center mr-4 w-12 h-12 bg-blue-100 rounded-xl">
-                                                    <CreditCard
-                                                        size={24}
+                                            {/* Loading Indicator */}
+                                            {isProcessingPayment && (
+                                                <View className="flex-row justify-center items-center p-4 mb-4 bg-blue-50 rounded-xl border border-blue-200">
+                                                    <ActivityIndicator
+                                                        size="small"
                                                         color="#3B82F6"
                                                     />
-                                                </View>
-                                                <View className="flex-1">
-                                                    <Text className="text-lg font-bold text-gray-900 font-primary">
-                                                        Card Payment
+                                                    <Text className="ml-3 text-blue-700 font-primary">
+                                                        Processing card
+                                                        payment...
                                                     </Text>
-                                                    <Text className="text-gray-600 font-primary">
-                                                        Prepare card for payment
-                                                    </Text>
-                                                </View>
-                                            </View>
-                                        </View>
-
-                                        <View className="p-6 mt-6 bg-gray-50 rounded-xl border border-gray-200">
-                                            <View className="items-center">
-                                                <View className="justify-center items-center mb-4 w-20 h-20 bg-blue-100 rounded-full">
-                                                    <CreditCard
-                                                        size={32}
-                                                        color="#3B82F6"
-                                                    />
-                                                </View>
-                                                <View className="flex flex-row gap-2">
-                                                    <Text className="mb-2 text-lg font-bold text-center text-gray-900 font-primary">
-                                                        Amount
-                                                    </Text>
-                                                    <Text className="mb-2 text-xl font-bold text-center text-gray-900 font-primary">
-                                                        {symbol}
-                                                        {total.toFixed(2)}
-                                                    </Text>
-                                                </View>
-                                                <Text className="text-center text-gray-600 font-primary">
-                                                    Tap or insert card on the
-                                                    machine when ready
-                                                </Text>
-                                            </View>
-                                        </View>
-
-                                        {/* Loading Indicator */}
-                                        {isProcessingPayment && (
-                                            <View className="flex-row justify-center items-center p-4 mb-4 bg-blue-50 rounded-xl border border-blue-200">
-                                                <ActivityIndicator
-                                                    size="small"
-                                                    color="#3B82F6"
-                                                />
-                                                <Text className="ml-3 text-blue-700 font-primary">
-                                                    Processing card payment...
-                                                </Text>
-                                            </View>
-                                        )}
-
-                                        <View className="flex-row gap-3 mt-6">
-                                            <Pressable
-                                                onPress={() =>
-                                                    setSelectedPaymentType(null)
-                                                }
-                                                className="flex-1 items-center py-4 bg-red-500 rounded-xl"
-                                                disabled={isProcessingPayment}
-                                            >
-                                                <Text className="font-semibold text-white font-primary">
-                                                    Cancel
-                                                </Text>
-                                            </Pressable>
-                                            <Pressable
-                                                onPress={handleCardPayment}
-                                                className={`flex-1 items-center rounded-xl py-4 ${
-                                                    isProcessingPayment
-                                                        ? 'bg-gray-300'
-                                                        : 'bg-blue-500'
-                                                }`}
-                                                disabled={isProcessingPayment}
-                                            >
-                                                <Text className="font-semibold text-white font-primary">
-                                                    Start Card Payment
-                                                </Text>
-                                            </Pressable>
-                                        </View>
-                                    </View>
-                                ) : (
-                                    /* Payment Method Selection */
-                                    <>
-                                        {/* Receipt Options */}
-                                        <View className="p-4 mb-6 bg-gray-50 rounded-xl border border-gray-200">
-                                            <Text className="mb-4 text-lg font-semibold text-gray-900 font-primary">
-                                                Receipt Options
-                                            </Text>
-
-                                            {/* Receipt Type Selection */}
-                                            <View className="flex flex-row gap-4 justify-center items-center mb-4">
-                                                {/* Print Option */}
-                                                <Pressable
-                                                    onPress={() =>
-                                                        handleReceiptOptionChange(
-                                                            'print',
-                                                            !receiptOptions.print
-                                                        )
-                                                    }
-                                                    className={`flex-1 flex-row items-center justify-center py-3 px-4 rounded-lg border-2 ${
-                                                        receiptOptions.print
-                                                            ? 'bg-blue-500 border-blue-500'
-                                                            : 'bg-white border-gray-300'
-                                                    }`}
-                                                >
-                                                    <Text
-                                                        className={`font-semibold font-primary ${
-                                                            receiptOptions.print
-                                                                ? 'text-white'
-                                                                : 'text-gray-700'
-                                                        }`}
-                                                    >
-                                                        🖨️ Print
-                                                    </Text>
-                                                </Pressable>
-
-                                                {/* SMS Option */}
-                                                <Pressable
-                                                    onPress={() =>
-                                                        handleReceiptOptionChange(
-                                                            'sms',
-                                                            !receiptOptions.sms
-                                                        )
-                                                    }
-                                                    className={`flex-1 flex-row items-center justify-center py-3 px-4 rounded-lg border-2 ${
-                                                        receiptOptions.sms
-                                                            ? 'bg-blue-500 border-blue-500'
-                                                            : 'bg-white border-gray-300'
-                                                    }`}
-                                                >
-                                                    <Text
-                                                        className={`font-semibold font-primary ${
-                                                            receiptOptions.sms
-                                                                ? 'text-white'
-                                                                : 'text-gray-700'
-                                                        }`}
-                                                    >
-                                                        📱 SMS
-                                                    </Text>
-                                                </Pressable>
-
-                                                {/* Email Option */}
-                                                <Pressable
-                                                    onPress={() =>
-                                                        handleReceiptOptionChange(
-                                                            'email',
-                                                            !receiptOptions.email
-                                                        )
-                                                    }
-                                                    className={`flex-1 flex-row items-center justify-center py-3 px-4 rounded-lg border-2 ${
-                                                        receiptOptions.email
-                                                            ? 'bg-blue-500 border-blue-500'
-                                                            : 'bg-white border-gray-300'
-                                                    }`}
-                                                >
-                                                    <Text
-                                                        className={`font-semibold font-primary ${
-                                                            receiptOptions.email
-                                                                ? 'text-white'
-                                                                : 'text-gray-700'
-                                                        }`}
-                                                    >
-                                                        📧 Email
-                                                    </Text>
-                                                </Pressable>
-                                            </View>
-
-                                            {/* Contact Input Fields - Side by Side */}
-                                            {(receiptOptions.sms || receiptOptions.email) && (
-                                                <View className="flex flex-row gap-3">
-                                                    {receiptOptions.sms && (
-                                                        <View className="flex-1">
-                                                            <Text className="mb-2 text-sm font-semibold text-gray-700 font-primary">
-                                                                Phone Number
-                                                            </Text>
-                                                            <TextInput
-                                                                value={receiptContact.phoneNumber}
-                                                                onChangeText={(value) =>
-                                                                    handleReceiptContactChange(
-                                                                        'phoneNumber',
-                                                                        value
-                                                                    )
-                                                                }
-                                                                placeholder="0712345678"
-                                                                keyboardType="phone-pad"
-                                                                className={`p-3 rounded-lg border font-primary ${
-                                                                    receiptErrors.phoneNumber
-                                                                        ? 'border-red-500'
-                                                                        : 'border-gray-300'
-                                                                }`}
-                                                            />
-                                                            {receiptErrors.phoneNumber && (
-                                                                <Text className="mt-1 text-sm text-red-500 font-primary">
-                                                                    {receiptErrors.phoneNumber}
-                                                                </Text>
-                                                            )}
-                                                        </View>
-                                                    )}
-
-                                                    {receiptOptions.email && (
-                                                        <View className="flex-1">
-                                                            <Text className="mb-2 text-sm font-semibold text-gray-700 font-primary">
-                                                                Email Address
-                                                            </Text>
-                                                            <TextInput
-                                                                value={receiptContact.email}
-                                                                onChangeText={(value) =>
-                                                                    handleReceiptContactChange(
-                                                                        'email',
-                                                                        value
-                                                                    )
-                                                                }
-                                                                placeholder="customer@example.com"
-                                                                keyboardType="email-address"
-                                                                autoCapitalize="none"
-                                                                className={`p-3 rounded-lg border font-primary ${
-                                                                    receiptErrors.email
-                                                                        ? 'border-red-500'
-                                                                        : 'border-gray-300'
-                                                                }`}
-                                                            />
-                                                            {receiptErrors.email && (
-                                                                <Text className="mt-1 text-sm text-red-500 font-primary">
-                                                                    {receiptErrors.email}
-                                                                </Text>
-                                                            )}
-                                                        </View>
-                                                    )}
                                                 </View>
                                             )}
-                                        </View>
 
-                                        <View className="flex flex-col gap-2 justify-start">
-                                            {/* Cash Payment */}
-                                            <Pressable
-                                                onPress={() =>
-                                                    setSelectedPaymentType(
-                                                        PaymentType.CASH
-                                                    )
-                                                }
-                                                className={`rounded-xl border p-4 ${
-                                                    selectedPaymentType ===
-                                                    PaymentType.CASH
-                                                        ? 'border-green-500 bg-green-50'
-                                                        : 'border-gray-200'
-                                                }`}
-                                            >
-                                                <View className="flex-row justify-between items-center">
-                                                    <View className="flex-row flex-1 items-center">
-                                                        <View className="justify-center items-center mr-4 w-12 h-12 bg-green-100 rounded-xl">
-                                                            <DollarSign
-                                                                size={24}
-                                                                color="#10B981"
-                                                            />
-                                                        </View>
-                                                        <View className="flex-1">
-                                                            <Text className="text-lg font-bold text-gray-900 font-primary">
-                                                                Cash Payment
-                                                            </Text>
-                                                            <Text className="text-gray-600 font-primary">
-                                                                Pay with
-                                                                physical cash at
-                                                                the counter
-                                                            </Text>
-                                                        </View>
+                                            <View className="flex-row gap-3 mt-6">
+                                                <Pressable
+                                                    onPress={() =>
+                                                        setSelectedPaymentType(
+                                                            null
+                                                        )
+                                                    }
+                                                    className="flex-1 items-center py-4 bg-red-500 rounded-xl"
+                                                    disabled={
+                                                        isProcessingPayment
+                                                    }
+                                                >
+                                                    <Text className="font-semibold text-white font-primary">
+                                                        Cancel
+                                                    </Text>
+                                                </Pressable>
+                                                <Pressable
+                                                    onPress={handleCardPayment}
+                                                    className={`flex-1 items-center rounded-xl py-4 ${
+                                                        isProcessingPayment
+                                                            ? 'bg-gray-300'
+                                                            : 'bg-blue-500'
+                                                    }`}
+                                                    disabled={
+                                                        isProcessingPayment
+                                                    }
+                                                >
+                                                    <Text className="font-semibold text-white font-primary">
+                                                        Start Card Payment
+                                                    </Text>
+                                                </Pressable>
+                                            </View>
+                                        </View>
+                                    ) : (
+                                        /* Payment Method Selection */
+                                        <>
+                                            {/* Receipt Options */}
+                                            <View className="p-4 mb-6 bg-gray-50 rounded-xl border border-gray-200">
+                                                <Text className="mb-4 text-lg font-semibold text-gray-900 font-primary">
+                                                    Receipt Options
+                                                </Text>
+
+                                                {/* Receipt Type Selection */}
+                                                <View className="flex flex-row gap-4 justify-center items-center mb-4">
+                                                    {/* Print Option */}
+                                                    <Pressable
+                                                        onPress={() =>
+                                                            handleReceiptOptionChange(
+                                                                'print',
+                                                                !receiptOptions.print
+                                                            )
+                                                        }
+                                                        className={`flex-1 flex-row items-center justify-center py-3 px-4 rounded-lg border-2 ${
+                                                            receiptOptions.print
+                                                                ? 'bg-blue-500 border-blue-500'
+                                                                : 'bg-white border-gray-300'
+                                                        }`}
+                                                    >
+                                                        <Text
+                                                            className={`font-semibold font-primary ${
+                                                                receiptOptions.print
+                                                                    ? 'text-white'
+                                                                    : 'text-gray-700'
+                                                            }`}
+                                                        >
+                                                            🖨️ Print
+                                                        </Text>
+                                                    </Pressable>
+
+                                                    {/* SMS Option */}
+                                                    <Pressable
+                                                        onPress={() =>
+                                                            handleReceiptOptionChange(
+                                                                'sms',
+                                                                !receiptOptions.sms
+                                                            )
+                                                        }
+                                                        className={`flex-1 flex-row items-center justify-center py-3 px-4 rounded-lg border-2 ${
+                                                            receiptOptions.sms
+                                                                ? 'bg-blue-500 border-blue-500'
+                                                                : 'bg-white border-gray-300'
+                                                        }`}
+                                                    >
+                                                        <Text
+                                                            className={`font-semibold font-primary ${
+                                                                receiptOptions.sms
+                                                                    ? 'text-white'
+                                                                    : 'text-gray-700'
+                                                            }`}
+                                                        >
+                                                            📱 SMS
+                                                        </Text>
+                                                    </Pressable>
+
+                                                    {/* Email Option */}
+                                                    <Pressable
+                                                        onPress={() =>
+                                                            handleReceiptOptionChange(
+                                                                'email',
+                                                                !receiptOptions.email
+                                                            )
+                                                        }
+                                                        className={`flex-1 flex-row items-center justify-center py-3 px-4 rounded-lg border-2 ${
+                                                            receiptOptions.email
+                                                                ? 'bg-blue-500 border-blue-500'
+                                                                : 'bg-white border-gray-300'
+                                                        }`}
+                                                    >
+                                                        <Text
+                                                            className={`font-semibold font-primary ${
+                                                                receiptOptions.email
+                                                                    ? 'text-white'
+                                                                    : 'text-gray-700'
+                                                            }`}
+                                                        >
+                                                            📧 Email
+                                                        </Text>
+                                                    </Pressable>
+                                                </View>
+
+                                                {/* Contact Input Fields - Side by Side */}
+                                                {(receiptOptions.sms ||
+                                                    receiptOptions.email) && (
+                                                    <View className="flex flex-row gap-3">
+                                                        {receiptOptions.sms && (
+                                                            <View className="flex-1">
+                                                                <Text className="mb-2 text-sm font-semibold text-gray-700 font-primary">
+                                                                    Phone Number
+                                                                </Text>
+                                                                <TextInput
+                                                                    value={
+                                                                        receiptContact.phoneNumber
+                                                                    }
+                                                                    onChangeText={(
+                                                                        value
+                                                                    ) =>
+                                                                        handleReceiptContactChange(
+                                                                            'phoneNumber',
+                                                                            value
+                                                                        )
+                                                                    }
+                                                                    placeholder="0712345678"
+                                                                    keyboardType="phone-pad"
+                                                                    className={`p-3 rounded-lg border font-primary ${
+                                                                        receiptErrors.phoneNumber
+                                                                            ? 'border-red-500'
+                                                                            : 'border-gray-300'
+                                                                    }`}
+                                                                />
+                                                                {receiptErrors.phoneNumber && (
+                                                                    <Text className="mt-1 text-sm text-red-500 font-primary">
+                                                                        {
+                                                                            receiptErrors.phoneNumber
+                                                                        }
+                                                                    </Text>
+                                                                )}
+                                                            </View>
+                                                        )}
+
+                                                        {receiptOptions.email && (
+                                                            <View className="flex-1">
+                                                                <Text className="mb-2 text-sm font-semibold text-gray-700 font-primary">
+                                                                    Email
+                                                                    Address
+                                                                </Text>
+                                                                <TextInput
+                                                                    value={
+                                                                        receiptContact.email
+                                                                    }
+                                                                    onChangeText={(
+                                                                        value
+                                                                    ) =>
+                                                                        handleReceiptContactChange(
+                                                                            'email',
+                                                                            value
+                                                                        )
+                                                                    }
+                                                                    placeholder="customer@example.com"
+                                                                    keyboardType="email-address"
+                                                                    autoCapitalize="none"
+                                                                    className={`p-3 rounded-lg border font-primary ${
+                                                                        receiptErrors.email
+                                                                            ? 'border-red-500'
+                                                                            : 'border-gray-300'
+                                                                    }`}
+                                                                />
+                                                                {receiptErrors.email && (
+                                                                    <Text className="mt-1 text-sm text-red-500 font-primary">
+                                                                        {
+                                                                            receiptErrors.email
+                                                                        }
+                                                                    </Text>
+                                                                )}
+                                                            </View>
+                                                        )}
                                                     </View>
-                                                    <View
-                                                        className={`h-6 w-6 rounded-full border ${
-                                                            selectedPaymentType ===
+                                                )}
+                                            </View>
+
+                                            <View className="flex flex-col gap-2 justify-start">
+                                                {/* Cash Payment */}
+                                                <Pressable
+                                                    onPress={() =>
+                                                        setSelectedPaymentType(
                                                             PaymentType.CASH
-                                                                ? 'border-green-500 bg-green-500'
-                                                                : 'border-gray-300'
-                                                        } items-center justify-center`}
-                                                    >
-                                                        {selectedPaymentType ===
-                                                            PaymentType.CASH && (
-                                                            <View className="w-2 h-2 bg-white rounded-full" />
-                                                        )}
+                                                        )
+                                                    }
+                                                    className={`rounded-xl border p-4 ${
+                                                        selectedPaymentType ===
+                                                        PaymentType.CASH
+                                                            ? 'border-green-500 bg-green-50'
+                                                            : 'border-gray-200'
+                                                    }`}
+                                                >
+                                                    <View className="flex-row justify-between items-center">
+                                                        <View className="flex-row flex-1 items-center">
+                                                            <View className="justify-center items-center mr-4 w-12 h-12 bg-green-100 rounded-xl">
+                                                                <DollarSign
+                                                                    size={24}
+                                                                    color="#10B981"
+                                                                />
+                                                            </View>
+                                                            <View className="flex-1">
+                                                                <Text className="text-lg font-bold text-gray-900 font-primary">
+                                                                    Cash Payment
+                                                                </Text>
+                                                                <Text className="text-gray-600 font-primary">
+                                                                    Pay with
+                                                                    physical
+                                                                    cash at the
+                                                                    counter
+                                                                </Text>
+                                                            </View>
+                                                        </View>
+                                                        <View
+                                                            className={`h-6 w-6 rounded-full border ${
+                                                                selectedPaymentType ===
+                                                                PaymentType.CASH
+                                                                    ? 'border-green-500 bg-green-500'
+                                                                    : 'border-gray-300'
+                                                            } items-center justify-center`}
+                                                        >
+                                                            {selectedPaymentType ===
+                                                                PaymentType.CASH && (
+                                                                <View className="w-2 h-2 bg-white rounded-full" />
+                                                            )}
+                                                        </View>
                                                     </View>
-                                                </View>
-                                            </Pressable>
+                                                </Pressable>
 
-                                            {/* Card Payment */}
-                                            <Pressable
-                                                onPress={() =>
-                                                    setSelectedPaymentType(
-                                                        PaymentType.CARD
-                                                    )
-                                                }
-                                                className={`rounded-xl border p-4 ${
-                                                    selectedPaymentType ===
-                                                    PaymentType.CARD
-                                                        ? 'border-green-500 bg-green-50'
-                                                        : 'border-gray-200'
-                                                }`}
-                                            >
-                                                <View className="flex-row justify-between items-center">
-                                                    <View className="flex-row flex-1 items-center">
-                                                        <View className="justify-center items-center mr-4 w-12 h-12 bg-blue-100 rounded-xl">
-                                                            <CreditCard
-                                                                size={24}
-                                                                color="#3B82F6"
-                                                            />
-                                                        </View>
-                                                        <View className="flex-1">
-                                                            <Text className="text-lg font-bold text-gray-900 font-primary">
-                                                                Card Payment
-                                                            </Text>
-                                                            <Text className="text-gray-600 font-primary">
-                                                                Pay with credit
-                                                                or debit card
-                                                            </Text>
-                                                        </View>
-                                                    </View>
-                                                    <View
-                                                        className={`h-6 w-6 rounded-full border ${
-                                                            selectedPaymentType ===
+                                                {/* Card Payment */}
+                                                <Pressable
+                                                    onPress={() =>
+                                                        setSelectedPaymentType(
                                                             PaymentType.CARD
-                                                                ? 'border-green-500 bg-green-500'
-                                                                : 'border-gray-300'
-                                                        } items-center justify-center`}
-                                                    >
-                                                        {selectedPaymentType ===
-                                                            PaymentType.CARD && (
-                                                            <View className="w-2 h-2 bg-white rounded-full" />
-                                                        )}
+                                                        )
+                                                    }
+                                                    className={`rounded-xl border p-4 ${
+                                                        selectedPaymentType ===
+                                                        PaymentType.CARD
+                                                            ? 'border-green-500 bg-green-50'
+                                                            : 'border-gray-200'
+                                                    }`}
+                                                >
+                                                    <View className="flex-row justify-between items-center">
+                                                        <View className="flex-row flex-1 items-center">
+                                                            <View className="justify-center items-center mr-4 w-12 h-12 bg-blue-100 rounded-xl">
+                                                                <CreditCard
+                                                                    size={24}
+                                                                    color="#3B82F6"
+                                                                />
+                                                            </View>
+                                                            <View className="flex-1">
+                                                                <Text className="text-lg font-bold text-gray-900 font-primary">
+                                                                    Card Payment
+                                                                </Text>
+                                                                <Text className="text-gray-600 font-primary">
+                                                                    Pay with
+                                                                    credit or
+                                                                    debit card
+                                                                </Text>
+                                                            </View>
+                                                        </View>
+                                                        <View
+                                                            className={`h-6 w-6 rounded-full border ${
+                                                                selectedPaymentType ===
+                                                                PaymentType.CARD
+                                                                    ? 'border-green-500 bg-green-500'
+                                                                    : 'border-gray-300'
+                                                            } items-center justify-center`}
+                                                        >
+                                                            {selectedPaymentType ===
+                                                                PaymentType.CARD && (
+                                                                <View className="w-2 h-2 bg-white rounded-full" />
+                                                            )}
+                                                        </View>
                                                     </View>
-                                                </View>
-                                            </Pressable>
+                                                </Pressable>
 
-                                            {/* Split Payment */}
-                                            <Pressable
-                                                onPress={() =>
-                                                    setSelectedPaymentType(
-                                                        PaymentType.SPLIT
-                                                    )
-                                                }
-                                                className={`rounded-xl border p-4 ${
-                                                    (selectedPaymentType as PaymentType) ===
-                                                    PaymentType.SPLIT
-                                                        ? 'border-green-500 bg-green-50'
-                                                        : 'border-gray-200'
-                                                }`}
-                                            >
-                                                <View className="flex-row justify-between items-center">
-                                                    <View className="flex-row flex-1 items-center">
-                                                        <View className="justify-center items-center mr-4 w-12 h-12 bg-amber-100 rounded-xl">
-                                                            <Split
-                                                                size={24}
-                                                                color="#F59E0B"
-                                                            />
-                                                        </View>
-                                                        <View className="flex-1">
-                                                            <Text className="text-lg font-bold text-gray-900 font-primary">
-                                                                Split Payment
-                                                            </Text>
-                                                            <Text className="text-gray-600 font-primary">
-                                                                Combine cash and
-                                                                card payments
-                                                            </Text>
-                                                        </View>
-                                                    </View>
-                                                    <View
-                                                        className={`h-6 w-6 rounded-full border ${
-                                                            (selectedPaymentType as PaymentType) ===
+                                                {/* Split Payment */}
+                                                <Pressable
+                                                    onPress={() =>
+                                                        setSelectedPaymentType(
                                                             PaymentType.SPLIT
-                                                                ? 'border-green-500 bg-green-500'
-                                                                : 'border-gray-300'
-                                                        } items-center justify-center`}
-                                                    >
-                                                        {(selectedPaymentType as PaymentType) ===
-                                                            PaymentType.SPLIT && (
-                                                            <View className="w-2 h-2 bg-white rounded-full" />
-                                                        )}
+                                                        )
+                                                    }
+                                                    className={`rounded-xl border p-4 ${
+                                                        (selectedPaymentType as PaymentType) ===
+                                                        PaymentType.SPLIT
+                                                            ? 'border-green-500 bg-green-50'
+                                                            : 'border-gray-200'
+                                                    }`}
+                                                >
+                                                    <View className="flex-row justify-between items-center">
+                                                        <View className="flex-row flex-1 items-center">
+                                                            <View className="justify-center items-center mr-4 w-12 h-12 bg-amber-100 rounded-xl">
+                                                                <Split
+                                                                    size={24}
+                                                                    color="#F59E0B"
+                                                                />
+                                                            </View>
+                                                            <View className="flex-1">
+                                                                <Text className="text-lg font-bold text-gray-900 font-primary">
+                                                                    Split
+                                                                    Payment
+                                                                </Text>
+                                                                <Text className="text-gray-600 font-primary">
+                                                                    Combine cash
+                                                                    and card
+                                                                    payments
+                                                                </Text>
+                                                            </View>
+                                                        </View>
+                                                        <View
+                                                            className={`h-6 w-6 rounded-full border ${
+                                                                (selectedPaymentType as PaymentType) ===
+                                                                PaymentType.SPLIT
+                                                                    ? 'border-green-500 bg-green-500'
+                                                                    : 'border-gray-300'
+                                                            } items-center justify-center`}
+                                                        >
+                                                            {(selectedPaymentType as PaymentType) ===
+                                                                PaymentType.SPLIT && (
+                                                                <View className="w-2 h-2 bg-white rounded-full" />
+                                                            )}
+                                                        </View>
                                                     </View>
-                                                </View>
-                                            </Pressable>
-                                        </View>
-                                    </>
-                                )}
-                            </View>
-                        </Animated.View>
+                                                </Pressable>
+                                            </View>
+                                        </>
+                                    )}
+                                </View>
+                            </Animated.View>
                         </Pressable>
                     </Pressable>
                 </Animated.View>

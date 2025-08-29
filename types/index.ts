@@ -11,3 +11,6 @@ export * from './till.types';
 
 // Export all auth-related types
 export * from './auth.types';
+
+// Export all transaction-related types
+export * from './transaction.types';

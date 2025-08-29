@@ -136,6 +136,20 @@ export const useAuthStore = create<AuthStore>()(
                 },
             });
             clearForms();
+            
+            // Show signed out notification
+            setTimeout(() => {
+                if ((global as any).showToast) {
+                    (global as any).showToast(
+                        'Signed Out Successfully',
+                        'info',
+                        3000,
+                        '👋'
+                    );
+                } else {
+                    console.log('👋 Signed Out Successfully');
+                }
+            }, 500);
         },
 
         forgotPassword: async (email: string) => {

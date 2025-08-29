@@ -1,7 +1,13 @@
 import { Drawer } from 'expo-router/drawer';
 import { StatusBar } from 'expo-status-bar';
 import { View, Text, Pressable, Dimensions } from 'react-native';
-import { Home, Settings, CirclePower } from 'lucide-react-native';
+import {
+    Home,
+    Settings,
+    CirclePower,
+    Receipt,
+    ChartArea,
+} from 'lucide-react-native';
 import { useRouter } from 'expo-router';
 import info from '../../data/info.json';
 import { useScreenSize } from '@/utils/screen.size.util';
@@ -15,6 +21,14 @@ function DrawerContent() {
 
     const navigateToTill = () => {
         router.push('/(drawer)/till');
+    };
+
+    const navigateToTransactions = () => {
+        router.push('/(drawer)/inventory');
+    };
+
+    const navigateToReports = () => {
+        router.push('/(drawer)/reports');
     };
 
     const handleSignOut = () => {
@@ -62,6 +76,24 @@ function DrawerContent() {
                             <Settings size={24} color="#374151" />
                             <Text className="ml-3 text-lg text-gray-700 font-primary">
                                 {info?.navigation?.settings?.label}
+                            </Text>
+                        </Pressable>
+                        <Pressable
+                            onPress={navigateToReports}
+                            className="flex-row items-center px-4 py-3 rounded-lg hover:bg-gray-50 active:bg-gray-100"
+                        >
+                            <ChartArea size={24} color="#374151" />
+                            <Text className="ml-3 text-lg text-gray-700 font-primary">
+                                {info?.navigation?.reports?.label}
+                            </Text>
+                        </Pressable>
+                        <Pressable
+                            onPress={navigateToTransactions}
+                            className="flex-row items-center px-4 py-3 rounded-lg hover:bg-gray-50 active:bg-gray-100"
+                        >
+                            <Receipt size={24} color="#374151" />
+                            <Text className="ml-3 text-lg text-gray-700 font-primary">
+                                {info?.navigation?.inventory?.label}
                             </Text>
                         </Pressable>
                     </View>

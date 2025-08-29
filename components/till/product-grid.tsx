@@ -1,23 +1,84 @@
 import { View, Text, FlatList, Dimensions } from 'react-native';
-import { useMemo, useCallback } from 'react';
+import { useMemo, useCallback, useEffect } from 'react';
+import Animated, {
+    useSharedValue,
+    useAnimatedStyle,
+    withTiming,
+    withSpring,
+    Easing,
+} from 'react-native-reanimated';
 import { useMenuStore } from '@/store/menu.store';
 import { useCartStore } from '@/store/cart.store';
 import ProductCard from './product-card';
 import type { MenuItemWithBadge } from '@/store/menu.store';
 
 /**
- * ProductGrid Component - Displays products in a responsive grid layout
+ * Individual Product Item Component with animation
+ */
+function ProductItemComponent({ 
+    item, 
+    index 
+}: { 
+    item: MenuItemWithBadge; 
+    index: number; 
+}) {
+    // Individual product animation values
+    const itemOpacity = useSharedValue(0);
+    const itemScale = useSharedValue(0.8);
+    const itemTranslateY = useSharedValue(15);
+
+    // Staggered animation for each product
+    useEffect(() => {
+        const delay = Math.min(index * 80, 800) + 200; // Stagger by 80ms each, max 800ms delay, start after 200ms
+        setTimeout(() => {
+            itemOpacity.value = withTiming(1, { duration: 400, easing: Easing.out(Easing.exp) });
+            itemScale.value = withSpring(1, { damping: 12, stiffness: 150 });
+            itemTranslateY.value = withSpring(0, { damping: 15, stiffness: 100 });
+        }, delay);
+    }, [index]);
+
+    const itemAnimatedStyle = useAnimatedStyle(() => ({
+        opacity: itemOpacity.value,
+        transform: [
+            { scale: itemScale.value },
+            { translateY: itemTranslateY.value }
+        ],
+    }));
+
+    return (
+        <Animated.View
+            style={[
+                {
+                    flex: 1,
+                    margin: 8,
+                    minHeight: 180, // Ensure consistent height
+                },
+                itemAnimatedStyle
+            ]}
+        >
+            <ProductCard item={item} />
+        </Animated.View>
+    );
+}
+
+/**
+ * ProductGrid Component - Displays products in a responsive grid layout with staggered animations
  *
  * Features:
  * - Responsive grid with dynamic column count based on screen width
  * - FlatList for optimized rendering with initial num to render
  * - Empty state with search/category feedback
  * - Item validation and error handling
+ * - Staggered entrance animations for product cards
  */
 export default function ProductGrid() {
     const { getItemsByCategory, searchItems } = useMenuStore();
     const { selectedCategory, searchQuery } = useCartStore();
     const { width } = Dimensions.get('window');
+
+    // Animation values for grid container
+    const containerOpacity = useSharedValue(0);
+    const containerTranslateY = useSharedValue(20);
 
     /**
      * Memoized filtered items to prevent unnecessary recalculations
@@ -34,6 +95,25 @@ export default function ProductGrid() {
         }
     }, [searchQuery, selectedCategory, searchItems, getItemsByCategory]);
 
+    // Trigger animation when items change
+    useEffect(() => {
+        // Reset animation
+        containerOpacity.value = 0;
+        containerTranslateY.value = 20;
+        
+        // Animate in new items
+        setTimeout(() => {
+            containerOpacity.value = withTiming(1, { duration: 500, easing: Easing.out(Easing.exp) });
+            containerTranslateY.value = withSpring(0, { damping: 15, stiffness: 100 });
+        }, 100);
+    }, [filteredItems.length, selectedCategory, searchQuery]);
+
+    // Animated style for container
+    const containerAnimatedStyle = useAnimatedStyle(() => ({
+        opacity: containerOpacity.value,
+        transform: [{ translateY: containerTranslateY.value }],
+    }));
+
     /**
      * Memoized number of columns to prevent unnecessary recalculations
      */
@@ -48,7 +128,7 @@ export default function ProductGrid() {
      * Memoized render function for individual product items
      * Optimized for smooth rendering without glitches
      */
-    const renderItem = useCallback(({ item }: { item: MenuItemWithBadge }) => {
+    const renderItem = useCallback(({ item, index }: { item: MenuItemWithBadge; index: number }) => {
         // Validate item data before rendering
         if (!item?.id || !item?.name || typeof item?.price !== 'number') {
             console.warn('Invalid item data:', item);
@@ -62,15 +142,10 @@ export default function ProductGrid() {
         }
 
         return (
-            <View
-                style={{
-                    flex: 1,
-                    margin: 8,
-                    minHeight: 180, // Ensure consistent height
-                }}
-            >
-                <ProductCard item={item} />
-            </View>
+            <ProductItemComponent
+                item={item}
+                index={index}
+            />
         );
     }, []);
 
@@ -112,10 +187,10 @@ export default function ProductGrid() {
     }, [filteredItems.length, numColumns]);
 
     return (
-        <View className="flex-1 px-4 bg-gray-200/20">
+        <Animated.View className="flex-1 px-4 bg-gray-200/20" style={containerAnimatedStyle}>
             <FlatList
                 data={filteredItems}
-                renderItem={renderItem}
+                renderItem={({ item, index }) => renderItem({ item, index })}
                 keyExtractor={getItemKey}
                 numColumns={numColumns}
                 key={`${numColumns}-${selectedCategory}-${searchQuery}`}
@@ -138,15 +213,10 @@ export default function ProductGrid() {
                 initialNumToRender={initialNumToRender}
                 maxToRenderPerBatch={8}
                 windowSize={10}
-                removeClippedSubviews={true}
+                removeClippedSubviews={false} // Disable to ensure animations work properly
                 updateCellsBatchingPeriod={50}
-                getItemLayout={(data, index) => ({
-                    length: 200, // Approximate item height
-                    offset: 200 * index,
-                    index,
-                })}
                 extraData={`${numColumns}-${selectedCategory}-${searchQuery}`}
             />
-        </View>
+        </Animated.View>
     );
 }

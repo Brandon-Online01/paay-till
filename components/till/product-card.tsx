@@ -34,18 +34,16 @@ export default function ProductCard({ item }: ProductCardProps) {
     const handleProductClick = useCallback(() => {
         // Validate item data
         if (!item?.id || !item?.name || typeof item?.price !== 'number') {
-            console.error(
-                'Invalid item data provided to handleProductClick'
-            );
+            console.error('Invalid item data provided to handleProductClick');
             return;
         }
 
         // Check if item has any variants (colors, sizes, or flavors)
-        const hasVariants = item.variants && (
-            (item.variants.colors && item.variants.colors.length > 0) ||
-            (item.variants.sizes && item.variants.sizes.length > 0) ||
-            (item.variants.flavors && item.variants.flavors.length > 0)
-        );
+        const hasVariants =
+            item.variants &&
+            ((item.variants.colors && item.variants.colors.length > 0) ||
+                (item.variants.sizes && item.variants.sizes.length > 0) ||
+                (item.variants.flavors && item.variants.flavors.length > 0));
 
         if (hasVariants) {
             // Item has variants - open customization modal
@@ -53,12 +51,9 @@ export default function ProductCard({ item }: ProductCardProps) {
             openProductModal(item.id);
         } else {
             // Item has no variants - add directly to basket
-            console.log(`Adding ${item.name} directly to basket - no variants`);
             try {
                 addItem(item, 1, '', item.badge);
-            } catch (error) {
-                console.error('Error adding item to cart:', error);
-            }
+            } catch (error) {}
         }
     }, [item, addItem, openProductModal]);
 
@@ -112,7 +107,8 @@ export default function ProductCard({ item }: ProductCardProps) {
                     {item.name}
                 </Text>
                 <Text className="text-2xl font-bold text-blue-600 font-primary">
-                    {symbol}{item.price.toFixed(2)}
+                    {symbol}
+                    {item.price.toFixed(2)}
                 </Text>
             </View>
         </Pressable>
