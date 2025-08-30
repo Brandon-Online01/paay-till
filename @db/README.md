@@ -13,8 +13,8 @@ import { initializeDatabase } from '@/db';
 
 // In your app's main initialization (e.g., App.tsx or main entry point)
 await initializeDatabase({
-    runMigrations: true, // Run product migrations from JSON
-    forceMigrations: false, // Don't overwrite existing data
+    runMigrations: false, // Skip product data migrations (products already in DB)
+    forceMigrations: false, // Don't force migrations
     showStatus: true, // Show database status after init
 });
 ```
@@ -26,7 +26,7 @@ import { DatabaseInitService } from '@/db';
 
 // Manual initialization with more control
 await DatabaseInitService.initializeAll({
-    runMigrations: true,
+    runMigrations: false, // Only run if you need to migrate data from JSON
     forceMigrations: false,
 });
 

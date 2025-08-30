@@ -25,11 +25,10 @@ export default function RootLayout() {
             try {
                 const { initializeDatabase } = await import('../@db');
                 await initializeDatabase({
-                    runMigrations: true, // Run product migrations
-                    forceMigrations: true, // Force migration to add missing columns
-                    showStatus: true, // Show status to see what's happening
+                    runMigrations: false, // Skip product data migrations - products are already in DB
+                    forceMigrations: false, // Don't force migrations
+                    showStatus: false, // Reduce verbose logging
                 });
-                console.log('✅ Database initialization completed');
             } catch (error) {
                 console.error(
                     'Failed to initialize database on app startup:',

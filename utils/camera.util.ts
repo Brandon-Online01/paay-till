@@ -24,11 +24,29 @@ export interface CameraOptions {
 }
 
 /**
+ * Camera status interface
+ */
+export interface CameraStatus {
+    isAvailable: boolean;
+    hasPermission: boolean;
+    isCapturing: boolean;
+    lastUpdated: string;
+    lastError: string | null;
+}
+
+/**
  * Camera utility class for photo and video capture
  * Provides cross-platform camera functionality with proper permissions
  */
 export class CameraUtils {
     private static isCapturing = false;
+    private static currentStatus: CameraStatus = {
+        isAvailable: true, // Assume available on mobile devices
+        hasPermission: false,
+        isCapturing: false,
+        lastUpdated: new Date().toISOString(),
+        lastError: null,
+    };
 
     /**
      * Request camera permissions
@@ -363,6 +381,39 @@ export class CameraUtils {
             console.error('❌ Failed to save image to gallery:', error);
             return false;
         }
+    }
+
+    /**
+     * Get current camera status
+     */
+    static getCameraStatus(): CameraStatus {
+        this.currentStatus.isCapturing = this.isCapturing;
+        this.currentStatus.lastUpdated = new Date().toISOString();
+        return { ...this.currentStatus };
+    }
+
+    /**
+     * Format camera status for logging
+     */
+    static formatStatusForLogging(): string {
+        const status = this.getCameraStatus();
+        const emoji = status.isAvailable && status.hasPermission ? '📷' : '📵';
+        const available = status.isAvailable ? 'Available' : 'Unavailable';
+        const permission = status.hasPermission ? 'Permitted' : 'No Permission';
+        const capturing = status.isCapturing ? 'Capturing' : 'Ready';
+        
+        return `${emoji} Camera - ${available} | ${permission} | ${capturing}`;
+    }
+
+    /**
+     * Update status when operations complete
+     */
+    private static updateStatus(updates: Partial<CameraStatus>) {
+        this.currentStatus = {
+            ...this.currentStatus,
+            ...updates,
+            lastUpdated: new Date().toISOString(),
+        };
     }
 }
 

@@ -1,7 +1,6 @@
 import {
     Text,
     View,
-    ScrollView,
     FlatList,
     Pressable,
     TextInput,
@@ -58,7 +57,6 @@ export default function Reports() {
         setShowFilterModal,
         setSelectedTransaction,
         setShowTransactionModal,
-        clearCache,
         refreshData,
     } = useReportsStore();
 
@@ -99,50 +97,10 @@ export default function Reports() {
         }
     }, [loadData, lastUpdated]);
 
-    const formatDate = (dateString: string) => {
-        const date = new Date(dateString);
-        return {
-            date: date.toLocaleDateString('en-GB', {
-                day: '2-digit',
-                month: 'short',
-            }),
-            time: date.toLocaleTimeString('en-GB', {
-                hour: '2-digit',
-                minute: '2-digit',
-            }),
-        };
-    };
-
-    const getStatusColor = (status: string) => {
-        switch (status) {
-            case 'completed':
-                return 'text-green-600';
-            case 'pending':
-                return 'text-yellow-600';
-            case 'canceled':
-                return 'text-red-600';
-            default:
-                return 'text-gray-600';
-        }
-    };
-
-    const getStatusLabel = (status: string) => {
-        switch (status) {
-            case 'completed':
-                return 'Delivered';
-            case 'pending':
-                return 'Shipped';
-            case 'canceled':
-                return 'Cancelled';
-            default:
-                return status;
-        }
-    };
-
-    const handleTransactionPress = (transaction: Transaction) => {
+    const handleTransactionPress = useCallback((transaction: Transaction) => {
         setSelectedTransaction(transaction);
         setShowTransactionModal(true);
-    };
+    }, [setSelectedTransaction, setShowTransactionModal]);
 
     const handleSortSelect = (sort: SortPeriod) => {
         setSortBy(sort);
@@ -152,8 +110,8 @@ export default function Reports() {
     /**
      * Optimized render function for transaction cards
      */
-    const renderTransactionCard = useCallback(({ item: transaction, index }) => (
-        <View className="w-[24%] mb-4">
+    const renderTransactionCard = useCallback(({ item: transaction, index }: { item: Transaction; index: number }) => (
+        <View style={{ flex: 1, margin: 8 }} key={index}>
             <TransactionCard
                 transaction={transaction}
                 onPress={handleTransactionPress}
@@ -164,13 +122,54 @@ export default function Reports() {
     /**
      * Optimized render function for transaction list items
      */
-    const renderTransactionListItem = useCallback(({ item: transaction, index }) => {
+    const renderTransactionListItem = useCallback(({ item: transaction, index }: { item: Transaction; index: number }) => {
+        
+        const formatDate = (dateString: string) => {
+            const date = new Date(dateString);
+            return {
+                date: date.toLocaleDateString('en-GB', {
+                    day: '2-digit',
+                    month: 'short',
+                }),
+                time: date.toLocaleTimeString('en-GB', {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                }),
+            };
+        };
+
+        const getStatusColor = (status: string) => {
+            switch (status) {
+                case 'completed':
+                    return 'text-green-600';
+                case 'pending':
+                    return 'text-yellow-600';
+                case 'canceled':
+                    return 'text-red-600';
+                default:
+                    return 'text-gray-600';
+            }
+        };
+    
+        const getStatusLabel = (status: string) => {
+            switch (status) {
+                case 'completed':
+                    return 'Delivered';
+                case 'pending':
+                    return 'Shipped';
+                case 'canceled':
+                    return 'Cancelled';
+                default:
+                    return status;
+            }
+        };
+    
         const dateTime = formatDate(transaction.createdAt);
 
         return (
             <Pressable
                 onPress={() => handleTransactionPress(transaction)}
-                className="p-4 mb-4 bg-white rounded-lg border border-gray-200 active:bg-gray-50"
+                className="p-4 mb-2 bg-white rounded-lg border border-gray-200 active:bg-gray-50"
             >
                 {/* Header Row */}
                 <View className="flex-row justify-between items-start mb-3">
@@ -222,7 +221,7 @@ export default function Reports() {
 
                             {/* Items */}
                             <View className="flex-1">
-                                {transaction.items.slice(0, 2).map((item, index) => (
+                                {transaction.items.slice(0, 2).map((item: any, index: number) => (
                                     <Text key={index} className="text-xs text-gray-700 font-primary">
                                         {item.image} {item.quantity}× {item.name}
                                     </Text>
@@ -291,12 +290,12 @@ export default function Reports() {
                 </View>
             </Pressable>
         );
-    }, [handleTransactionPress, formatDate, getStatusColor, getStatusLabel]);
+    }, [handleTransactionPress]);
 
     /**
      * Key extractor for FlatList optimization
      */
-    const keyExtractor = useCallback((item) => item.id, []);
+    const keyExtractor = useCallback((item: Transaction) => item.id?.toString() || '', []);
 
     /**
      * Loading component for FlatList
@@ -360,7 +359,15 @@ export default function Reports() {
                 renderItem: renderTransactionCard,
                 numColumns: 4,
                 key: 'cards-view',
-                contentContainerStyle: { padding: 16 },
+                contentContainerStyle: { 
+                    paddingBottom: 100,
+                    paddingTop: 8,
+                    paddingHorizontal: 16
+                },
+                columnWrapperStyle: {
+                    justifyContent: 'space-between' as const,
+                    marginBottom: 8,
+                },
             };
         } else {
             return {
@@ -573,6 +580,7 @@ export default function Reports() {
                 <FlatList
                     {...flatListProps}
                     ListEmptyComponent={renderEmptyComponent}
+                    key={`${Math.random()}-${filteredTransactions.length}`}
                     className="flex-1"
                 />
             )}

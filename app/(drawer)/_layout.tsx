@@ -166,7 +166,7 @@ export default function DrawerLayout() {
         <>
             <StatusBar style="dark" />
             <Drawer
-                drawerContent={DrawerContent}
+                drawerContent={() => <DrawerContent />}
                 screenOptions={screenOptions}
             >
                 <Drawer.Screen

@@ -33,28 +33,24 @@ export default function Header() {
     useEffect(() => {
         const initializeSystemMonitoring = async () => {
             try {
-                console.log('🔄 Header: Initializing system monitoring...');
-                
                 // Initialize all system utilities
                 const initialStatus = await SystemUtils.initialize();
                 setSystemStatus(initialStatus);
 
-                // Start continuous monitoring with callback
+                // Start continuous monitoring with callback (every 5 minutes)
                 const stopMonitoring = SystemUtils.startMonitoring((status) => {
                     setSystemStatus(status);
-                }, 30000); // Update every 30 seconds
+                }, 300000); // Update every 5 minutes
 
-                // Start periodic tabular logging (every 60 seconds)
+                // Start periodic tabular logging (every 5 minutes)
                 const logInterval = setInterval(() => {
                     SystemUtils.logStatusTable();
-                }, 60000);
+                }, 300000);
 
                 // Log initial status table
                 setTimeout(() => {
                     SystemUtils.logStatusTable();
-                }, 2000);
-
-                console.log('✅ Header: System monitoring initialized');
+                }, 5000); // Wait 5 seconds for system to settle
 
                 // Return cleanup function
                 return () => {

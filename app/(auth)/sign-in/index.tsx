@@ -26,11 +26,18 @@ import { BiometricsUtils } from '../../../utils/biometrics.util';
 
 export default function SignIn() {
     const router = useRouter();
-    const { signIn, updateSignInForm, signInForm, authState, clearForms } =
-        useAuthStore();
-    const [errors, setErrors] = useState<{ pin?: string }>({});
-    const [useBiometrics, setUseBiometrics] = useState(false);
-    const [biometricAvailable, setBiometricAvailable] = useState(false);
+    const { 
+        signIn, 
+        updateSignInForm, 
+        signInForm, 
+        authState, 
+        clearForms,
+        uiState,
+        setErrors,
+        clearErrors,
+        setUseBiometrics,
+        checkBiometricAvailability
+    } = useAuthStore();
 
     // Enhanced animation values for staggered entry
     const leftPanelOpacity = useSharedValue(0);
@@ -158,19 +165,8 @@ export default function SignIn() {
             newErrors.pin = 'PIN must contain only numbers';
         }
 
-        setErrors(newErrors);
+        setErrors('signIn', newErrors);
         return Object.keys(newErrors).length === 0;
-    };
-
-    const checkBiometricAvailability = async () => {
-        try {
-            const isAvailable = await BiometricsUtils.isAvailable();
-            const isEnrolled = await BiometricsUtils.isEnrolled();
-            setBiometricAvailable(isAvailable && isEnrolled);
-        } catch (error) {
-            console.error('Failed to check biometric availability:', error);
-            setBiometricAvailable(false);
-        }
     };
 
     const handleBiometricAuth = async () => {
@@ -200,7 +196,7 @@ export default function SignIn() {
     };
 
     const toggleBiometricMode = () => {
-        setUseBiometrics(!useBiometrics);
+        setUseBiometrics(!uiState.biometric.useBiometrics);
     };
 
     // Enhanced animated styles for staggered entry
@@ -280,7 +276,7 @@ export default function SignIn() {
                     style={leftPanelAnimatedStyle}
                 >
                     <ImageBackground
-                        source={require('../../../assets/images/waves.jpg')}
+                        source={require('../../../assets/images/waves.webp')}
                         className="flex-1 justify-center items-center w-full h-full"
                         resizeMode="cover"
                     >
@@ -344,19 +340,19 @@ export default function SignIn() {
                                 className="flex flex-col gap-1 w-1/2"
                                 style={inputAnimatedStyle}
                             >
-                                {useBiometrics ? (
+                                {uiState.biometric.useBiometrics ? (
                                     /* Biometric Authentication Mode */
                                     <>
                                         <Text className="font-semibold text-center text-gray-700 uppercase text-md font-primary">
                                             Biometric Authentication
                                         </Text>
-                                        <View className="flex flex-col gap-4 justify-center items-center p-8 w-full border border-blue-300 rounded-lg bg-blue-50">
+                                        <View className="flex flex-col gap-4 justify-center items-center p-8 w-full bg-blue-50 rounded-lg border border-blue-300">
                                             <Fingerprint size={48} color="#2d71f8" />
                                             <Text className="text-center text-gray-600 font-primary">
                                                 Touch the fingerprint sensor to sign in
                                             </Text>
                                             <Pressable
-                                                className="px-6 py-3 rounded-lg bg-blue-500"
+                                                className="px-6 py-3 bg-blue-500 rounded-lg"
                                                 onPress={handleBiometricAuth}
                                             >
                                                 <Text className="font-semibold text-center text-white font-primary">
@@ -379,7 +375,7 @@ export default function SignIn() {
                                         <View className="flex relative flex-row justify-center items-center w-full">
                                             <TextInput
                                                 className={`w-full p-6 items-center justify-center flex-row border rounded-lg text-center text-xl font-mono tracking-wider font-primary text-primary ${
-                                                    errors.pin
+                                                    uiState.errors.signIn?.pin
                                                         ? 'border-red-500'
                                                         : 'border-gray-300'
                                                 }`}
@@ -393,19 +389,20 @@ export default function SignIn() {
                                                 secureTextEntry
                                                 autoCapitalize="none"
                                             />
-                                            {/* Biometric Toggle Icon */}
-                                            {biometricAvailable && (
+                                            {/* Biometric Toggle Icon - Enhanced for prominence */}
+                                            {uiState.biometric.available && (
                                                 <Pressable
-                                                    className="absolute right-4 p-2 rounded-full bg-blue-100"
-                                                    onPress={toggleBiometricMode}
+                                                    className="absolute right-4 p-3 bg-blue-500 rounded-full shadow-lg"
+                                                    onPress={handleBiometricAuth}
+                                                    style={{ elevation: 4 }}
                                                 >
-                                                    <Fingerprint size={24} color="#2d71f8" />
+                                                    <Fingerprint size={28} color="#ffffff" />
                                                 </Pressable>
                                             )}
                                         </View>
-                                        {errors.pin && (
+                                        {uiState.errors.signIn?.pin && (
                                             <Text className="text-sm text-red-600 font-primary">
-                                                {errors.pin}
+                                                {uiState.errors.signIn.pin}
                                             </Text>
                                         )}
                                     </>
@@ -413,7 +410,7 @@ export default function SignIn() {
                             </Animated.View>
 
                             {/* Sign In Button - Only show in PIN mode */}
-                            {!useBiometrics && (
+                            {!uiState.biometric.useBiometrics && (
                                 <Animated.View
                                     style={buttonAnimatedStyle}
                                     className="flex-col gap-2 justify-center items-center w-full"

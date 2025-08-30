@@ -44,6 +44,19 @@ export interface AddressInfo {
 }
 
 /**
+ * Location status interface
+ */
+export interface LocationStatus {
+    isAvailable: boolean;
+    hasPermission: boolean;
+    isWatching: boolean;
+    hasCurrentLocation: boolean;
+    accuracy?: number;
+    lastUpdated: string;
+    lastError: string | null;
+}
+
+/**
  * Location utility class for GPS and geolocation services
  * Provides cross-platform location functionality with proper permissions
  */
@@ -51,6 +64,14 @@ export class LocationUtils {
     private static isWatching = false;
     private static watchId: number | null = null;
     private static currentLocation: LocationResult | null = null;
+    private static currentStatus: LocationStatus = {
+        isAvailable: true, // Assume GPS available on mobile devices
+        hasPermission: false,
+        isWatching: false,
+        hasCurrentLocation: false,
+        lastUpdated: new Date().toISOString(),
+        lastError: null,
+    };
 
     /**
      * Request location permissions
@@ -389,6 +410,44 @@ export class LocationUtils {
      */
     static getCachedLocation(): LocationResult | null {
         return this.currentLocation;
+    }
+
+    /**
+     * Get current location status
+     */
+    static getLocationStatus(): LocationStatus {
+        this.currentStatus.isWatching = this.isWatching;
+        this.currentStatus.hasCurrentLocation = this.currentLocation !== null;
+        this.currentStatus.accuracy = this.currentLocation?.coords.accuracy;
+        this.currentStatus.lastUpdated = new Date().toISOString();
+        return { ...this.currentStatus };
+    }
+
+    /**
+     * Format location status for logging
+     */
+    static formatStatusForLogging(): string {
+        const status = this.getLocationStatus();
+        const emoji = status.isAvailable && status.hasPermission ? '📍' : '📵';
+        const available = status.isAvailable ? 'Available' : 'Unavailable';
+        const permission = status.hasPermission ? 'Permitted' : 'No Permission';
+        const watching = status.isWatching ? 'Tracking' : 'Idle';
+        const location = status.hasCurrentLocation 
+            ? `Located${status.accuracy ? ` (±${Math.round(status.accuracy)}m)` : ''}`
+            : 'No Location';
+        
+        return `${emoji} Location - ${available} | ${permission} | ${watching} | ${location}`;
+    }
+
+    /**
+     * Update status when operations complete
+     */
+    private static updateStatus(updates: Partial<LocationStatus>) {
+        this.currentStatus = {
+            ...this.currentStatus,
+            ...updates,
+            lastUpdated: new Date().toISOString(),
+        };
     }
 }
 

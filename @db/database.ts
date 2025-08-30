@@ -1022,7 +1022,17 @@ class DatabaseService {
         try {
             const sql = `
         SELECT 
-          ti.*,
+          ti.id,
+          ti.transactionId,
+          ti.productId,
+          ti.quantity,
+          ti.unitPrice,
+          ti.calculatedPrice,
+          ti.variantPrice,
+          ti.totalPrice,
+          ti.selectedVariants,
+          ti.notes,
+          ti.createdAt,
           p.name as productName,
           p.image as productImage,
           p.description as productDescription,

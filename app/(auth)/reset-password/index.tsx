@@ -29,9 +29,11 @@ export default function ResetPassword() {
         forgotPasswordForm,
         authState,
         clearForms,
+        uiState,
+        setErrors,
+        setSuccessMessage,
+        clearSuccessMessages
     } = useAuthStore();
-    const [errors, setErrors] = useState<{ email?: string }>({});
-    const [successMessage, setSuccessMessage] = useState('');
 
     // Animation values
     const formOpacity = useSharedValue(0);
@@ -42,8 +44,7 @@ export default function ResetPassword() {
     useEffect(() => {
         // Clear forms when component mounts
         clearForms();
-        setSuccessMessage('');
-        setErrors({});
+        clearSuccessMessages();
 
         // Start entrance animations
         formOpacity.value = withTiming(1, {
@@ -65,7 +66,7 @@ export default function ResetPassword() {
             newErrors.email = 'Please enter a valid email address';
         }
 
-        setErrors(newErrors);
+        setErrors('forgotPassword', newErrors);
         return Object.keys(newErrors).length === 0;
     };
 
@@ -92,9 +93,10 @@ export default function ResetPassword() {
         try {
             await forgotPassword(forgotPasswordForm.email);
             buttonScale.value = withSpring(1, { damping: 10, stiffness: 200 });
-            setSuccessMessage(
-                'PIN reset instructions have been sent to your email.'
-            );
+                            setSuccessMessage(
+                    'resetPassword',
+                    'PIN reset instructions have been sent to your email.'
+                );
         } catch {
             buttonScale.value = withSpring(1, { damping: 10, stiffness: 200 });
             Alert.alert(
@@ -121,7 +123,7 @@ export default function ResetPassword() {
                     style={leftPanelAnimatedStyle}
                 >
                     <ImageBackground
-                        source={require('../../../assets/images/waves.jpg')}
+                        source={require('../../../assets/images/waves.webp')}
                         className="flex-1 justify-center items-center w-full h-full"
                         resizeMode="cover"
                     >
@@ -172,10 +174,10 @@ export default function ResetPassword() {
                         </View>
 
                         {/* Success Message */}
-                        {successMessage && (
+                        {uiState.successMessages.resetPassword && (
                             <View className="p-4 w-full bg-blue-50 rounded-lg border border-blue-200">
                                 <Text className="text-center text-blue-700">
-                                    {successMessage}
+                                    {uiState.successMessages.resetPassword}
                                 </Text>
                             </View>
                         )}
@@ -190,7 +192,7 @@ export default function ResetPassword() {
                                 <View className="relative flex-row justify-center items-center w-full">
                                     <TextInput
                                         className={`w-full p-6 border rounded-lg text-base font-primary ${
-                                            errors.email
+                                            uiState.errors.forgotPassword?.email
                                                 ? 'border-red-500'
                                                 : 'border-gray-300'
                                         }`}
@@ -203,9 +205,9 @@ export default function ResetPassword() {
                                         autoCapitalize="none"
                                     />
                                 </View>
-                                {errors.email && (
+                                {uiState.errors.forgotPassword?.email && (
                                     <Text className="text-sm text-red-600">
-                                        {errors.email}
+                                        {uiState.errors.forgotPassword.email}
                                     </Text>
                                 )}
                             </View>

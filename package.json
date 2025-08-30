@@ -1,7 +1,12 @@
 {
     "name": "orrbit-pos",
     "main": "expo-router/entry",
-    "version": "1.0.0",
+    "version": "0.0.1",
+    "author": "Brandon N Nkawu",
+    "publisher": "Orrbit Technologies",
+    "license": "ISC © Orrbit Technologies",
+    "description": "Expo React Native POS Application",
+    "homepage": "https://pos.orrbit.co.za",
     "scripts": {
         "start": "expo start",
         "reset-project": "node ./scripts/reset-project.js",

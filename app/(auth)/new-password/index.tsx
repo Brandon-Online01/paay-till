@@ -30,12 +30,10 @@ export default function NewPassword() {
         updateResetPasswordForm,
         resetPasswordForm,
         authState,
+        uiState,
+        setErrors,
+        togglePasswordVisibility
     } = useAuthStore();
-    const [errors, setErrors] = useState<{ pin?: string; confirmPin?: string }>(
-        {}
-    );
-    const [showPassword, setShowPassword] = useState(false);
-    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
     // Animation values
     const formOpacity = useSharedValue(0);
@@ -75,7 +73,7 @@ export default function NewPassword() {
             newErrors.confirmPin = 'Passwords do not match';
         }
 
-        setErrors(newErrors);
+        setErrors('resetPassword', newErrors);
         return Object.keys(newErrors).length === 0;
     };
 
@@ -135,7 +133,7 @@ export default function NewPassword() {
                     style={leftPanelAnimatedStyle}
                 >
                     <ImageBackground
-                        source={require('../../../assets/images/waves.jpg')}
+                        source={require('../../../assets/images/waves.webp')}
                         className="flex-1 justify-center items-center w-full h-full"
                         resizeMode="cover"
                     >
@@ -194,7 +192,7 @@ export default function NewPassword() {
                                 <View className="relative flex-row justify-center items-center w-full">
                                     <TextInput
                                         className={`w-full h-12 pl-4 pr-12 border rounded-lg text-base ${
-                                            errors.pin
+                                            uiState.errors.resetPassword?.pin
                                                 ? 'border-red-500'
                                                 : 'border-gray-300'
                                         }`}
@@ -205,25 +203,25 @@ export default function NewPassword() {
                                                 password,
                                             })
                                         }
-                                        secureTextEntry={!showPassword}
+                                        secureTextEntry={!uiState.passwordVisibility.showPassword}
                                         autoCapitalize="none"
                                     />
                                     <Pressable
                                         className="absolute top-3 right-3"
                                         onPress={() =>
-                                            setShowPassword(!showPassword)
+                                            togglePasswordVisibility('showPassword')
                                         }
                                     >
-                                        {showPassword ? (
+                                        {uiState.passwordVisibility.showPassword ? (
                                             <EyeOff size={20} color="#6b7280" />
                                         ) : (
                                             <Eye size={20} color="#6b7280" />
                                         )}
                                     </Pressable>
                                 </View>
-                                {errors.pin && (
+                                {uiState.errors.resetPassword?.pin && (
                                     <Text className="text-sm text-red-600 font-primary">
-                                        {errors.pin}
+                                        {uiState.errors.resetPassword.pin}
                                     </Text>
                                 )}
                             </View>
@@ -236,7 +234,7 @@ export default function NewPassword() {
                                 <View className="relative flex-row justify-center items-center w-full">
                                     <TextInput
                                         className={`w-full h-12 pl-4 pr-12 border rounded-lg text-base ${
-                                            errors.confirmPin
+                                            uiState.errors.resetPassword?.confirmPin
                                                 ? 'border-red-500'
                                                 : 'border-gray-300'
                                         }`}
@@ -249,27 +247,25 @@ export default function NewPassword() {
                                                 confirmPassword,
                                             })
                                         }
-                                        secureTextEntry={!showConfirmPassword}
+                                        secureTextEntry={!uiState.passwordVisibility.showConfirmPassword}
                                         autoCapitalize="none"
                                     />
                                     <Pressable
                                         className="absolute top-3 right-3"
                                         onPress={() =>
-                                            setShowConfirmPassword(
-                                                !showConfirmPassword
-                                            )
+                                            togglePasswordVisibility('showConfirmPassword')
                                         }
                                     >
-                                        {showConfirmPassword ? (
+                                        {uiState.passwordVisibility.showConfirmPassword ? (
                                             <EyeOff size={20} color="#6b7280" />
                                         ) : (
                                             <Eye size={20} color="#6b7280" />
                                         )}
                                     </Pressable>
                                 </View>
-                                {errors.confirmPin && (
+                                {uiState.errors.resetPassword?.confirmPin && (
                                     <Text className="text-sm text-red-600 font-primary">
-                                        {errors.confirmPin}
+                                        {uiState.errors.resetPassword.confirmPin}
                                     </Text>
                                 )}
                             </View>

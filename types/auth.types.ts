@@ -86,11 +86,36 @@ export interface OtpVerificationFormData {
 }
 
 /**
+ * UI State interfaces
+ */
+export interface UIState {
+    errors: {
+        signIn?: { pin?: string };
+        signUp?: { businessName?: string; businessEmail?: string; pin?: string };
+        forgotPassword?: { email?: string };
+        resetPassword?: { pin?: string; confirmPin?: string };
+        otpVerification?: { code?: string };
+    };
+    successMessages: {
+        resetPassword?: string;
+    };
+    biometric: {
+        available: boolean;
+        useBiometrics: boolean;
+    };
+    passwordVisibility: {
+        showPassword: boolean;
+        showConfirmPassword: boolean;
+    };
+}
+
+/**
  * Auth store interface
  */
 export interface AuthStore {
     // State
     authState: AuthState;
+    uiState: UIState;
     signInForm: SignInFormData;
     signUpForm: SignUpFormData;
     forgotPasswordForm: ForgotPasswordFormData;
@@ -111,6 +136,16 @@ export interface AuthStore {
     updateForgotPasswordForm: (data: Partial<ForgotPasswordFormData>) => void;
     updateResetPasswordForm: (data: Partial<ResetPasswordFormData>) => void;
     updateOtpForm: (data: Partial<OtpVerificationFormData>) => void;
+
+    // UI State updates
+    setErrors: (page: keyof UIState['errors'], errors: any) => void;
+    clearErrors: (page?: keyof UIState['errors']) => void;
+    setSuccessMessage: (page: keyof UIState['successMessages'], message: string) => void;
+    clearSuccessMessages: (page?: keyof UIState['successMessages']) => void;
+    setBiometricAvailable: (available: boolean) => void;
+    setUseBiometrics: (useBiometrics: boolean) => void;
+    togglePasswordVisibility: (field: keyof UIState['passwordVisibility']) => void;
+    checkBiometricAvailability: () => Promise<void>;
 
     // Utilities
     clearForms: () => void;

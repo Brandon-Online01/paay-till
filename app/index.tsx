@@ -103,7 +103,7 @@ export default function Index() {
     return (
         <Animated.View style={[{ flex: 1 }, backgroundAnimatedStyle]}>
             <ImageBackground
-                source={require('../assets/images/waves.jpg')}
+                source={require('../assets/images/waves.webp')}
                 className="flex-1"
                 resizeMode="cover"
             >
@@ -129,7 +129,7 @@ export default function Index() {
                         {/* Subtitle */}
                         <View className="flex flex-col gap-4 items-center -mt-14">
                             <Animated.View style={textAnimatedStyle}>
-                                <Text className="max-w-2xl text-lg leading-relaxed text-center text-white/90 font-primary">
+                                <Text className="max-w-2xl text-2xl leading-relaxed text-center text-white/90 font-primary">
                                     The ultimate POS solution for SMEs, designed
                                     for effortless setup and intuitive use,
                                     delivering groundbreaking accessibility like

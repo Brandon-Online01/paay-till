@@ -1,7 +1,6 @@
 import {
     Text,
     View,
-    ScrollView,
     FlatList,
     Pressable,
     TextInput,
@@ -24,14 +23,13 @@ import {
 import BaseProvider from '@/providers/base.provider';
 import { useInventoryStore, SortOption } from '@/store/inventory.store';
 import { Product } from '@/types/inventory.types';
-import { ProductService } from '@/@db';
 import ProductFilterModal from '@/components/inventory/filter-modal';
 import ProductDetailModal from '@/components/inventory/product-detail-modal';
 import AddItemModal from '@/components/inventory/add-item-modal';
 import ProductCard from '@/components/inventory/product-card';
 
 const SORT_OPTIONS: { value: SortOption; label: string }[] = [
-    { value: 'recent', label: 'Recent' },
+    { value: 'createdAt', label: 'Recent' },
     { value: 'name', label: 'Name' },
     { value: 'price', label: 'Price' },
     { value: 'category', label: 'Category' },
@@ -40,35 +38,25 @@ const SORT_OPTIONS: { value: SortOption; label: string }[] = [
 export default function Inventory() {
     const {
         products,
-        totalCount,
-        currentPage,
-        hasNextPage,
         isLoading,
-        isLoadingMore,
         isRefreshing,
         error,
         metrics,
-        reorderAlerts,
         searchQuery,
         sortBy,
-        sortOrder,
-        filters,
         showFilterModal,
         selectedProduct,
         showProductModal,
         viewMode,
         lastUpdated,
         loadProducts,
-        loadMoreProducts,
         refreshProducts,
         setSearchQuery,
         setSortBy,
-        setFilters,
         setShowFilterModal,
         setSelectedProduct,
         setShowProductModal,
         setViewMode,
-        clearCache,
         loadReorderAlerts,
     } = useInventoryStore();
 
@@ -93,7 +81,7 @@ export default function Inventory() {
         await refreshProducts();
     }, [refreshProducts]);
 
-    const getBadgeColor = (badge: string | null) => {
+    const getBadgeColor = useCallback((badge: string | null) => {
         switch (badge) {
             case 'special':
                 return 'text-green-600 bg-green-100';
@@ -104,12 +92,12 @@ export default function Inventory() {
             default:
                 return 'text-gray-600 bg-gray-100';
         }
-    };
+    }, []);
 
-    const handleProductPress = (product: Product) => {
+    const handleProductPress = useCallback((product: Product) => {
         setSelectedProduct(product);
         setShowProductModal(true);
-    };
+    }, [setSelectedProduct, setShowProductModal]);
 
     const handleSortSelect = (sort: SortOption) => {
         setSortBy(sort);
@@ -138,8 +126,8 @@ export default function Inventory() {
     /**
      * Optimized render function for product cards
      */
-    const renderProductCard = useCallback(({ item: product, index }) => (
-        <View className="w-[24%] mb-4">
+    const renderProductCard = useCallback(({ item: product, index }: { item: Product; index: number }) => (
+        <View style={{ flex: 1, margin: 8 }}>
             <ProductCard
                 product={product}
                 onPress={handleProductPress}
@@ -150,10 +138,10 @@ export default function Inventory() {
     /**
      * Optimized render function for product list items
      */
-    const renderProductListItem = useCallback(({ item: product, index }) => (
+    const renderProductListItem = useCallback(({ item: product, index }: { item: Product; index: number }) => (
         <Pressable
             onPress={() => handleProductPress(product)}
-            className="p-4 mb-4 bg-white rounded-lg border border-gray-200 active:bg-gray-50"
+            className="p-4 mb-2 bg-white rounded-lg border border-gray-200 active:bg-gray-50"
         >
             {/* Header Row */}
             <View className="flex-row justify-between items-start mb-3">
@@ -260,7 +248,7 @@ export default function Inventory() {
     /**
      * Key extractor for FlatList optimization
      */
-    const keyExtractor = useCallback((item) => item.id, []);
+    const keyExtractor = useCallback((item: Product) => item.id, []);
 
     /**
      * Loading component for FlatList
@@ -324,7 +312,15 @@ export default function Inventory() {
                 renderItem: renderProductCard,
                 numColumns: 4,
                 key: 'cards-view',
-                contentContainerStyle: { padding: 16 },
+                contentContainerStyle: { 
+                    paddingBottom: 100,
+                    paddingTop: 8,
+                    paddingHorizontal: 16
+                },
+                columnWrapperStyle: {
+                    justifyContent: 'space-between' as const,
+                    marginBottom: 8,
+                },
             };
         } else {
             return {
@@ -547,6 +543,7 @@ export default function Inventory() {
             ) : (
                 <FlatList
                     {...flatListProps}
+                    key={flatListProps.key}
                     ListEmptyComponent={renderEmptyComponent}
                     className="flex-1"
                 />

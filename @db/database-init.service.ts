@@ -52,34 +52,28 @@ export class DatabaseInitService {
         forceMigrations?: boolean;
     }): Promise<void> {
         const startTime = Date.now();
-        console.log('🔄 Initializing Database Services...');
 
         try {
             // Step 1: Core database
             await databaseService.initialize();
-            console.log('  ✅ Core Database');
 
             // Step 2: Schema migrations  
             const { MigrationManager } = await import('./migration-manager');
             const db = databaseService.getDb();
             const migrationManager = new MigrationManager(db);
             await migrationManager.runMigrations();
-            console.log('  ✅ Schema Migrations');
 
             // Step 2.5: Advanced indexes
             await databaseService.createAdvancedIndexes();
-            console.log('  ✅ Database Indexes');
 
             // Step 3: Transaction service
             await TransactionService.initialize();
-            console.log('  ✅ Transaction Service');
 
             // Step 4: Product service
             await ProductService.initialize();
-            console.log('  ✅ Product Service');
 
-            // Step 5: Data migrations (if requested)
-            if (options?.runMigrations !== false) {
+            // Step 5: Data migrations (only if explicitly requested)
+            if (options?.runMigrations === true) {
                 try {
                     const migrationType = options?.forceMigrations ? 'FORCE' : 'NORMAL';
                     if (options?.forceMigrations) {
@@ -87,16 +81,15 @@ export class DatabaseInitService {
                     } else {
                         await ProductMigration.runMigration();
                     }
-                    console.log(`  ✅ Data Migration (${migrationType})`);
                 } catch (migrationError) {
-                    console.log('  ⚠️ Data Migration (Skipped - data exists)');
+                    // Silent handling - data already exists
                 }
             }
 
-            // Step 6: Final status
+            // Step 6: Final status - single line
             const duration = Date.now() - startTime;
             await this.showCompactStatus();
-            console.log(`✅ Database Ready (${duration}ms)`);
+            console.log(`📊 Database Ready: Products=${await this.getProductCount()} | Transactions=${await this.getTransactionCount()} | Ready in ${duration}ms`);
             
         } catch (error) {
             console.error('❌ Database initialization failed:', error);
@@ -135,44 +128,43 @@ export class DatabaseInitService {
     }
 
     /**
-     * Show detailed database status (full version)
+     * Show detailed database status (full version) - Only when explicitly requested
      */
     static async showStatus(): Promise<void> {
+        // This method is kept for manual debugging but not used in normal flow
         try {
-            console.log('\n📊 === DATABASE STATUS ===');
-
-            // Product statistics
             const productStats = await ProductService.getProductStats();
-            console.log(`📦 Products: ${productStats.totalProducts} total`);
-            console.log(
-                `💰 Product Value: R${productStats.totalValue.toFixed(2)}`
-            );
-            console.log(
-                `📊 Average Price: R${productStats.averagePrice.toFixed(2)}`
-            );
-            console.log(`✅ In Stock: ${productStats.inStockProducts}`);
-            console.log(`❌ Out of Stock: ${productStats.outOfStockProducts}`);
-            console.log(`🏷️ Categories: ${productStats.categories}`);
-
-            // Transaction statistics
-            const transactionStats =
-                await TransactionService.getTransactionStats();
-            console.log(
-                `💳 Transactions: ${transactionStats.totalTransactions} total`
-            );
-            console.log(
-                `💰 Total Amount: R${transactionStats.totalAmount.toFixed(2)}`
-            );
-            console.log(
-                `📊 Average Transaction: R${transactionStats.averageTransaction.toFixed(2)}`
-            );
-            console.log(
-                `💸 Total Discounts: R${transactionStats.totalDiscount.toFixed(2)}`
-            );
-
-            console.log('=========================\n');
+            const transactionStats = await TransactionService.getTransactionStats();
+            
+            console.log('📊 Database Status:');
+            console.log(`  📦 Products: ${productStats.totalProducts} (${productStats.inStockProducts} in stock)`);
+            console.log(`  💳 Transactions: ${transactionStats.totalTransactions} (R${transactionStats.totalAmount.toFixed(2)} total)`);
         } catch (error) {
             console.error('❌ Failed to get database status:', error);
+        }
+    }
+
+    /**
+     * Get product count for compact status
+     */
+    private static async getProductCount(): Promise<number> {
+        try {
+            const stats = await ProductService.getProductStats();
+            return stats.totalProducts;
+        } catch {
+            return 0;
+        }
+    }
+
+    /**
+     * Get transaction count for compact status
+     */
+    private static async getTransactionCount(): Promise<number> {
+        try {
+            const stats = await TransactionService.getTransactionStats();
+            return stats.totalTransactions;
+        } catch {
+            return 0;
         }
     }
 
@@ -288,11 +280,12 @@ export async function initializeDatabase(options?: {
     showStatus?: boolean;
 }): Promise<void> {
     await DatabaseInitService.initializeAll({
-        runMigrations: options?.runMigrations !== false,
+        runMigrations: options?.runMigrations === true, // Only run if explicitly requested
         forceMigrations: options?.forceMigrations || false,
     });
 
-    if (options?.showStatus !== false) {
+    // Only show detailed status if explicitly requested
+    if (options?.showStatus === true) {
         await DatabaseInitService.showStatus();
     }
 }

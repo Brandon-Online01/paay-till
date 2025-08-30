@@ -23,8 +23,7 @@ import info from '../../../data/info.json';
 
 export default function VerifyOTP() {
     const router = useRouter();
-    const { verifyOtp, updateOtpForm, otpForm, authState } = useAuthStore();
-    const [errors, setErrors] = useState<{ code?: string }>({});
+    const { verifyOtp, updateOtpForm, otpForm, authState, uiState, setErrors } = useAuthStore();
 
     // Animation values
     const formOpacity = useSharedValue(0);
@@ -53,7 +52,7 @@ export default function VerifyOTP() {
             newErrors.code = 'Code must contain only numbers';
         }
 
-        setErrors(newErrors);
+        setErrors('otpVerification', newErrors);
         return Object.keys(newErrors).length === 0;
     };
 
@@ -116,7 +115,7 @@ export default function VerifyOTP() {
                     style={leftPanelAnimatedStyle}
                 >
                     <ImageBackground
-                        source={require('../../../assets/images/waves.jpg')}
+                        source={require('../../../assets/images/waves.webp')}
                         className="flex-1 justify-center items-center w-full h-full"
                         resizeMode="cover"
                     >
@@ -177,7 +176,7 @@ export default function VerifyOTP() {
                                 <View className="relative flex-row justify-center items-center w-full">
                                     <TextInput
                                         className={`w-full h-12 pl-4 pr-4 border rounded-lg text-center text-2xl font-mono tracking-widest ${
-                                            errors.code
+                                            uiState.errors.otpVerification?.code
                                                 ? 'border-red-500'
                                                 : 'border-gray-300'
                                         }`}
@@ -191,9 +190,9 @@ export default function VerifyOTP() {
                                         autoCapitalize="none"
                                     />
                                 </View>
-                                {errors.code && (
+                                {uiState.errors.otpVerification?.code && (
                                     <Text className="text-sm text-red-600 font-primary">
-                                        {errors.code}
+                                        {uiState.errors.otpVerification.code}
                                     </Text>
                                 )}
                             </View>

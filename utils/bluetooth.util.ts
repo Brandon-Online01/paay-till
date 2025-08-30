@@ -15,9 +15,26 @@ export interface BluetoothDevice {
  * Bluetooth utility class for device discovery and management
  * Provides cross-platform Bluetooth functionality with proper permissions
  */
+export interface BluetoothStatus {
+    isAvailable: boolean;
+    isEnabled: boolean;
+    isScanning: boolean;
+    connectedDevicesCount: number;
+    lastUpdated: string;
+    lastError: string | null;
+}
+
 export class BluetoothUtils {
     private static isScanning = false;
     private static connectedDevices: BluetoothDevice[] = [];
+    private static currentStatus: BluetoothStatus = {
+        isAvailable: true, // Assume available on mobile devices
+        isEnabled: false,
+        isScanning: false,
+        connectedDevicesCount: 0,
+        lastUpdated: new Date().toISOString(),
+        lastError: null,
+    };
 
     /**
      * Request Bluetooth permissions for Android
@@ -259,6 +276,42 @@ export class BluetoothUtils {
             console.error(`❌ Failed to send data to ${device.name}:`, error);
             return false;
         }
+    }
+
+    /**
+     * Get current Bluetooth status
+     */
+    static getBluetoothStatus(): BluetoothStatus {
+        this.currentStatus.isScanning = this.isScanning;
+        this.currentStatus.connectedDevicesCount = this.connectedDevices.length;
+        this.currentStatus.lastUpdated = new Date().toISOString();
+        return { ...this.currentStatus };
+    }
+
+    /**
+     * Format Bluetooth status for logging
+     */
+    static formatStatusForLogging(): string {
+        const status = this.getBluetoothStatus();
+        const emoji = status.isEnabled ? '📶' : '📵';
+        const enabled = status.isEnabled ? 'Enabled' : 'Disabled';
+        const scanning = status.isScanning ? 'Scanning' : 'Idle';
+        const devices = status.connectedDevicesCount > 0 
+            ? `${status.connectedDevicesCount} device(s) connected` 
+            : 'No devices';
+        
+        return `${emoji} Bluetooth - ${enabled} | ${scanning} | ${devices}`;
+    }
+
+    /**
+     * Update status when operations complete
+     */
+    private static updateStatus(updates: Partial<BluetoothStatus>) {
+        this.currentStatus = {
+            ...this.currentStatus,
+            ...updates,
+            lastUpdated: new Date().toISOString(),
+        };
     }
 }
 

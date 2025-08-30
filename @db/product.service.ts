@@ -317,42 +317,7 @@ export class ProductService {
         }
     }
 
-    /**
-     * Get product analytics
-     */
-    static async getProductAnalytics(productId: string): Promise<ProductAnalytics> {
-        try {
-            // Query transaction items to get analytics
-            const query = `
-                SELECT 
-                    COUNT(*) as totalSold,
-                    SUM(totalPrice) as totalRevenue,
-                    AVG(totalPrice) as averageOrderValue,
-                    MAX(createdAt) as lastSold
-                FROM transaction_items ti
-                JOIN transactions t ON t.id = ti.transactionId
-                WHERE ti.productId = ? AND t.status = 'completed'
-            `;
-
-            const result = await databaseService.getDb().getFirstAsync(query, [productId]);
-            
-            return {
-                totalSold: (result as any)?.totalSold || 0,
-                totalRevenue: (result as any)?.totalRevenue || 0,
-                averageOrderValue: (result as any)?.averageOrderValue || 0,
-                lastSold: (result as any)?.lastSold || undefined,
-                topSellingVariants: {} // TODO: Implement variant analytics
-            };
-        } catch (error) {
-            console.error('❌ Error fetching product analytics:', error);
-            return {
-                totalSold: 0,
-                totalRevenue: 0,
-                averageOrderValue: 0,
-                topSellingVariants: {}
-            };
-        }
-    }
+    // Removed duplicate - using the version at line 504 that calls databaseService
 
     /**
      * Clear product cache
@@ -494,6 +459,28 @@ export class ProductService {
                 averagePrice: 0,
                 categories: 0,
                 lowStockCount: 0
+            };
+        }
+    }
+
+    /**
+     * Get product analytics from transaction data
+     */
+    static async getProductAnalytics(productId: string): Promise<{
+        totalSold: number;
+        totalRevenue: number;
+        averageOrderValue: number;
+        lastSold?: string;
+    }> {
+        try {
+            return await databaseService.getProductAnalyticsFromTransactions(productId);
+        } catch (error) {
+            console.error('❌ Error fetching product analytics:', error);
+            // Return default values instead of throwing
+            return {
+                totalSold: 0,
+                totalRevenue: 0,
+                averageOrderValue: 0,
             };
         }
     }

@@ -24,13 +24,15 @@ import info from '../../../data/info.json';
 
 export default function SignUp() {
     const router = useRouter();
-    const { signUp, updateSignUpForm, signUpForm, authState, clearForms } =
-        useAuthStore();
-    const [errors, setErrors] = useState<{
-        businessName?: string;
-        businessEmail?: string;
-        pin?: string;
-    }>({});
+    const { 
+        signUp, 
+        updateSignUpForm, 
+        signUpForm, 
+        authState, 
+        clearForms,
+        uiState,
+        setErrors
+    } = useAuthStore();
 
     // Enhanced animation values for staggered entry
     const leftPanelOpacity = useSharedValue(0);
@@ -170,7 +172,7 @@ export default function SignUp() {
             newErrors.pin = 'PIN must contain only numbers';
         }
 
-        setErrors(newErrors);
+        setErrors('signUp', newErrors);
         return Object.keys(newErrors).length === 0;
     };
 
@@ -251,7 +253,7 @@ export default function SignUp() {
                     style={leftPanelAnimatedStyle}
                 >
                     <ImageBackground
-                        source={require('../../../assets/images/waves.jpg')}
+                        source={require('../../../assets/images/waves.webp')}
                         className="flex-1 justify-center items-center w-full h-full"
                         resizeMode="cover"
                     >
@@ -321,7 +323,7 @@ export default function SignUp() {
                                     <View className="relative flex-row justify-center items-center w-full">
                                         <TextInput
                                             className={`w-full p-6 border rounded-lg text-base font-primary ${
-                                                errors.businessName
+                                                uiState.errors.signUp?.businessName
                                                     ? 'border-red-500'
                                                     : 'border-gray-300'
                                             }`}
@@ -337,9 +339,9 @@ export default function SignUp() {
                                             autoCapitalize="words"
                                         />
                                     </View>
-                                    {errors.businessName && (
+                                    {uiState.errors.signUp?.businessName && (
                                         <Text className="text-sm text-red-600 font-primary">
-                                            {errors.businessName}
+                                            {uiState.errors.signUp.businessName}
                                         </Text>
                                     )}
                                 </View>
@@ -352,7 +354,7 @@ export default function SignUp() {
                                     <View className="relative flex-row justify-center items-center w-full">
                                         <TextInput
                                             className={`w-full p-6 border rounded-lg text-base font-primary ${
-                                                errors.businessEmail
+                                                uiState.errors.signUp?.businessEmail
                                                     ? 'border-red-500'
                                                     : 'border-gray-300'
                                             }`}
@@ -369,9 +371,9 @@ export default function SignUp() {
                                             autoCapitalize="none"
                                         />
                                     </View>
-                                    {errors.businessEmail && (
+                                    {uiState.errors.signUp?.businessEmail && (
                                         <Text className="text-sm text-red-600 font-primary">
-                                            {errors.businessEmail}
+                                            {uiState.errors.signUp.businessEmail}
                                         </Text>
                                     )}
                                 </View>

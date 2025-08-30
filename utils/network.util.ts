@@ -313,6 +313,38 @@ export const getWiFiSignalStrength = (status: NetworkStatus): number | null => {
     return status.details.strength || null;
 };
 
+/**
+ * Format network status for logging
+ */
+export const formatStatusForLogging = (status: NetworkStatus): string => {
+    const emoji = getNetworkStatusEmoji(status);
+    const connectionName = getConnectionTypeName(status.connectionType);
+    const connected = status.isConnected ? 'Connected' : 'Disconnected';
+    const reachable = status.isInternetReachable === true ? 'Internet: Yes' : 
+                      status.isInternetReachable === false ? 'Internet: No' : 
+                      'Internet: Unknown';
+    
+    let speedInfo = '';
+    if (status.speed) {
+        speedInfo = ` | Speed: ${status.speed.downloadSpeed}Mbps (${status.speed.quality})`;
+    }
+    
+    let detailInfo = '';
+    if (isCellularConnection(status)) {
+        const generation = getCellularGeneration(status);
+        if (generation && generation !== 'Unknown') {
+            detailInfo = ` | ${generation}`;
+        }
+    } else if (isWiFiConnection(status)) {
+        const strength = getWiFiSignalStrength(status);
+        if (strength !== null) {
+            detailInfo = ` | Signal: ${strength}dBm`;
+        }
+    }
+    
+    return `${emoji} ${connectionName} - ${connected} | ${reachable}${speedInfo}${detailInfo}`;
+};
+
 export const NetworkUtils = {
     getCurrentStatus: getCurrentNetworkStatus,
     testSpeed: testNetworkSpeed,
@@ -325,4 +357,5 @@ export const NetworkUtils = {
     isWiFiConnection,
     getCellularGeneration,
     getWiFiSignalStrength,
+    formatStatusForLogging,
 };

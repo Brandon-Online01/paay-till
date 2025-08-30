@@ -10,7 +10,9 @@ import {
     ResetPasswordFormData,
     OtpVerificationFormData,
     User,
+    UIState,
 } from '../types';
+import { BiometricsUtils } from '../utils/biometrics.util';
 
 /**
  * Optimized authentication store with better performance patterns
@@ -23,6 +25,24 @@ export const useAuthStore = create<AuthStore>()(
             user: null,
             error: null,
             isLoading: false,
+        },
+        uiState: {
+            errors: {
+                signIn: {},
+                signUp: {},
+                forgotPassword: {},
+                resetPassword: {},
+                otpVerification: {},
+            },
+            successMessages: {},
+            biometric: {
+                available: false,
+                useBiometrics: false,
+            },
+            passwordVisibility: {
+                showPassword: false,
+                showConfirmPassword: false,
+            },
         },
 
         signInForm: { pin: '' },
@@ -252,6 +272,113 @@ export const useAuthStore = create<AuthStore>()(
             }));
         },
 
+        // UI State management
+        setErrors: (page, errors) => {
+            set((state) => ({
+                uiState: {
+                    ...state.uiState,
+                    errors: {
+                        ...state.uiState.errors,
+                        [page]: errors,
+                    },
+                },
+            }));
+        },
+
+        clearErrors: (page) => {
+            set((state) => ({
+                uiState: {
+                    ...state.uiState,
+                    errors: page
+                        ? {
+                              ...state.uiState.errors,
+                              [page]: {},
+                          }
+                        : {
+                              signIn: {},
+                              signUp: {},
+                              forgotPassword: {},
+                              resetPassword: {},
+                              otpVerification: {},
+                          },
+                },
+            }));
+        },
+
+        setSuccessMessage: (page, message) => {
+            set((state) => ({
+                uiState: {
+                    ...state.uiState,
+                    successMessages: {
+                        ...state.uiState.successMessages,
+                        [page]: message,
+                    },
+                },
+            }));
+        },
+
+        clearSuccessMessages: (page) => {
+            set((state) => ({
+                uiState: {
+                    ...state.uiState,
+                    successMessages: page
+                        ? {
+                              ...state.uiState.successMessages,
+                              [page]: undefined,
+                          }
+                        : {},
+                },
+            }));
+        },
+
+        setBiometricAvailable: (available) => {
+            set((state) => ({
+                uiState: {
+                    ...state.uiState,
+                    biometric: {
+                        ...state.uiState.biometric,
+                        available,
+                    },
+                },
+            }));
+        },
+
+        setUseBiometrics: (useBiometrics) => {
+            set((state) => ({
+                uiState: {
+                    ...state.uiState,
+                    biometric: {
+                        ...state.uiState.biometric,
+                        useBiometrics,
+                    },
+                },
+            }));
+        },
+
+        togglePasswordVisibility: (field) => {
+            set((state) => ({
+                uiState: {
+                    ...state.uiState,
+                    passwordVisibility: {
+                        ...state.uiState.passwordVisibility,
+                        [field]: !state.uiState.passwordVisibility[field],
+                    },
+                },
+            }));
+        },
+
+        checkBiometricAvailability: async () => {
+            const { setBiometricAvailable } = get();
+            try {
+                const isAvailable = await BiometricsUtils.isAvailable();
+                const isEnrolled = await BiometricsUtils.isEnrolled();
+                setBiometricAvailable(isAvailable && isEnrolled);
+            } catch (error) {
+                console.error('Failed to check biometric availability:', error);
+                setBiometricAvailable(false);
+            }
+        },
+
         // Optimized utility functions
         clearForms: () => {
             set({
@@ -264,6 +391,24 @@ export const useAuthStore = create<AuthStore>()(
                     confirmPassword: '',
                 },
                 otpForm: { code: '' },
+                uiState: {
+                    errors: {
+                        signIn: {},
+                        signUp: {},
+                        forgotPassword: {},
+                        resetPassword: {},
+                        otpVerification: {},
+                    },
+                    successMessages: {},
+                    biometric: {
+                        available: false,
+                        useBiometrics: false,
+                    },
+                    passwordVisibility: {
+                        showPassword: false,
+                        showConfirmPassword: false,
+                    },
+                },
             });
         },
 
