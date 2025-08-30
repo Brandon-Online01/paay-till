@@ -7,7 +7,7 @@ import {
     TextInput,
     Modal,
 } from 'react-native';
-import { X, Save, Plus, Minus, Loader } from 'lucide-react-native';
+import { X, Save, Plus, Minus, Loader, Scan, Package, Info } from 'lucide-react-native';
 import {
     Product,
     ProductVariant,
@@ -55,6 +55,15 @@ export default function AddItemModal({
         badge: null as string | null,
         stockQuantity: '0',
         inStock: true,
+        // Enhanced inventory fields
+        barcode: '',
+        qrCode: '',
+        reorderQty: '10',
+        maxBuyQty: '100',
+        minBuyQty: '1',
+        resellerName: '',
+        brand: '',
+        information: '',
     });
 
     const [variants, setVariants] = useState<ProductVariants>({
@@ -120,6 +129,17 @@ export default function AddItemModal({
                 inStock: formData.inStock,
                 stockQuantity: parseInt(formData.stockQuantity),
                 variants: variants,
+                // Enhanced inventory fields
+                barcode: formData.barcode.trim() || null,
+                qrCode: formData.qrCode.trim() || null,
+                reorderQty: parseInt(formData.reorderQty) || 10,
+                maxBuyQty: parseInt(formData.maxBuyQty) || 100,
+                minBuyQty: parseInt(formData.minBuyQty) || 1,
+                resellerName: formData.resellerName.trim() || null,
+                brand: formData.brand.trim() || null,
+                information: formData.information.trim() || null,
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString(),
             };
 
             // Save to database
@@ -153,6 +173,15 @@ export default function AddItemModal({
             badge: null,
             stockQuantity: '0',
             inStock: true,
+            // Enhanced inventory fields
+            barcode: '',
+            qrCode: '',
+            reorderQty: '10',
+            maxBuyQty: '100',
+            minBuyQty: '1',
+            resellerName: '',
+            brand: '',
+            information: '',
         });
         setVariants({
             colors: [],
@@ -450,6 +479,148 @@ export default function AddItemModal({
                                         </Text>
                                     </Pressable>
                                 ))}
+                            </View>
+                        </View>
+
+                        {/* Enhanced Inventory Fields Section */}
+                        <View className="mb-6 p-4 bg-gray-50 rounded-lg">
+                            <View className="flex-row items-center mb-4">
+                                <Package size={20} color="#6b7280" />
+                                <Text className="ml-2 text-lg font-semibold text-gray-900 font-primary">
+                                    Enhanced Inventory Details
+                                </Text>
+                            </View>
+
+                            {/* Barcode and QR Code */}
+                            <View className="flex-row gap-4 mb-4">
+                                <View className="flex-1">
+                                    <Text className="mb-2 text-sm font-semibold text-gray-700 font-primary">
+                                        Barcode
+                                    </Text>
+                                    <View className="flex-row">
+                                        <TextInput
+                                            value={formData.barcode}
+                                            onChangeText={(barcode) =>
+                                                setFormData((prev) => ({ ...prev, barcode }))
+                                            }
+                                            placeholder="Enter or scan barcode"
+                                            className="flex-1 p-4 rounded-l-lg border border-r-0 border-gray-300 font-primary"
+                                        />
+                                        <Pressable className="px-4 py-4 bg-blue-500 rounded-r-lg border border-blue-500">
+                                            <Scan size={20} color="#ffffff" />
+                                        </Pressable>
+                                    </View>
+                                </View>
+                                
+                                <View className="flex-1">
+                                    <Text className="mb-2 text-sm font-semibold text-gray-700 font-primary">
+                                        QR Code
+                                    </Text>
+                                    <TextInput
+                                        value={formData.qrCode}
+                                        onChangeText={(qrCode) =>
+                                            setFormData((prev) => ({ ...prev, qrCode }))
+                                        }
+                                        placeholder="QR Code"
+                                        className="p-4 rounded-lg border border-gray-300 font-primary"
+                                    />
+                                </View>
+                            </View>
+
+                            {/* Brand and Reseller */}
+                            <View className="flex-row gap-4 mb-4">
+                                <View className="flex-1">
+                                    <Text className="mb-2 text-sm font-semibold text-gray-700 font-primary">
+                                        Brand
+                                    </Text>
+                                    <TextInput
+                                        value={formData.brand}
+                                        onChangeText={(brand) =>
+                                            setFormData((prev) => ({ ...prev, brand }))
+                                        }
+                                        placeholder="Product brand"
+                                        className="p-4 rounded-lg border border-gray-300 font-primary"
+                                    />
+                                </View>
+                                
+                                <View className="flex-1">
+                                    <Text className="mb-2 text-sm font-semibold text-gray-700 font-primary">
+                                        Reseller Name
+                                    </Text>
+                                    <TextInput
+                                        value={formData.resellerName}
+                                        onChangeText={(resellerName) =>
+                                            setFormData((prev) => ({ ...prev, resellerName }))
+                                        }
+                                        placeholder="Reseller/Supplier"
+                                        className="p-4 rounded-lg border border-gray-300 font-primary"
+                                    />
+                                </View>
+                            </View>
+
+                            {/* Quantity Limits */}
+                            <View className="flex-row gap-2 mb-4">
+                                <View className="flex-1">
+                                    <Text className="mb-2 text-sm font-semibold text-gray-700 font-primary">
+                                        Reorder Qty
+                                    </Text>
+                                    <TextInput
+                                        value={formData.reorderQty}
+                                        onChangeText={(reorderQty) =>
+                                            setFormData((prev) => ({ ...prev, reorderQty }))
+                                        }
+                                        placeholder="10"
+                                        keyboardType="numeric"
+                                        className="p-4 rounded-lg border border-gray-300 font-primary"
+                                    />
+                                </View>
+                                
+                                <View className="flex-1">
+                                    <Text className="mb-2 text-sm font-semibold text-gray-700 font-primary">
+                                        Min Buy Qty
+                                    </Text>
+                                    <TextInput
+                                        value={formData.minBuyQty}
+                                        onChangeText={(minBuyQty) =>
+                                            setFormData((prev) => ({ ...prev, minBuyQty }))
+                                        }
+                                        placeholder="1"
+                                        keyboardType="numeric"
+                                        className="p-4 rounded-lg border border-gray-300 font-primary"
+                                    />
+                                </View>
+                                
+                                <View className="flex-1">
+                                    <Text className="mb-2 text-sm font-semibold text-gray-700 font-primary">
+                                        Max Buy Qty
+                                    </Text>
+                                    <TextInput
+                                        value={formData.maxBuyQty}
+                                        onChangeText={(maxBuyQty) =>
+                                            setFormData((prev) => ({ ...prev, maxBuyQty }))
+                                        }
+                                        placeholder="100"
+                                        keyboardType="numeric"
+                                        className="p-4 rounded-lg border border-gray-300 font-primary"
+                                    />
+                                </View>
+                            </View>
+
+                            {/* Additional Information */}
+                            <View>
+                                <Text className="mb-2 text-sm font-semibold text-gray-700 font-primary">
+                                    Additional Information
+                                </Text>
+                                <TextInput
+                                    value={formData.information}
+                                    onChangeText={(information) =>
+                                        setFormData((prev) => ({ ...prev, information }))
+                                    }
+                                    placeholder="Any additional product information, notes, or specifications..."
+                                    multiline
+                                    numberOfLines={3}
+                                    className="p-4 rounded-lg border border-gray-300 font-primary"
+                                />
                             </View>
                         </View>
 

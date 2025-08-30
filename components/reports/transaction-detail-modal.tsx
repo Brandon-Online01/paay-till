@@ -9,6 +9,7 @@ import {
     MapPin,
     Truck,
     Image as ImageIcon,
+    Printer,
 } from 'lucide-react-native';
 import { Transaction } from '@/types/transaction.types';
 import { TransactionService } from '@/@db';
@@ -54,6 +55,18 @@ export default function TransactionDetailModal({
     };
 
     if (!transaction) return null;
+
+    const handlePrintReceipt = () => {
+        // TODO: Implement receipt printing functionality
+        // This could integrate with thermal printer, email, or export functionality
+        console.log('Printing receipt for transaction:', transaction.transactionID);
+        
+        // For now, we'll just log the action
+        // In a real implementation, this would:
+        // 1. Format the transaction data for receipt printing
+        // 2. Send to thermal printer or generate PDF
+        // 3. Show success/error feedback
+    };
 
     const formatDate = (dateString: string) => {
         const date = new Date(dateString);
@@ -124,12 +137,21 @@ export default function TransactionDetailModal({
                     >
                         {/* Header */}
                         <View className="relative px-6 pt-6 pb-4 border-b border-gray-200">
-                            <Pressable
-                                onPress={onClose}
-                                className="absolute top-2 right-2 z-10 justify-center items-center w-12 h-12 rounded-full border border-red-500 bg-red-500/80"
-                            >
-                                <X size={22} color="#ffffff" />
-                            </Pressable>
+                            {/* Action buttons */}
+                            <View className="absolute top-2 right-2 z-10 flex-row gap-2">
+                                <Pressable
+                                    onPress={handlePrintReceipt}
+                                    className="justify-center items-center w-12 h-12 rounded-full border border-green-500 bg-green-500/80"
+                                >
+                                    <Printer size={22} color="#ffffff" />
+                                </Pressable>
+                                <Pressable
+                                    onPress={onClose}
+                                    className="justify-center items-center w-12 h-12 rounded-full border border-red-500 bg-red-500/80"
+                                >
+                                    <X size={22} color="#ffffff" />
+                                </Pressable>
+                            </View>
 
                             <View>
                                 <Text className="text-xl font-bold text-gray-900 font-primary">

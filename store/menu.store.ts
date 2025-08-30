@@ -87,29 +87,75 @@ export const useMenuStore = create<MenuStore>((set, get) => {
         .filter(Boolean) as MenuItemWithBadge[]; // Filter out null items
 
     /**
-     * Transform categories data with item counts
-     * Calculates the number of items in each category
-     */
-    const categories = TILL_DATA.categories
-        .map((category) => {
-            // Validate category data
-            if (!category?.id || !category?.name) {
-                console.warn('Invalid category data:', category);
-                return null;
-            }
+ * Category icon mapping for dynamic category generation
+ */
+const categoryIconMap: Record<string, string> = {
+    all: '🍽️',
+    electronics: '📱',
+    clothing: '👕',
+    food: '🍕',
+    beverages: '☕',
+    toys: '🧸',
+    tools: '🔧',
+    home: '🏠',
+    health: '💊',
+    sports: '⚽',
+    automotive: '🚗',
+    books: '📚',
+    office: '📝',
+    pet: '🐕',
+    baby: '👶',
+    // Add more default icons as needed
+};
 
-            const count = items.filter((item) =>
-                category.id === 'all' ? true : item.category === category.id
-            ).length;
+/**
+ * Generate categories dynamically from actual product data
+ * Only includes categories that have products and assigns appropriate icons
+ */
+const generateDynamicCategories = (items: MenuItemWithBadge[]): MenuStore['categories'] => {
+    const categoryMap = new Map<string, number>();
+    
+    // Count items in each category
+    items.forEach((item) => {
+        if (item.category) {
+            categoryMap.set(item.category, (categoryMap.get(item.category) || 0) + 1);
+        }
+    });
 
-            return {
-                id: category.id,
-                name: category.name,
-                icon: category.icon,
+    // Create categories array with proper naming and icons
+    const dynamicCategories: MenuStore['categories'] = [];
+    
+    // Always add "All Items" category first
+    dynamicCategories.push({
+        id: 'all',
+        name: 'All Items',
+        icon: categoryIconMap.all || '🍽️',
+        count: items.length,
+    });
+
+    // Add categories that have items
+    for (const [categoryId, count] of categoryMap.entries()) {
+        if (count > 0) {
+            // Generate a proper display name from category ID
+            const displayName = categoryId
+                .split(/[-_]/)
+                .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+                .join(' ');
+
+            dynamicCategories.push({
+                id: categoryId,
+                name: displayName,
+                icon: categoryIconMap[categoryId] || '📦', // Default icon if not mapped
                 count,
-            };
-        })
-        .filter(Boolean) as MenuStore['categories']; // Filter out null categories
+            });
+        }
+    }
+
+    return dynamicCategories;
+};
+
+// Generate categories dynamically from products
+const categories = generateDynamicCategories(items);
 
     return {
         items,

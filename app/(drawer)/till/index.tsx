@@ -7,6 +7,7 @@ import CartSidebar from '@/components/till/cart-sidebar';
 import ProductModal from '@/components/till/product-modal';
 import { useScreenSize, getFlexDirection } from '@/utils/screen.size.util';
 import { useCartStore } from '@/store/cart.store';
+import { useLayoutStore } from '@/store/layout.store';
 
 /**
  * TillPage Component - Main till interface with dynamic layout
@@ -20,12 +21,14 @@ export default function TillPage() {
     const screenSize = useScreenSize();
     const { width } = Dimensions.get('window');
     const { items } = useCartStore();
+    const { cartPosition } = useLayoutStore();
 
     // Determine if we should show split layout or full width
     const hasItems = items.length > 0;
     const isMobile = width <= 480;
     const flexDirection =
         getFlexDirection(screenSize) === 'column' ? 'flex-col' : 'flex-row';
+    const isCartOnLeft = cartPosition === 'left';
 
     /**
      * Render full width layout when basket is empty
@@ -61,28 +64,56 @@ export default function TillPage() {
     return (
         <BaseProvider>
             <View className={`flex-1 p-2 ${flexDirection}`}>
-                {/* Cart/Order Sidebar - Left side on desktop, top on mobile */}
-                <View
-                    className={`${isMobile ? 'w-full h-2/5' : 'w-1/3 h-full'}`}
-                >
-                    <CartSidebar />
-                </View>
+                {/* Conditional ordering based on cart position */}
+                {!isMobile && isCartOnLeft ? (
+                    <>
+                        {/* Cart/Order Sidebar - Left side */}
+                        <View className="w-1/3 h-full">
+                            <CartSidebar />
+                        </View>
 
-                {/* Main Content Area - Right side on desktop, bottom on mobile */}
-                <View
-                    className={`flex-1 ${isMobile ? 'w-full h-3/5' : 'w-2/3 h-full'}`}
-                >
-                    {/* Search Bar */}
-                    <SearchBar />
+                        {/* Main Content Area - Right side */}
+                        <View className="flex-1 w-2/3 h-full">
+                            <SearchBar />
+                            <Categories />
+                            <View className="flex-1">
+                                <ProductGrid />
+                            </View>
+                        </View>
+                    </>
+                ) : (
+                    <>
+                        {/* Mobile layout or cart on right */}
+                        {!isMobile && (
+                            /* Main Content Area - Left side on desktop */
+                            <View className="flex-1 w-2/3 h-full">
+                                <SearchBar />
+                                <Categories />
+                                <View className="flex-1">
+                                    <ProductGrid />
+                                </View>
+                            </View>
+                        )}
+                        
+                        {/* Cart/Order Sidebar - Right side on desktop, top on mobile */}
+                        <View
+                            className={`${isMobile ? 'w-full h-2/5' : 'w-1/3 h-full'}`}
+                        >
+                            <CartSidebar />
+                        </View>
 
-                    {/* Categories */}
-                    <Categories />
-
-                    {/* Product Grid */}
-                    <View className="flex-1">
-                        <ProductGrid />
-                    </View>
-                </View>
+                        {/* Main Content Area - Bottom on mobile */}
+                        {isMobile && (
+                            <View className="flex-1 w-full h-3/5">
+                                <SearchBar />
+                                <Categories />
+                                <View className="flex-1">
+                                    <ProductGrid />
+                                </View>
+                            </View>
+                        )}
+                    </>
+                )}
 
                 {/* Product Modal - Full screen overlay */}
                 <ProductModal />

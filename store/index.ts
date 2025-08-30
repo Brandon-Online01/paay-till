@@ -5,3 +5,5 @@ export * from './auth.store';
 export * from './till.store';
 export * from './reports.store';
 export * from './inventory.store';
+export * from './theme.store';
+export * from './layout.store';
