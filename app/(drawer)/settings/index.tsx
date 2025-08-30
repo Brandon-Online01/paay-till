@@ -275,7 +275,8 @@ export default function Settings() {
                                             </Text>
                                             <View className="p-3 rounded-lg border border-gray-300">
                                                 <Text className="text-gray-900 font-primary">
-                                                    {user?.firstName || 'Brandon'}
+                                                    {user?.firstName ||
+                                                        'Brandon'}
                                                 </Text>
                                             </View>
                                         </View>
@@ -298,8 +299,8 @@ export default function Settings() {
                                         Contact email
                                     </Text>
                                     <Text className="mb-3 text-xs text-gray-600 font-primary">
-                                        Manage your accounts email address for the
-                                        invoices.
+                                        Manage your accounts email address for
+                                        the invoices.
                                     </Text>
                                     <View className="flex-row gap-3 items-center">
                                         <View className="flex-row flex-1 items-center p-3 rounded-lg border border-gray-300">
@@ -338,7 +339,9 @@ export default function Settings() {
                                                 </Text>
                                                 <Pressable
                                                     onPress={() =>
-                                                        setShowPassword(!showPassword)
+                                                        setShowPassword(
+                                                            !showPassword
+                                                        )
                                                     }
                                                 >
                                                     {showPassword ? (

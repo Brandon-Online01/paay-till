@@ -12,7 +12,7 @@ import {
 } from '@react-navigation/drawer';
 import { Text, View, Pressable } from 'react-native';
 import { useEffect, useState } from 'react';
-import { NetworkUtils, NetworkStatus } from '../utils/network.util';
+import { SystemUtils, SystemStatus } from '../utils/system.util';
 import DeviceSelectionModal from './device-selection-modal';
 import info from '../data/info.json';
 
@@ -20,40 +20,61 @@ export default function Header() {
     const navigation = useNavigation<DrawerNavigationProp<any>>();
     const drawerStatus = useDrawerStatus();
     const isDrawerOpen = drawerStatus === 'open';
-    
-    // Network monitoring state
-    const [networkStatus, setNetworkStatus] = useState<NetworkStatus | null>(null);
-    
+
+    // System monitoring state
+    const [systemStatus, setSystemStatus] = useState<SystemStatus | null>(null);
+
     // Device selection modal state
     const [showDeviceModal, setShowDeviceModal] = useState(false);
-    const [selectedDeviceType, setSelectedDeviceType] = useState<'printer' | 'scanner' | 'cloud'>('printer');
+    const [selectedDeviceType, setSelectedDeviceType] = useState<
+        'printer' | 'scanner' | 'cloud'
+    >('printer');
 
     useEffect(() => {
-        // Start network monitoring with simplified logging
-        const stopMonitoring = NetworkUtils.startMonitoring({
-            enableSpeedTest: false, // Disable speed tests for better performance
-            logToConsole: false, // We'll handle our own simplified logging
-            onStatusChange: (status) => {
-                setNetworkStatus(status);
+        const initializeSystemMonitoring = async () => {
+            try {
+                console.log('🔄 Header: Initializing system monitoring...');
                 
-                // Simplified network status logging
-                const connectionType = NetworkUtils.getConnectionTypeName(status.connectionType);
-                const emoji = NetworkUtils.getNetworkStatusEmoji(status);
-                console.log(`${emoji} Network: ${connectionType} - ${status.isConnected ? 'Connected' : 'Disconnected'}`);
-            },
-        });
+                // Initialize all system utilities
+                const initialStatus = await SystemUtils.initialize();
+                setSystemStatus(initialStatus);
 
-        // Get initial network status
-        NetworkUtils.getCurrentStatus().then(status => {
-            setNetworkStatus(status);
-            const connectionType = NetworkUtils.getConnectionTypeName(status.connectionType);
-            const emoji = NetworkUtils.getNetworkStatusEmoji(status);
-            console.log(`${emoji} Network: ${connectionType} - ${status.isConnected ? 'Connected' : 'Disconnected'}`);
-        });
+                // Start continuous monitoring with callback
+                const stopMonitoring = SystemUtils.startMonitoring((status) => {
+                    setSystemStatus(status);
+                }, 30000); // Update every 30 seconds
+
+                // Start periodic tabular logging (every 60 seconds)
+                const logInterval = setInterval(() => {
+                    SystemUtils.logStatusTable();
+                }, 60000);
+
+                // Log initial status table
+                setTimeout(() => {
+                    SystemUtils.logStatusTable();
+                }, 2000);
+
+                console.log('✅ Header: System monitoring initialized');
+
+                // Return cleanup function
+                return () => {
+                    stopMonitoring();
+                    SystemUtils.stopMonitoring();
+                    clearInterval(logInterval);
+                    console.log('🧹 Header: System monitoring cleaned up');
+                };
+            } catch (error) {
+                console.error('❌ Header: Failed to initialize system monitoring:', error);
+            }
+        };
+
+        const cleanup = initializeSystemMonitoring();
 
         // Cleanup on unmount
         return () => {
-            stopMonitoring();
+            if (cleanup instanceof Promise) {
+                cleanup.then((cleanupFn) => cleanupFn?.());
+            }
         };
     }, []);
 
@@ -65,21 +86,25 @@ export default function Header() {
         }
     };
 
-    // Get color based on connectivity status
-    const getConnectivityColor = (status: string, isNetworkConnected?: boolean): string => {
-        // If we have real network status, use it; otherwise fall back to info.json
-        if (isNetworkConnected !== undefined) {
-            return isNetworkConnected ? '#1c8370' : '#FC4A4A';
-        }
-        
-        switch (status) {
-            case 'connected':
-                return '#1c8370'; // green-700
-            case 'connecting':
-                return '#d97706'; // amber-600
-            case 'disconnected':
+    // Get color based on system connectivity status
+    const getConnectivityColor = (
+        componentType: 'network' | 'bluetooth' | 'camera' | 'location'
+    ): string => {
+        if (!systemStatus) return '#6b7280'; // gray when not initialized
+
+        switch (componentType) {
+            case 'network':
+                return systemStatus.network.isConnected ? '#1c8370' : '#FC4A4A'; // green/red
+            case 'bluetooth':
+                return systemStatus.bluetooth.enabled ? '#1c8370' : '#FC4A4A'; // green/red
+            case 'camera':
+                return systemStatus.camera.available && systemStatus.camera.permissionsGranted 
+                    ? '#1c8370' : '#FC4A4A'; // green/red
+            case 'location':
+                return systemStatus.location.enabled && systemStatus.location.permissionsGranted 
+                    ? '#1c8370' : '#FC4A4A'; // green/red
             default:
-                return '#FC4A4A'; // red-600
+                return '#6b7280'; // gray
         }
     };
 
@@ -115,10 +140,7 @@ export default function Header() {
                 <View className="flex-row gap-1 items-center">
                     <MapPinHouse
                         size={20}
-                        color={getConnectivityColor(
-                            connectivity?.cloud?.status || 'disconnected',
-                            networkStatus?.isConnected
-                        )}
+                        color={getConnectivityColor('location')}
                         strokeWidth={1.9}
                     />
                     <Text className="text-lg font-semibold font-primary text-primary">
@@ -132,18 +154,14 @@ export default function Header() {
                     <Pressable onPress={() => handleDeviceIconPress('printer')}>
                         <PrinterCheck
                             size={23}
-                            color={getConnectivityColor(
-                                connectivity?.printer?.status || 'disconnected'
-                            )}
+                            color={getConnectivityColor('bluetooth')}
                             strokeWidth={1.9}
                         />
                     </Pressable>
                     <Pressable onPress={() => handleDeviceIconPress('scanner')}>
                         <ScanLine
                             size={23}
-                            color={getConnectivityColor(
-                                connectivity?.scanner?.status || 'disconnected'
-                            )}
+                            color={getConnectivityColor('camera')}
                             strokeWidth={1.9}
                         />
                     </Pressable>

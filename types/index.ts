@@ -1,5 +1,5 @@
 /**
- * Centralized type definitions for the Paay application
+ * Centralized type definitions for the Orrbit POS application
  * This file exports all types, interfaces, and enums used throughout the app
  */
 

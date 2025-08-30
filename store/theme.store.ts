@@ -18,14 +18,14 @@ export const useThemeStore = create<ThemeState>()(
         (set, get) => ({
             theme: 'system',
             currentTheme: 'light',
-            
+
             setTheme: (theme: Theme) => {
                 set({ theme });
-                
+
                 // Apply theme logic
                 const state = get();
                 let actualTheme: 'light' | 'dark';
-                
+
                 if (theme === 'system') {
                     // In a real app, you'd check the system theme
                     // For now, default to light
@@ -33,18 +33,19 @@ export const useThemeStore = create<ThemeState>()(
                 } else {
                     actualTheme = theme;
                 }
-                
+
                 set({ currentTheme: actualTheme });
                 colorScheme.set(actualTheme);
             },
-            
+
             toggleTheme: () => {
                 const state = get();
                 const currentTheme = state.currentTheme;
-                const newTheme: Theme = currentTheme === 'light' ? 'dark' : 'light';
+                const newTheme: Theme =
+                    currentTheme === 'light' ? 'dark' : 'light';
                 state.setTheme(newTheme);
             },
-            
+
             initializeTheme: () => {
                 const state = get();
                 // Initialize theme on app start

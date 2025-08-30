@@ -178,7 +178,7 @@ export const useCartStore = create<CartStore>()(
          */
         clearCart: () => {
             console.log('🧹 Cart cleared - ready for next transaction');
-            
+
             set({
                 items: [],
                 subtotal: 0,
@@ -390,13 +390,15 @@ export const useCartStore = create<CartStore>()(
 
             // Save transaction to database
             try {
-                const { TransactionService } = await import('../@db/transaction.service');
-                
+                const { TransactionService } = await import(
+                    '../@db/transaction.service'
+                );
+
                 await TransactionService.saveTransaction({
                     cashierID: 'current-cashier', // TODO: Get from auth context
                     orderID: completedOrder.id,
                     items: state.items,
-                    paymentMethods: payments.map(payment => ({
+                    paymentMethods: payments.map((payment) => ({
                         type: payment.type as any,
                         amount: payment.amount,
                         reference: payment.reference,
@@ -419,23 +421,59 @@ export const useCartStore = create<CartStore>()(
 
                 console.log(`💾 Transaction saved to database successfully`);
             } catch (error) {
-                console.error('❌ Failed to save transaction to database:', error);
+                console.error(
+                    '❌ Failed to save transaction to database:',
+                    error
+                );
+
+                // Show user notification for failed database save
+                setTimeout(() => {
+                    if (
+                        typeof window !== 'undefined' &&
+                        (global as any).showToast
+                    ) {
+                        (global as any).showToast(
+                            'Transaction completed but failed to save to database. Please manually record this sale.',
+                            'error',
+                            8000,
+                            '⚠️'
+                        );
+                    }
+                }, 2000);
+
+                // Log detailed transaction info for manual entry
+                console.log(
+                    `🔴 MANUAL ENTRY REQUIRED - Transaction ${completedOrder.id}:`
+                );
+                console.log(
+                    `   - Amount: ${state.symbol}${completedOrder.total.toFixed(2)}`
+                );
+                console.log(
+                    `   - Items: ${state.items.map((item) => `${item.name} (${item.quantity})`).join(', ')}`
+                );
+                console.log(
+                    `   - Payment: ${payments.map((p) => `${p.type}: ${state.symbol}${p.amount.toFixed(2)}`).join(', ')}`
+                );
+                console.log(`   - Time: ${new Date().toLocaleString()}`);
+
                 // Don't block the payment flow if database save fails
                 // TODO: Add retry mechanism or queue for offline storage
             }
 
             // Transaction completion
-            console.log(`✅ Transaction ${completedOrder.id} completed - ${state.symbol}${completedOrder.total.toFixed(2)}`);
-            
+            console.log(
+                `✅ Transaction ${completedOrder.id} completed - ${state.symbol}${completedOrder.total.toFixed(2)}`
+            );
+
             // Clear cart immediately after successful payment
             set({
                 // Order completion
                 currentOrder: completedOrder,
-                
+
                 // Modal states
                 isPaymentModalVisible: false,
                 isReceiptModalVisible: false,
-                
+
                 // Cart clearing - immediate reset for next transaction
                 items: [],
                 subtotal: 0,

@@ -8,7 +8,10 @@
  * and custom speed testing implementation
  */
 
-import NetInfo, { NetInfoState, NetInfoStateType } from '@react-native-community/netinfo';
+import NetInfo, {
+    NetInfoState,
+    NetInfoStateType,
+} from '@react-native-community/netinfo';
 
 export interface NetworkStatus {
     isConnected: boolean;
@@ -101,7 +104,9 @@ export const testNetworkSpeed = async (
 /**
  * Determine network quality based on download speed
  */
-export const getNetworkQuality = (downloadSpeedMbps: number): NetworkSpeed['quality'] => {
+export const getNetworkQuality = (
+    downloadSpeedMbps: number
+): NetworkSpeed['quality'] => {
     if (downloadSpeedMbps >= 25) return 'excellent';
     if (downloadSpeedMbps >= 10) return 'good';
     if (downloadSpeedMbps >= 2) return 'fair';
@@ -141,14 +146,19 @@ export const getConnectionTypeName = (type: NetInfoStateType): string => {
  */
 export const getNetworkStatusEmoji = (status: NetworkStatus): string => {
     if (!status.isConnected) return '📵';
-    
+
     if (status.speed) {
         switch (status.speed.quality) {
-            case 'excellent': return '📶';
-            case 'good': return '📶';
-            case 'fair': return '📳';
-            case 'poor': return '📶';
-            default: return '📵';
+            case 'excellent':
+                return '📶';
+            case 'good':
+                return '📶';
+            case 'fair':
+                return '📳';
+            case 'poor':
+                return '📶';
+            default:
+                return '📵';
         }
     }
 
@@ -167,7 +177,7 @@ export const getNetworkStatusEmoji = (status: NetworkStatus): string => {
  */
 export const startNetworkMonitoring = (
     options: NetworkMonitorOptions = {}
-): () => void => {
+): (() => void) => {
     const {
         enableSpeedTest = false,
         speedTestInterval = 30000, // 30 seconds
@@ -178,23 +188,25 @@ export const startNetworkMonitoring = (
     let speedTestTimer: ReturnType<typeof setInterval> | null = null;
 
     // Listen for network state changes
-    const unsubscribe = NetInfo.addEventListener(async (state: NetInfoState) => {
-        const status: NetworkStatus = {
-            isConnected: state.isConnected ?? false,
-            connectionType: state.type,
-            isInternetReachable: state.isInternetReachable,
-            details: state.details,
-            timestamp: new Date(),
-        };
+    const unsubscribe = NetInfo.addEventListener(
+        async (state: NetInfoState) => {
+            const status: NetworkStatus = {
+                isConnected: state.isConnected ?? false,
+                connectionType: state.type,
+                isInternetReachable: state.isInternetReachable,
+                details: state.details,
+                timestamp: new Date(),
+            };
 
-        if (logToConsole) {
-            logNetworkStatus(status);
-        }
+            if (logToConsole) {
+                logNetworkStatus(status);
+            }
 
-        if (onStatusChange) {
-            onStatusChange(status);
+            if (onStatusChange) {
+                onStatusChange(status);
+            }
         }
-    });
+    );
 
     // Start periodic speed testing if enabled
     if (enableSpeedTest) {
@@ -204,7 +216,7 @@ export const startNetworkMonitoring = (
                 if (currentStatus.isConnected) {
                     const speed = await testNetworkSpeed();
                     const statusWithSpeed = { ...currentStatus, speed };
-                    
+
                     if (logToConsole) {
                         console.log('🚀 Speed Test Results:', {
                             downloadSpeed: `${speed.downloadSpeed} Mbps`,
@@ -243,7 +255,7 @@ export const startNetworkMonitoring = (
 export const logNetworkStatus = (status: NetworkStatus): void => {
     const connectionName = getConnectionTypeName(status.connectionType);
     const statusEmoji = getNetworkStatusEmoji(status);
-    
+
     console.log(`${statusEmoji} Network Status:`, {
         connected: status.isConnected,
         type: connectionName,

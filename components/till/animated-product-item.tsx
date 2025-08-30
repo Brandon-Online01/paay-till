@@ -18,14 +18,17 @@ interface AnimatedProductItemProps {
     index: number;
 }
 
-export default function AnimatedProductItem({ item, index }: AnimatedProductItemProps) {
+export default function AnimatedProductItem({
+    item,
+    index,
+}: AnimatedProductItemProps) {
     const opacity = useSharedValue(0);
     const translateY = useSharedValue(30);
     const scale = useSharedValue(0.9);
 
     useEffect(() => {
         const delay = index * 100; // Stagger by 100ms per item
-        
+
         setTimeout(() => {
             opacity.value = withTiming(1, {
                 duration: 500,
@@ -44,10 +47,7 @@ export default function AnimatedProductItem({ item, index }: AnimatedProductItem
 
     const animatedStyle = useAnimatedStyle(() => ({
         opacity: opacity.value,
-        transform: [
-            { translateY: translateY.value },
-            { scale: scale.value },
-        ],
+        transform: [{ translateY: translateY.value }, { scale: scale.value }],
     }));
 
     // Validate item data before rendering
@@ -56,7 +56,9 @@ export default function AnimatedProductItem({ item, index }: AnimatedProductItem
         return (
             <View style={{ flex: 1, margin: 8 }}>
                 <View className="flex-1 justify-center items-center p-4 bg-gray-100 rounded-xl">
-                    <Text className="text-sm text-gray-500 font-primary">Invalid item</Text>
+                    <Text className="text-sm text-gray-500 font-primary">
+                        Invalid item
+                    </Text>
                 </View>
             </View>
         );
@@ -77,7 +79,3 @@ export default function AnimatedProductItem({ item, index }: AnimatedProductItem
         </Animated.View>
     );
 }
-
-
-
-

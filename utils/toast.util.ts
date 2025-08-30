@@ -23,7 +23,12 @@ export const ToastUtils = {
      */
     success: (message: string, duration: number = 3000, icon?: string) => {
         if ((global as any).showToast) {
-            (global as any).showToast(message, 'success', duration, icon || '✅');
+            (global as any).showToast(
+                message,
+                'success',
+                duration,
+                icon || '✅'
+            );
             console.log('✅ ToastUtils: Success toast shown:', message);
         } else {
             console.warn('⚠️ ToastUtils: Global showToast not available');
@@ -38,7 +43,9 @@ export const ToastUtils = {
             (global as any).showToast(message, 'error', duration, icon || '❌');
             console.log('❌ ToastUtils: Error toast shown:', message);
         } else {
-            console.warn('⚠️ ToastUtils: Global showToast not available for error');
+            console.warn(
+                '⚠️ ToastUtils: Global showToast not available for error'
+            );
         }
     },
 
@@ -67,7 +74,12 @@ export const ToastUtils = {
      */
     warning: (message: string, duration: number = 4000, icon?: string) => {
         if ((global as any).showToast) {
-            (global as any).showToast(message, 'warning', duration, icon || '⚠️');
+            (global as any).showToast(
+                message,
+                'warning',
+                duration,
+                icon || '⚠️'
+            );
             console.log('⚠️ ToastUtils: Warning toast shown:', message);
         }
     },

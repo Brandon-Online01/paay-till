@@ -6,11 +6,12 @@ import {
     TextInput,
     Animated,
 } from 'react-native';
-import { useCallback, useMemo, useRef } from 'react';
+import { useCallback, useMemo, useRef, useState, useEffect } from 'react';
 import { Plus, Minus, X } from 'lucide-react-native';
 import { useCartStore } from '@/store/cart.store';
 import { useUIStore } from '@/store/ui.store';
-import { useMenuStore } from '@/store/menu.store';
+import { ProductService } from '@/@db/product.service';
+import { Product } from '@/types/inventory.types';
 
 /**
  * ProductModal Component - Full-screen overlay modal for product customization
@@ -31,16 +32,38 @@ export default function ProductModal() {
         updateModalNotes,
         updateCustomization,
     } = useUIStore();
-    const { getItemById } = useMenuStore();
 
     // Animation refs and state
     const modalScale = useRef(new Animated.Value(0.8)).current;
 
-    // Get the current product being customized
-    const currentProduct = useMemo(() => {
-        if (!productModal.productId) return null;
-        return getItemById(productModal.productId);
-    }, [productModal.productId, getItemById]);
+    // State for current product
+    const [currentProduct, setCurrentProduct] = useState<Product | null>(null);
+    const [isLoadingProduct, setIsLoadingProduct] = useState(false);
+
+    // Fetch product from database when modal opens
+    useEffect(() => {
+        const fetchProduct = async () => {
+            if (!productModal.productId) {
+                setCurrentProduct(null);
+                return;
+            }
+
+            setIsLoadingProduct(true);
+            try {
+                const product = await ProductService.getProductById(
+                    productModal.productId
+                );
+                setCurrentProduct(product);
+            } catch (error) {
+                console.error('Failed to fetch product:', error);
+                setCurrentProduct(null);
+            } finally {
+                setIsLoadingProduct(false);
+            }
+        };
+
+        fetchProduct();
+    }, [productModal.productId]);
 
     // Animate modal entrance
     const animateModalEntrance = useCallback(() => {
@@ -72,13 +95,19 @@ export default function ProductModal() {
             );
             if (sizeVariant) variantPrice += sizeVariant.price;
         }
-        if (productModal.customization.flavor && currentProduct.variants.flavors) {
+        if (
+            productModal.customization.flavor &&
+            currentProduct.variants.flavors
+        ) {
             const flavorVariant = currentProduct.variants.flavors.find(
                 (f) => f.name === productModal.customization.flavor
             );
             if (flavorVariant) variantPrice += flavorVariant.price;
         }
-        if (productModal.customization.color && currentProduct.variants.colors) {
+        if (
+            productModal.customization.color &&
+            currentProduct.variants.colors
+        ) {
             const colorVariant = currentProduct.variants.colors.find(
                 (c) => c.name === productModal.customization.color
             );
@@ -105,7 +134,11 @@ export default function ProductModal() {
         }
 
         // Validate item data before adding to cart
-        if (!currentProduct.id || !currentProduct.name || typeof currentProduct.price !== 'number') {
+        if (
+            !currentProduct.id ||
+            !currentProduct.name ||
+            typeof currentProduct.price !== 'number'
+        ) {
             console.error('Invalid item data provided to handleAddToCart');
             return;
         }
@@ -174,7 +207,7 @@ export default function ProductModal() {
         updateModalQuantity(productModal.quantity - 1);
     }, [productModal.quantity, updateModalQuantity]);
 
-    if (!productModal.isVisible || !currentProduct) return null;
+    if (!productModal.isVisible) return null;
 
     return (
         <Modal
@@ -183,7 +216,7 @@ export default function ProductModal() {
             animationType="fade"
             onRequestClose={closeProductModal}
         >
-            <Pressable 
+            <Pressable
                 className="flex-1 justify-center items-center bg-black-900/80"
                 onPress={closeProductModal}
                 style={{ flex: 1 }}
@@ -198,226 +231,298 @@ export default function ProductModal() {
                         }}
                         className="bg-white rounded-2xl border border-gray-200 shadow-xl"
                     >
-                    {/* Modal Header */}
-                    <View className="relative px-6 pt-6 pb-4">
-                        <Pressable
-                            onPress={closeProductModal}
-                            className="absolute top-2 right-2 z-10 justify-center items-center w-12 h-12 rounded-full border border-red-500 bg-red-500/80"
-                        >
-                            <X size={22} color="#ffffff" />
-                        </Pressable>
+                        {/* Modal Header */}
+                        <View className="relative px-6 pt-6 pb-4">
+                            <Pressable
+                                onPress={closeProductModal}
+                                className="absolute top-2 right-2 z-10 justify-center items-center w-12 h-12 rounded-full border border-red-500 bg-red-500/80"
+                            >
+                                <X size={22} color="#ffffff" />
+                            </Pressable>
 
-                        <Text className="mb-2 text-2xl font-bold text-gray-900 font-primary">
-                            Customize your order
-                        </Text>
-                        <View className="flex flex-row justify-center items-center p-4 my-4 bg-gray-50 rounded-xl">
-                            <Text className="mr-2 text-sm font-semibold text-gray-600 font-primary">
-                                Total Amount:
+                            <Text className="mb-2 text-2xl font-bold text-gray-900 font-primary">
+                                Customize your order
                             </Text>
-                            <Text className="text-2xl font-bold text-blue-600 font-primary">
-                                {totalPrice}
-                            </Text>
-                        </View>
-                    </View>
-
-                    {/* Modal Content */}
-                    <View className="px-6 pb-6">
-                        {/* Product Image */}
-                        <View className="justify-center items-center mb-4 w-full h-40 bg-gray-100 rounded-lg">
-                            <Text className="text-6xl font-primary">
-                                {currentProduct.image}
-                            </Text>
-                        </View>
-
-                        {/* Product Info */}
-                        <Text className="mb-1 text-sm font-semibold text-blue-600 capitalize font-primary">
-                            {currentProduct.category}
-                        </Text>
-                        <Text className="mb-2 text-xl font-bold text-gray-900 font-primary">
-                            {currentProduct.name}
-                        </Text>
-                        {currentProduct.description && (
-                            <Text className="mb-4 text-gray-600 font-primary">
-                                {currentProduct.description}
-                            </Text>
-                        )}
-
-                        {/* Notes Input */}
-                        <View className="mb-6">
-                            <Text className="mb-2 font-semibold text-gray-700 font-primary">
-                                Add notes to your order...
-                            </Text>
-                            <TextInput
-                                value={productModal.notes}
-                                onChangeText={updateModalNotes}
-                                placeholder="Any special instructions?"
-                                multiline
-                                numberOfLines={3}
-                                className="p-3 text-gray-900 rounded-lg border border-gray-200 font-primary"
-                                style={{ textAlignVertical: 'top' }}
-                            />
-                        </View>
-
-                        {/* Customization Options */}
-                        {currentProduct.variants && (
-                            <View className="mb-6">
-                                <Text className="mb-3 text-lg font-semibold text-gray-900 font-primary">
-                                    Customize your order
+                            <View className="flex flex-row justify-center items-center p-4 my-4 bg-gray-50 rounded-xl">
+                                <Text className="mr-2 text-sm font-semibold text-gray-600 font-primary">
+                                    Total Amount:
                                 </Text>
-
-                                {/* Color Selector */}
-                                {currentProduct.variants.colors && currentProduct.variants.colors.length > 0 && (
-                                    <View className="mb-3">
-                                        <Text className="mb-2 text-sm font-semibold text-gray-700 font-primary">
-                                            Color
-                                        </Text>
-                                        <View className="flex-row flex-wrap gap-2">
-                                            {currentProduct.variants.colors.map((color) => (
-                                                <Pressable
-                                                    key={color.name}
-                                                    onPress={() =>
-                                                        updateCustomization(
-                                                            'color',
-                                                            color.name
-                                                        )
-                                                    }
-                                                    className={`px-3 py-2 rounded-lg border ${
-                                                        productModal.customization
-                                                            .color === color.name
-                                                            ? 'bg-blue-500 border-blue-500'
-                                                            : 'bg-gray-100 border-gray-200'
-                                                    }`}
-                                                >
-                                                    <Text
-                                                        className={`font-primary ${
-                                                            productModal.customization
-                                                                .color === color.name
-                                                                ? 'text-white'
-                                                                : 'text-gray-700'
-                                                        }`}
-                                                    >
-                                                        {color.name}
-                                                        {color.price > 0 && ` (+${symbol}${color.price})`}
-                                                    </Text>
-                                                </Pressable>
-                                            ))}
-                                        </View>
-                                    </View>
-                                )}
-
-                                {/* Flavor Selector */}
-                                {currentProduct.variants.flavors && currentProduct.variants.flavors.length > 0 && (
-                                    <View className="mb-3">
-                                        <Text className="mb-2 text-sm font-semibold text-gray-700 font-primary">
-                                            Flavor
-                                        </Text>
-                                        <View className="flex-row flex-wrap gap-2">
-                                            {currentProduct.variants.flavors.map((flavor) => (
-                                                <Pressable
-                                                    key={flavor.name}
-                                                    onPress={() =>
-                                                        updateCustomization(
-                                                            'flavor',
-                                                            flavor.name
-                                                        )
-                                                    }
-                                                    className={`px-3 py-2 rounded-lg border ${
-                                                        productModal.customization
-                                                            .flavor === flavor.name
-                                                            ? 'bg-green-500 border-green-500'
-                                                            : 'bg-gray-100 border-gray-200'
-                                                    }`}
-                                                >
-                                                    <Text
-                                                        className={`font-primary ${
-                                                            productModal.customization
-                                                                .flavor === flavor.name
-                                                                ? 'text-white'
-                                                                : 'text-gray-700'
-                                                        }`}
-                                                    >
-                                                        {flavor.name}
-                                                        {flavor.price > 0 && ` (+${symbol}${flavor.price})`}
-                                                    </Text>
-                                                </Pressable>
-                                            ))}
-                                        </View>
-                                    </View>
-                                )}
-
-                                {/* Size Selector */}
-                                {currentProduct.variants.sizes && currentProduct.variants.sizes.length > 0 && (
-                                    <View className="mb-3">
-                                        <Text className="mb-2 text-sm font-semibold text-gray-700 font-primary">
-                                            Size
-                                        </Text>
-                                        <View className="flex-row flex-wrap gap-2">
-                                            {currentProduct.variants.sizes.map((size) => (
-                                                <Pressable
-                                                    key={size.name}
-                                                    onPress={() =>
-                                                        updateCustomization(
-                                                            'size',
-                                                            size.name
-                                                        )
-                                                    }
-                                                    className={`px-3 py-2 rounded-lg border ${
-                                                        productModal.customization
-                                                            .size === size.name
-                                                            ? 'bg-purple-500 border-purple-500'
-                                                            : 'bg-gray-100 border-gray-200'
-                                                    }`}
-                                                >
-                                                    <Text
-                                                        className={`font-primary ${
-                                                            productModal.customization
-                                                                .size === size.name
-                                                                ? 'text-white'
-                                                                : 'text-gray-700'
-                                                        }`}
-                                                    >
-                                                        {size.name}
-                                                        {size.price > 0 && ` (+${symbol}${size.price})`}
-                                                    </Text>
-                                                </Pressable>
-                                            ))}
-                                        </View>
-                                    </View>
-                                )}
+                                <Text className="text-2xl font-bold text-blue-600 font-primary">
+                                    {totalPrice}
+                                </Text>
                             </View>
-                        )}
-
-                        {/* Quantity Selector */}
-                        <View className="flex-row justify-center items-center mb-6">
-                            <Pressable
-                                onPress={decrementQuantity}
-                                className="justify-center items-center w-12 h-12 bg-gray-100 rounded-full"
-                            >
-                                <Minus size={20} color="#374151" />
-                            </Pressable>
-
-                            <Text className="mx-8 text-2xl font-bold text-gray-900 font-primary">
-                                {productModal.quantity}
-                            </Text>
-
-                            <Pressable
-                                onPress={incrementQuantity}
-                                className="justify-center items-center w-12 h-12 bg-blue-500 rounded-full"
-                            >
-                                <Plus size={20} color="white" />
-                            </Pressable>
                         </View>
 
-                        {/* Add to Cart Button */}
-                        <Pressable
-                            onPress={handleAddToCart}
-                            className="items-center py-4 bg-blue-500 rounded-lg"
-                        >
-                            <Text className="text-lg font-bold text-white font-primary">
-                                Add to Cart ({totalPrice})
-                            </Text>
-                        </Pressable>
-                    </View>
+                        {/* Modal Content */}
+                        <View className="px-6 pb-6">
+                            {/* Loading State */}
+                            {isLoadingProduct && (
+                                <View className="justify-center items-center py-20">
+                                    <Text className="text-lg text-gray-600 font-primary">
+                                        Loading product...
+                                    </Text>
+                                </View>
+                            )}
+
+                            {/* Product Not Found */}
+                            {!isLoadingProduct && !currentProduct && (
+                                <View className="justify-center items-center py-20">
+                                    <Text className="text-lg text-gray-600 font-primary">
+                                        Product not found
+                                    </Text>
+                                    <Text className="text-sm text-gray-500 font-primary">
+                                        Please try again
+                                    </Text>
+                                </View>
+                            )}
+
+                            {/* Product Content */}
+                            {!isLoadingProduct && currentProduct && (
+                                <>
+                                    {/* Product Image */}
+                                    <View className="justify-center items-center mb-4 w-full h-40 bg-gray-100 rounded-lg">
+                                        <Text className="text-6xl font-primary">
+                                            {currentProduct.image}
+                                        </Text>
+                                    </View>
+
+                                    {/* Product Info */}
+                                    <Text className="mb-1 text-sm font-semibold text-blue-600 capitalize font-primary">
+                                        {currentProduct.category}
+                                    </Text>
+                                    <Text className="mb-2 text-xl font-bold text-gray-900 font-primary">
+                                        {currentProduct.name}
+                                    </Text>
+                                    {currentProduct.description && (
+                                        <Text className="mb-4 text-gray-600 font-primary">
+                                            {currentProduct.description}
+                                        </Text>
+                                    )}
+
+                                    {/* Notes Input */}
+                                    <View className="mb-6">
+                                        <Text className="mb-2 font-semibold text-gray-700 font-primary">
+                                            Add notes to your order...
+                                        </Text>
+                                        <TextInput
+                                            value={productModal.notes}
+                                            onChangeText={updateModalNotes}
+                                            placeholder="Any special instructions?"
+                                            multiline
+                                            numberOfLines={3}
+                                            className="p-3 text-gray-900 rounded-lg border border-gray-200 font-primary"
+                                            style={{ textAlignVertical: 'top' }}
+                                        />
+                                    </View>
+
+                                    {/* Customization Options */}
+                                    {currentProduct.variants && (
+                                        <View className="mb-6">
+                                            <Text className="mb-3 text-lg font-semibold text-gray-900 font-primary">
+                                                Customize your order
+                                            </Text>
+
+                                            {/* Color Selector */}
+                                            {currentProduct.variants.colors &&
+                                                currentProduct.variants.colors
+                                                    .length > 0 && (
+                                                    <View className="mb-3">
+                                                        <Text className="mb-2 text-sm font-semibold text-gray-700 font-primary">
+                                                            Color
+                                                        </Text>
+                                                        <View className="flex-row flex-wrap gap-2">
+                                                            {currentProduct.variants.colors.map(
+                                                                (color) => (
+                                                                    <Pressable
+                                                                        key={
+                                                                            color.name
+                                                                        }
+                                                                        onPress={() =>
+                                                                            updateCustomization(
+                                                                                'color',
+                                                                                color.name
+                                                                            )
+                                                                        }
+                                                                        className={`px-3 py-2 rounded-lg border ${
+                                                                            productModal
+                                                                                .customization
+                                                                                .color ===
+                                                                            color.name
+                                                                                ? 'bg-blue-500 border-blue-500'
+                                                                                : 'bg-gray-100 border-gray-200'
+                                                                        }`}
+                                                                    >
+                                                                        <Text
+                                                                            className={`font-primary ${
+                                                                                productModal
+                                                                                    .customization
+                                                                                    .color ===
+                                                                                color.name
+                                                                                    ? 'text-white'
+                                                                                    : 'text-gray-700'
+                                                                            }`}
+                                                                        >
+                                                                            {
+                                                                                color.name
+                                                                            }
+                                                                            {color.price >
+                                                                                0 &&
+                                                                                ` (+${symbol}${color.price})`}
+                                                                        </Text>
+                                                                    </Pressable>
+                                                                )
+                                                            )}
+                                                        </View>
+                                                    </View>
+                                                )}
+
+                                            {/* Flavor Selector */}
+                                            {currentProduct.variants.flavors &&
+                                                currentProduct.variants.flavors
+                                                    .length > 0 && (
+                                                    <View className="mb-3">
+                                                        <Text className="mb-2 text-sm font-semibold text-gray-700 font-primary">
+                                                            Flavor
+                                                        </Text>
+                                                        <View className="flex-row flex-wrap gap-2">
+                                                            {currentProduct.variants.flavors.map(
+                                                                (flavor) => (
+                                                                    <Pressable
+                                                                        key={
+                                                                            flavor.name
+                                                                        }
+                                                                        onPress={() =>
+                                                                            updateCustomization(
+                                                                                'flavor',
+                                                                                flavor.name
+                                                                            )
+                                                                        }
+                                                                        className={`px-3 py-2 rounded-lg border ${
+                                                                            productModal
+                                                                                .customization
+                                                                                .flavor ===
+                                                                            flavor.name
+                                                                                ? 'bg-green-500 border-green-500'
+                                                                                : 'bg-gray-100 border-gray-200'
+                                                                        }`}
+                                                                    >
+                                                                        <Text
+                                                                            className={`font-primary ${
+                                                                                productModal
+                                                                                    .customization
+                                                                                    .flavor ===
+                                                                                flavor.name
+                                                                                    ? 'text-white'
+                                                                                    : 'text-gray-700'
+                                                                            }`}
+                                                                        >
+                                                                            {
+                                                                                flavor.name
+                                                                            }
+                                                                            {flavor.price >
+                                                                                0 &&
+                                                                                ` (+${symbol}${flavor.price})`}
+                                                                        </Text>
+                                                                    </Pressable>
+                                                                )
+                                                            )}
+                                                        </View>
+                                                    </View>
+                                                )}
+
+                                            {/* Size Selector */}
+                                            {currentProduct.variants.sizes &&
+                                                currentProduct.variants.sizes
+                                                    .length > 0 && (
+                                                    <View className="mb-3">
+                                                        <Text className="mb-2 text-sm font-semibold text-gray-700 font-primary">
+                                                            Size
+                                                        </Text>
+                                                        <View className="flex-row flex-wrap gap-2">
+                                                            {currentProduct.variants.sizes.map(
+                                                                (size) => (
+                                                                    <Pressable
+                                                                        key={
+                                                                            size.name
+                                                                        }
+                                                                        onPress={() =>
+                                                                            updateCustomization(
+                                                                                'size',
+                                                                                size.name
+                                                                            )
+                                                                        }
+                                                                        className={`px-3 py-2 rounded-lg border ${
+                                                                            productModal
+                                                                                .customization
+                                                                                .size ===
+                                                                            size.name
+                                                                                ? 'bg-purple-500 border-purple-500'
+                                                                                : 'bg-gray-100 border-gray-200'
+                                                                        }`}
+                                                                    >
+                                                                        <Text
+                                                                            className={`font-primary ${
+                                                                                productModal
+                                                                                    .customization
+                                                                                    .size ===
+                                                                                size.name
+                                                                                    ? 'text-white'
+                                                                                    : 'text-gray-700'
+                                                                            }`}
+                                                                        >
+                                                                            {
+                                                                                size.name
+                                                                            }
+                                                                            {size.price >
+                                                                                0 &&
+                                                                                ` (+${symbol}${size.price})`}
+                                                                        </Text>
+                                                                    </Pressable>
+                                                                )
+                                                            )}
+                                                        </View>
+                                                    </View>
+                                                )}
+                                        </View>
+                                    )}
+                                </>
+                            )}
+
+                            {/* Quantity Selector - only show if product is loaded */}
+                            {!isLoadingProduct && currentProduct && (
+                                <>
+                                    <View className="flex-row justify-center items-center mb-6">
+                                        <Pressable
+                                            onPress={decrementQuantity}
+                                            className="justify-center items-center w-12 h-12 bg-gray-100 rounded-full"
+                                        >
+                                            <Minus size={20} color="#374151" />
+                                        </Pressable>
+
+                                        <Text className="mx-8 text-2xl font-bold text-gray-900 font-primary">
+                                            {productModal.quantity}
+                                        </Text>
+
+                                        <Pressable
+                                            onPress={incrementQuantity}
+                                            className="justify-center items-center w-12 h-12 bg-blue-500 rounded-full"
+                                        >
+                                            <Plus size={20} color="white" />
+                                        </Pressable>
+                                    </View>
+
+                                    {/* Add to Cart Button */}
+                                    <Pressable
+                                        onPress={handleAddToCart}
+                                        className="items-center py-4 bg-blue-500 rounded-lg"
+                                    >
+                                        <Text className="text-lg font-bold text-white font-primary">
+                                            Add to Cart ({totalPrice})
+                                        </Text>
+                                    </Pressable>
+                                </>
+                            )}
+                        </View>
                     </Animated.View>
                 </Pressable>
             </Pressable>

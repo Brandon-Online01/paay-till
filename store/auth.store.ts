@@ -136,7 +136,7 @@ export const useAuthStore = create<AuthStore>()(
                 },
             });
             clearForms();
-            
+
             // Show signed out notification
             setTimeout(() => {
                 if ((global as any).showToast) {

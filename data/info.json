@@ -1,18 +1,18 @@
 {
     "company": {
-        "name": "Paay",
+        "name": "Orrbit POS",
         "logo": "PA",
-        "tagline": "The ultimate POS solution for SMEs, designed for effortless setup and intuitive use, delivering groundbreaking accessibility like never before.",
-        "description": "The ultimate POS solution for SMEs, designed for effortless setup and intuitive use, delivering groundbreaking accessibility like never before."
+        "tagline": "Empower Your Business: Lightning-Fast POS for SMEs with Seamless Setup and Unmatched Ease.",
+        "description": "Revolutionize your small or medium-sized business with our cutting-edge POS solution. Engineered for lightning-fast setup and intuitive navigation, it offers unparalleled accessibility, empowering you to streamline operations, boost efficiency, and focus on growth like Juno."
     },
     "user": {
         "fullName": "Brandon N Nkawu",
         "firstName": "Brandon",
         "lastName": "Nkawu",
         "initials": "BN",
-        "title": "Software Engineer | Orrbit Technologies",
+        "title": "CTO | Engineer | @Orrbit Technologies",
         "email": "brandon.nkawu@orrbit.co.za",
-        "phone": "+27 11 234 5678",
+        "phone": "+27 73 959 0288",
         "avatar": "BN"
     },
     "till": {
@@ -1144,7 +1144,7 @@
     },
     "navigation": {
         "home": {
-            "label": "Home",
+            "label": "Till",
             "icon": "home"
         },
         "settings": {
@@ -1163,7 +1163,7 @@
     "auth": {
         "signIn": {
             "title": "Welcome back",
-            "subtitle": "Sign in to your Paay account",
+            "subtitle": "Sign in to your Orrbit POS account",
             "signUpLink": "Don't have an account? Sign up",
             "forgotPasswordLink": "Forgot password?",
             "backToHomeLink": "Onboarding Page",

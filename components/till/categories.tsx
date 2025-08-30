@@ -27,16 +27,16 @@ interface CategoryItem {
 /**
  * Individual Category Item Component with animation
  */
-function CategoryItemComponent({ 
-    item, 
-    index, 
-    isSelected, 
-    onPress 
-}: { 
-    item: CategoryItem; 
-    index: number; 
-    isSelected: boolean; 
-    onPress: (id: string) => void; 
+function CategoryItemComponent({
+    item,
+    index,
+    isSelected,
+    onPress,
+}: {
+    item: CategoryItem;
+    index: number;
+    isSelected: boolean;
+    onPress: (id: string) => void;
 }) {
     // Individual category animation values
     const itemOpacity = useSharedValue(0);
@@ -47,9 +47,15 @@ function CategoryItemComponent({
     useEffect(() => {
         const delay = index * 100 + 300; // Stagger by 100ms each, start after 300ms
         setTimeout(() => {
-            itemOpacity.value = withTiming(1, { duration: 400, easing: Easing.out(Easing.exp) });
+            itemOpacity.value = withTiming(1, {
+                duration: 400,
+                easing: Easing.out(Easing.exp),
+            });
             itemScale.value = withSpring(1, { damping: 12, stiffness: 150 });
-            itemTranslateY.value = withSpring(0, { damping: 15, stiffness: 100 });
+            itemTranslateY.value = withSpring(0, {
+                damping: 15,
+                stiffness: 100,
+            });
         }, delay);
     }, [index]);
 
@@ -57,7 +63,7 @@ function CategoryItemComponent({
         opacity: itemOpacity.value,
         transform: [
             { scale: itemScale.value },
-            { translateY: itemTranslateY.value }
+            { translateY: itemTranslateY.value },
         ],
     }));
 
@@ -116,8 +122,14 @@ export default function Categories() {
     useEffect(() => {
         // Container animation
         setTimeout(() => {
-            containerOpacity.value = withTiming(1, { duration: 600, easing: Easing.out(Easing.exp) });
-            containerTranslateY.value = withSpring(0, { damping: 15, stiffness: 100 });
+            containerOpacity.value = withTiming(1, {
+                duration: 600,
+                easing: Easing.out(Easing.exp),
+            });
+            containerTranslateY.value = withSpring(0, {
+                damping: 15,
+                stiffness: 100,
+            });
         }, 100);
     }, []);
 
@@ -133,24 +145,27 @@ export default function Categories() {
      * @param index - Index for staggered animation delay
      * @returns JSX element for the category button
      */
-    const renderCategory = useCallback(({ item, index }: { item: CategoryItem; index: number }) => {
-        // Validate category data
-        if (!item?.id || !item?.name) {
-            console.warn('Invalid category data:', item);
-            return null;
-        }
+    const renderCategory = useCallback(
+        ({ item, index }: { item: CategoryItem; index: number }) => {
+            // Validate category data
+            if (!item?.id || !item?.name) {
+                console.warn('Invalid category data:', item);
+                return null;
+            }
 
-        const isSelected = selectedCategory === item.id;
+            const isSelected = selectedCategory === item.id;
 
-        return (
-            <CategoryItemComponent
-                item={item}
-                index={index}
-                isSelected={isSelected}
-                onPress={setSelectedCategory}
-            />
-        );
-    }, [selectedCategory, setSelectedCategory]);
+            return (
+                <CategoryItemComponent
+                    item={item}
+                    index={index}
+                    isSelected={isSelected}
+                    onPress={setSelectedCategory}
+                />
+            );
+        },
+        [selectedCategory, setSelectedCategory]
+    );
 
     /**
      * Get key for FlatList item
@@ -173,7 +188,9 @@ export default function Categories() {
         <Animated.View className="px-4 mb-4" style={containerAnimatedStyle}>
             <FlatList
                 data={categories}
-                renderItem={({ item, index }) => renderCategory({ item, index })}
+                renderItem={({ item, index }) =>
+                    renderCategory({ item, index })
+                }
                 keyExtractor={getCategoryKey}
                 horizontal={true}
                 showsHorizontalScrollIndicator={false}

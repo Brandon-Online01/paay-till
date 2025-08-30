@@ -2,11 +2,12 @@ import {
     Text,
     View,
     ScrollView,
+    FlatList,
     Pressable,
     TextInput,
     RefreshControl,
 } from 'react-native';
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import {
     Search,
     Filter,
@@ -17,14 +18,17 @@ import {
     Archive,
     RotateCcw,
     Plus,
+    List,
+    Grid3x3,
 } from 'lucide-react-native';
 import BaseProvider from '@/providers/base.provider';
 import { useInventoryStore, SortOption } from '@/store/inventory.store';
 import { Product } from '@/types/inventory.types';
+import { ProductService } from '@/@db';
 import ProductFilterModal from '@/components/inventory/filter-modal';
 import ProductDetailModal from '@/components/inventory/product-detail-modal';
 import AddItemModal from '@/components/inventory/add-item-modal';
-import infoData from '@/data/info.json';
+import ProductCard from '@/components/inventory/product-card';
 
 const SORT_OPTIONS: { value: SortOption; label: string }[] = [
     { value: 'recent', label: 'Recent' },
@@ -35,71 +39,59 @@ const SORT_OPTIONS: { value: SortOption; label: string }[] = [
 
 export default function Inventory() {
     const {
-        filteredProducts,
-        metrics,
+        products,
+        totalCount,
+        currentPage,
+        hasNextPage,
         isLoading,
+        isLoadingMore,
         isRefreshing,
         error,
+        metrics,
+        reorderAlerts,
         searchQuery,
         sortBy,
+        sortOrder,
+        filters,
         showFilterModal,
         selectedProduct,
         showProductModal,
+        viewMode,
         lastUpdated,
-        setProducts,
-        setLoading,
-        setError,
+        loadProducts,
+        loadMoreProducts,
+        refreshProducts,
         setSearchQuery,
         setSortBy,
+        setFilters,
         setShowFilterModal,
         setSelectedProduct,
         setShowProductModal,
+        setViewMode,
         clearCache,
-        refreshData,
+        loadReorderAlerts,
     } = useInventoryStore();
 
     const [showSortDropdown, setShowSortDropdown] = useState(false);
     const [showAddItemModal, setShowAddItemModal] = useState(false);
 
-    const loadData = useCallback(async () => {
-        setLoading(true);
-        setError(null);
-        try {
-            // Transform info.json products to match our Product interface
-            const products: Product[] = infoData.till.items.map((item) => ({
-                id: item.id,
-                name: item.name,
-                category: item.category,
-                price: item.price,
-                image: item.image,
-                description: item.description,
-                badge: item.badge,
-                variants: item.variants,
-                inStock: true, // Default to in stock, can be updated based on inventory logic
-                stockQuantity: Math.floor(Math.random() * 100) + 1, // Random stock for demo
-            }));
-            setProducts(products);
-        } catch (error) {
-            console.error('Failed to load products:', error);
-            setError('Failed to load products');
-        } finally {
-            setLoading(false);
-        }
-    }, [setProducts, setLoading, setError]);
+    // Initialize data loading
+    useEffect(() => {
+        const initializeData = async () => {
+            // Only load if we don't have recent data
+            if (!lastUpdated || new Date().getTime() - new Date(lastUpdated).getTime() > 30000) {
+                await loadProducts();
+            }
+            // Also load reorder alerts
+            await loadReorderAlerts();
+        };
+
+        initializeData();
+    }, [loadProducts, loadReorderAlerts, lastUpdated]);
 
     const handleRefresh = useCallback(async () => {
-        await refreshData();
-    }, [refreshData]);
-
-    useEffect(() => {
-        // Only load if we don't have recent data
-        if (
-            !lastUpdated ||
-            new Date().getTime() - new Date(lastUpdated).getTime() > 30000
-        ) {
-            loadData();
-        }
-    }, [loadData, lastUpdated]);
+        await refreshProducts();
+    }, [refreshProducts]);
 
     const getBadgeColor = (badge: string | null) => {
         switch (badge) {
@@ -128,18 +120,221 @@ export default function Inventory() {
         setShowAddItemModal(true);
     };
 
-    const handleSaveNewProduct = (newProduct: Omit<Product, 'id'>) => {
-        // Generate a new ID for the product
-        const id = (Date.now() + Math.random()).toString();
-        const productWithId: Product = { ...newProduct, id };
-        
-        // Add to current products list
-        const currentProducts = [...filteredProducts, productWithId];
-        setProducts(currentProducts);
-        
-        console.log('New product added:', productWithId);
+    const handleSaveNewProduct = async (savedProduct: Product) => {
+        console.log('New product saved to database:', savedProduct);
+
+        // Refresh the product list to get the latest data
+        try {
+            await refreshProducts();
+            console.log(`✅ Product list refreshed after adding new product`);
+        } catch (error) {
+            console.error('Failed to refresh products after save:', error);
+            // TODO: Handle error appropriately
+        }
+
         setShowAddItemModal(false);
     };
+
+    /**
+     * Optimized render function for product cards
+     */
+    const renderProductCard = useCallback(({ item: product, index }) => (
+        <View className="w-[24%] mb-4">
+            <ProductCard
+                product={product}
+                onPress={handleProductPress}
+            />
+        </View>
+    ), [handleProductPress]);
+
+    /**
+     * Optimized render function for product list items
+     */
+    const renderProductListItem = useCallback(({ item: product, index }) => (
+        <Pressable
+            onPress={() => handleProductPress(product)}
+            className="p-4 mb-4 bg-white rounded-lg border border-gray-200 active:bg-gray-50"
+        >
+            {/* Header Row */}
+            <View className="flex-row justify-between items-start mb-3">
+                <View className="flex-1">
+                    <View className="flex-row justify-between items-center mb-2">
+                        <Text className="text-sm text-gray-600 font-primary">
+                            Product
+                        </Text>
+                        <Text className="text-sm text-gray-600 font-primary">
+                            Category
+                        </Text>
+                        <Text className="text-sm text-gray-600 font-primary">
+                            Price
+                        </Text>
+                        <Text className="text-sm text-gray-600 font-primary">
+                            Stock
+                        </Text>
+                        <Text className="text-sm text-gray-600 font-primary">
+                            Status
+                        </Text>
+                    </View>
+
+                    <View className="flex-row justify-between items-center">
+                        {/* Product */}
+                        <View className="flex-1">
+                            <View className="flex-row items-center">
+                                <Text className="mr-2 text-2xl">
+                                    {product.image}
+                                </Text>
+                                <View>
+                                    <Text className="text-sm font-semibold text-gray-900 font-primary">
+                                        {product.name}
+                                    </Text>
+                                    <Text className="text-xs text-gray-500 font-primary">
+                                        ID: {product.id}
+                                    </Text>
+                                </View>
+                            </View>
+                        </View>
+
+                        {/* Category */}
+                        <View className="flex-1">
+                            <Text className="text-sm font-semibold text-gray-900 capitalize font-primary">
+                                {product.category}
+                            </Text>
+                        </View>
+
+                        {/* Price */}
+                        <View className="flex-1">
+                            <Text className="text-sm font-bold text-gray-900 font-primary">
+                                R{product.price.toFixed(2)}
+                            </Text>
+                        </View>
+
+                        {/* Stock */}
+                        <View className="flex-1">
+                            <Text className="text-sm text-gray-700 font-primary">
+                                {product.stockQuantity || 0} units
+                            </Text>
+                        </View>
+
+                        {/* Status */}
+                        <View className="flex-1">
+                            <View className="flex-row gap-1">
+                                {product.badge && (
+                                    <View
+                                        className={`px-2 py-1 rounded ${getBadgeColor(product.badge)}`}
+                                    >
+                                        <Text className="text-xs font-semibold font-primary">
+                                            {product.badge}
+                                        </Text>
+                                    </View>
+                                )}
+                                <View className="px-2 py-1 bg-green-100 rounded">
+                                    <Text className="text-xs font-semibold text-green-800 font-primary">
+                                        {product.inStock ? 'In Stock' : 'Out of Stock'}
+                                    </Text>
+                                </View>
+                            </View>
+                        </View>
+                    </View>
+                </View>
+            </View>
+
+            {/* Description */}
+            <View className="pt-3 mt-3 border-t border-gray-100">
+                <Text className="text-sm text-gray-600 font-primary">
+                    {product.description}
+                </Text>
+                {product.variants && (
+                    <View className="mt-2">
+                        <Text className="text-xs text-gray-500 font-primary">
+                            Variants available:
+                            {product.variants.colors && ` ${product.variants.colors.length} colors`}
+                            {product.variants.sizes && ` ${product.variants.sizes.length} sizes`}
+                            {product.variants.flavors && ` ${product.variants.flavors.length} flavors`}
+                        </Text>
+                    </View>
+                )}
+            </View>
+        </Pressable>
+    ), [handleProductPress, getBadgeColor]);
+
+    /**
+     * Key extractor for FlatList optimization
+     */
+    const keyExtractor = useCallback((item) => item.id, []);
+
+    /**
+     * Loading component for FlatList
+     */
+    const renderLoadingComponent = useCallback(() => (
+        <View className="flex-1 justify-center items-center py-12">
+            <Text className="text-gray-500 font-primary">
+                Loading products...
+            </Text>
+        </View>
+    ), []);
+
+    /**
+     * Empty component for FlatList
+     */
+    const renderEmptyComponent = useCallback(() => (
+        <View className="flex-1 justify-center items-center py-12">
+            <Text className="text-gray-500 font-primary">
+                No products found
+            </Text>
+        </View>
+    ), []);
+
+    /**
+     * Error component for FlatList
+     */
+    const renderErrorComponent = useCallback(() => (
+        <View className="flex-1 justify-center items-center py-12">
+            <Text className="text-red-500 font-primary">
+                {error}
+            </Text>
+        </View>
+    ), [error]);
+
+    /**
+     * FlatList configuration based on view mode
+     */
+    const flatListProps = useMemo(() => {
+        const baseProps = {
+            data: products,
+            keyExtractor,
+            showsVerticalScrollIndicator: false,
+            initialNumToRender: 20,
+            maxToRenderPerBatch: 10,
+            windowSize: 10,
+            updateCellsBatchingPeriod: 50,
+            removeClippedSubviews: true,
+            refreshControl: (
+                <RefreshControl
+                    refreshing={isRefreshing}
+                    onRefresh={handleRefresh}
+                    colors={['#2563eb']}
+                    tintColor="#2563eb"
+                />
+            ),
+        };
+
+        if (viewMode === 'cards') {
+            return {
+                ...baseProps,
+                renderItem: renderProductCard,
+                numColumns: 4,
+                key: 'cards-view',
+                contentContainerStyle: { padding: 16 },
+            };
+        } else {
+            return {
+                ...baseProps,
+                renderItem: renderProductListItem,
+                key: 'list-view',
+                contentContainerStyle: { padding: 16 },
+            };
+        }
+    }, [viewMode, products, keyExtractor, renderProductCard, renderProductListItem, isRefreshing, handleRefresh]);
 
     return (
         <BaseProvider>
@@ -158,6 +353,8 @@ export default function Inventory() {
                         )}
                     </View>
                     <View className="flex-row gap-2">
+                        {/* View Toggle */}
+
                         <Pressable
                             onPress={handleRefresh}
                             disabled={isRefreshing}
@@ -264,7 +461,7 @@ export default function Inventory() {
                                 {SORT_OPTIONS.find(
                                     (opt) => opt.value === sortBy
                                 )?.label || 'Recent'}
-                </Text>
+                            </Text>
                             <ChevronDown size={16} color="#6b7280" />
                         </Pressable>
 
@@ -280,7 +477,7 @@ export default function Inventory() {
                                     >
                                         <Text className="text-gray-700 font-primary">
                                             {option.label}
-                </Text>
+                                        </Text>
                                     </Pressable>
                                 ))}
                             </View>
@@ -303,157 +500,57 @@ export default function Inventory() {
                         className="flex-row gap-2 justify-center items-center p-4 w-36 bg-blue-600 rounded-lg border border-blue-200"
                     >
                         <Plus size={16} color="white" />
-                        <Text className="text-white font-primary">Add Item</Text>
+                        <Text className="text-white font-primary">
+                            Add Item
+                        </Text>
                     </Pressable>
+                    <View className="flex-row bg-gray-100 rounded-lg">
+                        <Pressable
+                            onPress={() => setViewMode('list')}
+                            className={`p-2 rounded-lg ${
+                                viewMode === 'list'
+                                    ? 'bg-blue-600'
+                                    : 'bg-transparent'
+                            }`}
+                        >
+                            <List
+                                size={20}
+                                color={
+                                    viewMode === 'list' ? '#ffffff' : '#6b7280'
+                                }
+                            />
+                        </Pressable>
+                        <Pressable
+                            onPress={() => setViewMode('cards')}
+                            className={`p-2 rounded-lg ${
+                                viewMode === 'cards'
+                                    ? 'bg-blue-600'
+                                    : 'bg-transparent'
+                            }`}
+                        >
+                            <Grid3x3
+                                size={20}
+                                color={
+                                    viewMode === 'cards' ? '#ffffff' : '#6b7280'
+                                }
+                            />
+                        </Pressable>
+                    </View>
                 </View>
             </View>
 
-            <ScrollView
-                className="flex-1"
-                refreshControl={
-                    <RefreshControl
-                        refreshing={isRefreshing}
-                        onRefresh={handleRefresh}
-                        colors={['#2563eb']}
-                        tintColor="#2563eb"
-                    />
-                }
-            >
-                {/* Product List */}
-                <View className="px-6 py-4">
-                    {isLoading && !isRefreshing ? (
-                        <View className="flex-1 justify-center items-center py-12">
-                            <Text className="text-gray-500 font-primary">
-                                Loading products...
-                            </Text>
-                        </View>
-                    ) : error ? (
-                        <View className="flex-1 justify-center items-center py-12">
-                            <Text className="text-red-500 font-primary">
-                                {error}
-                            </Text>
-                        </View>
-                    ) : filteredProducts.length === 0 ? (
-                        <View className="flex-1 justify-center items-center py-12">
-                            <Text className="text-gray-500 font-primary">
-                                No products found
-                            </Text>
-                        </View>
-                    ) : (
-                        filteredProducts.map((product) => {
-                            return (
-                                <Pressable
-                                    key={product.id}
-                                    onPress={() =>
-                                        handleProductPress(product)
-                                    }
-                                    className="p-4 mb-4 bg-white rounded-lg border border-gray-200 active:bg-gray-50"
-                                >
-                                    {/* Header Row */}
-                                    <View className="flex-row justify-between items-start mb-3">
-                                        <View className="flex-1">
-                                            <View className="flex-row justify-between items-center mb-2">
-                                                <Text className="text-sm text-gray-600 font-primary">
-                                                    Product
-                                                </Text>
-                                                <Text className="text-sm text-gray-600 font-primary">
-                                                    Category
-                                                </Text>
-                                                <Text className="text-sm text-gray-600 font-primary">
-                                                    Price
-                                                </Text>
-                                                <Text className="text-sm text-gray-600 font-primary">
-                                                    Stock
-                                                </Text>
-                                                <Text className="text-sm text-gray-600 font-primary">
-                                                    Status
-                                                </Text>
-                                            </View>
-
-                                            <View className="flex-row justify-between items-center">
-                                                {/* Product */}
-                                                <View className="flex-1">
-                                                    <View className="flex-row items-center">
-                                                        <Text className="text-2xl mr-2">
-                                                            {product.image}
-                                                        </Text>
-                                                        <View>
-                                                            <Text className="text-sm font-semibold text-gray-900 font-primary">
-                                                                {product.name}
-                                                            </Text>
-                                                            <Text className="text-xs text-gray-500 font-primary">
-                                                                ID: {product.id}
-                                                            </Text>
-                                                        </View>
-                                                    </View>
-                                                </View>
-
-                                                {/* Category */}
-                                                <View className="flex-1">
-                                                    <Text className="text-sm font-semibold text-gray-900 font-primary capitalize">
-                                                        {product.category}
-                                                    </Text>
-                                                </View>
-
-                                                {/* Price */}
-                                                <View className="flex-1">
-                                                    <Text className="text-sm font-bold text-gray-900 font-primary">
-                                                        R{product.price.toFixed(2)}
-                                                    </Text>
-                                                </View>
-
-                                                {/* Stock */}
-                                                <View className="flex-1">
-                                                    <Text className="text-sm text-gray-700 font-primary">
-                                                        {product.stockQuantity || 0} units
-                                                    </Text>
-                                                </View>
-
-                                                {/* Status */}
-                                                <View className="flex-1">
-                                                    <View className="flex-row gap-1">
-                                                        {product.badge && (
-                                                            <View
-                                                                className={`px-2 py-1 rounded ${getBadgeColor(product.badge)}`}
-                                                            >
-                                                                <Text className="text-xs font-semibold font-primary">
-                                                                    {product.badge}
-                                                                </Text>
-                                                            </View>
-                                                        )}
-                                                        <View className="px-2 py-1 bg-green-100 rounded">
-                                                            <Text className="text-xs font-semibold text-green-800 font-primary">
-                                                                In Stock
-                                                            </Text>
-                                                        </View>
-                                                    </View>
-                                                </View>
-                                            </View>
-                                        </View>
-                                    </View>
-
-                                    {/* Description */}
-                                    <View className="pt-3 mt-3 border-t border-gray-100">
-                                        <Text className="text-sm text-gray-600 font-primary">
-                                            {product.description}
-                                        </Text>
-                                        {product.variants && (
-                                            <View className="mt-2">
-                                                <Text className="text-xs text-gray-500 font-primary">
-                                                    Variants available:
-                                                    {product.variants.colors && ` ${product.variants.colors.length} colors`}
-                                                    {product.variants.sizes && ` ${product.variants.sizes.length} sizes`}
-                                                    {product.variants.flavors && ` ${product.variants.flavors.length} flavors`}
-                                                </Text>
-                                            </View>
-                                        )}
-                                    </View>
-                                </Pressable>
-                            );
-                        })
-                    )}
-                </View>
-            </ScrollView>
+            {/* Product List */}
+            {isLoading && !isRefreshing ? (
+                renderLoadingComponent()
+            ) : error ? (
+                renderErrorComponent()
+            ) : (
+                <FlatList
+                    {...flatListProps}
+                    ListEmptyComponent={renderEmptyComponent}
+                    className="flex-1"
+                />
+            )}
 
             {/* Filter Modal */}
             <ProductFilterModal

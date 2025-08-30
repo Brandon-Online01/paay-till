@@ -36,22 +36,22 @@ export default function SignUp() {
     const leftPanelOpacity = useSharedValue(0);
     const leftPanelScale = useSharedValue(0.8);
     const leftPanelTranslateX = useSharedValue(-100);
-    
+
     const headerOpacity = useSharedValue(0);
     const headerTranslateY = useSharedValue(30);
-    
+
     const formOpacity = useSharedValue(0);
     const formTranslateY = useSharedValue(50);
-    
+
     const inputsOpacity = useSharedValue(0);
     const inputsTranslateY = useSharedValue(20);
-    
+
     const buttonOpacity = useSharedValue(0);
     const buttonScale = useSharedValue(0.8);
-    
+
     const linksOpacity = useSharedValue(0);
     const linksTranslateY = useSharedValue(20);
-    
+
     const logoScale = useSharedValue(0);
     const logoRotate = useSharedValue(-45);
 
@@ -62,45 +62,84 @@ export default function SignUp() {
         // Staggered entrance animations with proper delays
         // 1. Left panel slides in and scales
         setTimeout(() => {
-            leftPanelOpacity.value = withTiming(1, { duration: 600, easing: Easing.out(Easing.exp) });
-            leftPanelTranslateX.value = withSpring(0, { damping: 15, stiffness: 100 });
-            leftPanelScale.value = withSpring(1, { damping: 12, stiffness: 120 });
+            leftPanelOpacity.value = withTiming(1, {
+                duration: 600,
+                easing: Easing.out(Easing.exp),
+            });
+            leftPanelTranslateX.value = withSpring(0, {
+                damping: 15,
+                stiffness: 100,
+            });
+            leftPanelScale.value = withSpring(1, {
+                damping: 12,
+                stiffness: 120,
+            });
         }, 100);
 
         // 2. Logo appears with scale and rotation
         setTimeout(() => {
             logoScale.value = withSpring(1, { damping: 10, stiffness: 150 });
-            logoRotate.value = withTiming(0, { duration: 800, easing: Easing.out(Easing.back(1.2)) });
+            logoRotate.value = withTiming(0, {
+                duration: 800,
+                easing: Easing.out(Easing.back(1.2)),
+            });
         }, 300);
 
         // 3. Header text fades in from top
         setTimeout(() => {
-            headerOpacity.value = withTiming(1, { duration: 500, easing: Easing.out(Easing.exp) });
-            headerTranslateY.value = withSpring(0, { damping: 15, stiffness: 100 });
+            headerOpacity.value = withTiming(1, {
+                duration: 500,
+                easing: Easing.out(Easing.exp),
+            });
+            headerTranslateY.value = withSpring(0, {
+                damping: 15,
+                stiffness: 100,
+            });
         }, 600);
 
         // 4. Form container appears
         setTimeout(() => {
-            formOpacity.value = withTiming(1, { duration: 600, easing: Easing.out(Easing.exp) });
-            formTranslateY.value = withSpring(0, { damping: 15, stiffness: 100 });
+            formOpacity.value = withTiming(1, {
+                duration: 600,
+                easing: Easing.out(Easing.exp),
+            });
+            formTranslateY.value = withSpring(0, {
+                damping: 15,
+                stiffness: 100,
+            });
         }, 800);
 
         // 5. Input fields slide in
         setTimeout(() => {
-            inputsOpacity.value = withTiming(1, { duration: 500, easing: Easing.out(Easing.exp) });
-            inputsTranslateY.value = withSpring(0, { damping: 15, stiffness: 100 });
+            inputsOpacity.value = withTiming(1, {
+                duration: 500,
+                easing: Easing.out(Easing.exp),
+            });
+            inputsTranslateY.value = withSpring(0, {
+                damping: 15,
+                stiffness: 100,
+            });
         }, 1000);
 
         // 6. Button appears with scale
         setTimeout(() => {
-            buttonOpacity.value = withTiming(1, { duration: 500, easing: Easing.out(Easing.exp) });
+            buttonOpacity.value = withTiming(1, {
+                duration: 500,
+                easing: Easing.out(Easing.exp),
+            });
             buttonScale.value = withSpring(1, { damping: 12, stiffness: 150 });
         }, 1200);
 
         // 7. Footer links fade in
         setTimeout(() => {
-            linksOpacity.value = withTiming(1, { duration: 500, easing: Easing.out(Easing.exp) });
-            linksTranslateY.value = withSpring(0, { damping: 15, stiffness: 100 });
+            linksOpacity.value = withTiming(1, {
+                duration: 500,
+                easing: Easing.out(Easing.exp),
+            });
+            linksTranslateY.value = withSpring(0, {
+                damping: 15,
+                stiffness: 100,
+            });
         }, 1400);
     }, [clearForms]);
 
@@ -140,14 +179,14 @@ export default function SignUp() {
         opacity: leftPanelOpacity.value,
         transform: [
             { translateX: leftPanelTranslateX.value },
-            { scale: leftPanelScale.value }
+            { scale: leftPanelScale.value },
         ],
     }));
 
     const logoAnimatedStyle = useAnimatedStyle(() => ({
         transform: [
             { scale: logoScale.value },
-            { rotate: `${logoRotate.value}deg` }
+            { rotate: `${logoRotate.value}deg` },
         ],
     }));
 
@@ -217,7 +256,10 @@ export default function SignUp() {
                         resizeMode="cover"
                     >
                         <View className="flex flex-col gap-2 justify-center items-center p-6 space-y-2 rounded-lg bg-black/40">
-                            <Animated.View className="flex flex-col gap-2 items-center" style={logoAnimatedStyle}>
+                            <Animated.View
+                                className="flex flex-col gap-2 items-center"
+                                style={logoAnimatedStyle}
+                            >
                                 <Image
                                     source={require('../../../assets/images/logo.png')}
                                     className="rounded-2xl"
@@ -251,7 +293,10 @@ export default function SignUp() {
                     </View>
                     <View className="flex flex-col gap-10 justify-center items-center p-2 w-full h-full">
                         {/* Header */}
-                        <Animated.View className="space-y-2" style={headerAnimatedStyle}>
+                        <Animated.View
+                            className="space-y-2"
+                            style={headerAnimatedStyle}
+                        >
                             <Text className="text-3xl font-bold text-center text-primary font-primary">
                                 {info?.auth?.signUp?.title ||
                                     'Create An Account'}
@@ -263,7 +308,10 @@ export default function SignUp() {
                         </Animated.View>
 
                         {/* Form */}
-                        <Animated.View className="flex flex-col gap-6 justify-center items-center w-full" style={formAnimatedStyle}>
+                        <Animated.View
+                            className="flex flex-col gap-6 justify-center items-center w-full"
+                            style={formAnimatedStyle}
+                        >
                             <Animated.View style={inputsAnimatedStyle}>
                                 {/* Business Name Field */}
                                 <View className="flex flex-col gap-1 w-full mb-6">
@@ -278,9 +326,13 @@ export default function SignUp() {
                                                     : 'border-gray-300'
                                             }`}
                                             placeholder="Your Business Name"
-                                            value={signUpForm.businessName || ''}
+                                            value={
+                                                signUpForm.businessName || ''
+                                            }
                                             onChangeText={(businessName) =>
-                                                updateSignUpForm({ businessName })
+                                                updateSignUpForm({
+                                                    businessName,
+                                                })
                                             }
                                             autoCapitalize="words"
                                         />
@@ -305,9 +357,13 @@ export default function SignUp() {
                                                     : 'border-gray-300'
                                             }`}
                                             placeholder="business@example.com"
-                                            value={signUpForm.businessEmail || ''}
+                                            value={
+                                                signUpForm.businessEmail || ''
+                                            }
                                             onChangeText={(businessEmail) =>
-                                                updateSignUpForm({ businessEmail })
+                                                updateSignUpForm({
+                                                    businessEmail,
+                                                })
                                             }
                                             keyboardType="email-address"
                                             autoCapitalize="none"
@@ -357,7 +413,10 @@ export default function SignUp() {
                         </Animated.View>
 
                         {/* Links */}
-                        <Animated.View className="absolute right-0 bottom-0 left-0" style={linksAnimatedStyle}>
+                        <Animated.View
+                            className="absolute right-0 bottom-0 left-0"
+                            style={linksAnimatedStyle}
+                        >
                             <View className="flex-row gap-1 justify-center items-center">
                                 <Text className="text-gray-600 font-primary">
                                     Already have an account?

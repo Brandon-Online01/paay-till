@@ -1,11 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import {
-    View,
-    Text,
-    Animated,
-    SafeAreaView,
-    StyleSheet,
-} from 'react-native';
+import { View, Text, Animated, SafeAreaView, StyleSheet } from 'react-native';
 import { useUIStore } from '@/store/ui.store';
 
 /**
@@ -158,13 +152,17 @@ export default function ToastProvider() {
         if (!(global as any).showToast) {
             // Store the showToast function globally
             (global as any).showToast = showToast;
-            console.log('🎉 ToastProvider: Global showToast function initialized');
+            console.log(
+                '🎉 ToastProvider: Global showToast function initialized'
+            );
         }
 
         if (!(global as any).resetUIState) {
             // Store the resetUIState function globally
             (global as any).resetUIState = resetAllUIState;
-            console.log('🔄 ToastProvider: Global resetUIState function initialized');
+            console.log(
+                '🔄 ToastProvider: Global resetUIState function initialized'
+            );
         }
     }, []); // Empty dependency array to run only once
 

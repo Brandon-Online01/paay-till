@@ -2,11 +2,12 @@ import {
     Text,
     View,
     ScrollView,
+    FlatList,
     Pressable,
     TextInput,
     RefreshControl,
 } from 'react-native';
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import {
     Search,
     Filter,
@@ -16,6 +17,8 @@ import {
     TrendingUp,
     Package,
     RotateCcw,
+    List,
+    Grid3x3,
 } from 'lucide-react-native';
 import BaseProvider from '@/providers/base.provider';
 import { TransactionService } from '@/@db/transaction.service';
@@ -23,6 +26,7 @@ import { useReportsStore, SortPeriod } from '@/store/reports.store';
 import { Transaction } from '@/types/transaction.types';
 import FilterModal from '@/components/reports/filter-modal';
 import TransactionDetailModal from '@/components/reports/transaction-detail-modal';
+import TransactionCard from '@/components/reports/transaction-card';
 
 const SORT_OPTIONS: { value: SortPeriod; label: string }[] = [
     { value: 'hourly', label: 'Hourly' },
@@ -59,6 +63,7 @@ export default function Reports() {
     } = useReportsStore();
 
     const [showSortDropdown, setShowSortDropdown] = useState(false);
+    const [viewMode, setViewMode] = useState<'list' | 'cards'>('list');
 
     const loadData = useCallback(async () => {
         setLoading(true);
@@ -143,6 +148,229 @@ export default function Reports() {
         setSortBy(sort);
         setShowSortDropdown(false);
     };
+
+    /**
+     * Optimized render function for transaction cards
+     */
+    const renderTransactionCard = useCallback(({ item: transaction, index }) => (
+        <View className="w-[24%] mb-4">
+            <TransactionCard
+                transaction={transaction}
+                onPress={handleTransactionPress}
+            />
+        </View>
+    ), [handleTransactionPress]);
+
+    /**
+     * Optimized render function for transaction list items
+     */
+    const renderTransactionListItem = useCallback(({ item: transaction, index }) => {
+        const dateTime = formatDate(transaction.createdAt);
+
+        return (
+            <Pressable
+                onPress={() => handleTransactionPress(transaction)}
+                className="p-4 mb-4 bg-white rounded-lg border border-gray-200 active:bg-gray-50"
+            >
+                {/* Header Row */}
+                <View className="flex-row justify-between items-start mb-3">
+                    <View className="flex-1">
+                        <View className="flex-row justify-between items-center mb-2">
+                            <Text className="text-sm text-gray-600 font-primary">
+                                Created
+                            </Text>
+                            <Text className="text-sm text-gray-600 font-primary">
+                                Customer
+                            </Text>
+                            <Text className="text-sm text-gray-600 font-primary">
+                                Items
+                            </Text>
+                            <Text className="text-sm text-gray-600 font-primary">
+                                Cost
+                            </Text>
+                            <Text className="text-sm text-gray-600 font-primary">
+                                Status
+                            </Text>
+                            <Text className="text-sm text-gray-600 font-primary">
+                                Payment
+                            </Text>
+                            <Text className="text-sm text-gray-600 font-primary">
+                                Cashier
+                            </Text>
+                        </View>
+
+                        <View className="flex-row justify-between items-center">
+                            {/* Created */}
+                            <View className="flex-1">
+                                <Text className="text-sm font-semibold text-gray-900 font-primary">
+                                    {dateTime.date}
+                                </Text>
+                                <Text className="text-xs text-gray-500 font-primary">
+                                    {dateTime.time}
+                                </Text>
+                            </View>
+
+                            {/* Customer */}
+                            <View className="flex-1">
+                                <Text className="text-sm font-semibold text-gray-900 font-primary">
+                                    {transaction.customerName || 'Walk-in Customer'}
+                                </Text>
+                                <Text className="text-xs text-gray-500 font-primary">
+                                    {transaction.receiptOptions?.phoneNumber || '+27 XXX XXXX'}
+                                </Text>
+                            </View>
+
+                            {/* Items */}
+                            <View className="flex-1">
+                                {transaction.items.slice(0, 2).map((item, index) => (
+                                    <Text key={index} className="text-xs text-gray-700 font-primary">
+                                        {item.image} {item.quantity}× {item.name}
+                                    </Text>
+                                ))}
+                                {transaction.items.length > 2 && (
+                                    <Text className="text-xs text-gray-500 font-primary">
+                                        +{transaction.items.length - 2} more
+                                    </Text>
+                                )}
+                            </View>
+
+                            {/* Cost */}
+                            <View className="flex-1">
+                                <Text className="text-sm font-bold text-gray-900 font-primary">
+                                    R{transaction.totalAmount.toFixed(2)}
+                                </Text>
+                            </View>
+
+                            {/* Status */}
+                            <View className="flex-1">
+                                <Text className={`text-sm font-semibold font-primary ${getStatusColor(transaction.status)}`}>
+                                    {getStatusLabel(transaction.status)}
+                                </Text>
+                            </View>
+
+                            {/* Payment */}
+                            <View className="flex-1">
+                                <View className="px-2 py-1 bg-green-100 rounded">
+                                    <Text className="text-xs font-semibold text-green-800 font-primary">
+                                        Paid
+                                    </Text>
+                                </View>
+                            </View>
+
+                            {/* Cashier */}
+                            <View className="flex-1">
+                                <Text className="text-sm text-gray-700 font-primary">
+                                    👨‍💼 {transaction.cashierID || 'Unknown'}
+                                </Text>
+                            </View>
+                        </View>
+                    </View>
+                </View>
+
+                {/* Status Options */}
+                <View className="pt-3 mt-3 border-t border-gray-100">
+                    <Text className="mb-2 text-xs text-gray-600 font-primary">
+                        Status:
+                    </Text>
+                    <View className="flex-row gap-4">
+                        {['Shipped', 'Not delivered', 'Delivered', 'Returned', 'Cancelled'].map((status) => (
+                            <View key={status} className="flex-row gap-1 items-center">
+                                <View
+                                    className={`w-3 h-3 rounded-full border-2 ${
+                                        getStatusLabel(transaction.status) === status
+                                            ? 'bg-green-600 border-green-600'
+                                            : 'border-gray-300'
+                                    }`}
+                                />
+                                <Text className="text-xs text-gray-600 font-primary">
+                                    {status}
+                                </Text>
+                            </View>
+                        ))}
+                    </View>
+                </View>
+            </Pressable>
+        );
+    }, [handleTransactionPress, formatDate, getStatusColor, getStatusLabel]);
+
+    /**
+     * Key extractor for FlatList optimization
+     */
+    const keyExtractor = useCallback((item) => item.id, []);
+
+    /**
+     * Loading component for FlatList
+     */
+    const renderLoadingComponent = useCallback(() => (
+        <View className="flex-1 justify-center items-center py-12">
+            <Text className="text-gray-500 font-primary">
+                Loading sales...
+            </Text>
+        </View>
+    ), []);
+
+    /**
+     * Empty component for FlatList
+     */
+    const renderEmptyComponent = useCallback(() => (
+        <View className="flex-1 justify-center items-center py-12">
+            <Text className="text-gray-500 font-primary">
+                No sales found
+            </Text>
+        </View>
+    ), []);
+
+    /**
+     * Error component for FlatList
+     */
+    const renderErrorComponent = useCallback(() => (
+        <View className="flex-1 justify-center items-center py-12">
+            <Text className="text-red-500 font-primary">
+                {error}
+            </Text>
+        </View>
+    ), [error]);
+
+    /**
+     * FlatList configuration based on view mode
+     */
+    const flatListProps = useMemo(() => {
+        const baseProps = {
+            data: filteredTransactions,
+            keyExtractor,
+            showsVerticalScrollIndicator: false,
+            initialNumToRender: 20,
+            maxToRenderPerBatch: 10,
+            windowSize: 10,
+            updateCellsBatchingPeriod: 50,
+            removeClippedSubviews: true,
+            refreshControl: (
+                <RefreshControl
+                    refreshing={isRefreshing}
+                    onRefresh={handleRefresh}
+                    colors={['#2563eb']}
+                    tintColor="#2563eb"
+                />
+            ),
+        };
+
+        if (viewMode === 'cards') {
+            return {
+                ...baseProps,
+                renderItem: renderTransactionCard,
+                numColumns: 4,
+                key: 'cards-view',
+                contentContainerStyle: { padding: 16 },
+            };
+        } else {
+            return {
+                ...baseProps,
+                renderItem: renderTransactionListItem,
+                key: 'list-view',
+                contentContainerStyle: { padding: 16 },
+            };
+        }
+    }, [viewMode, filteredTransactions, keyExtractor, renderTransactionCard, renderTransactionListItem, isRefreshing, handleRefresh]);
 
     return (
         <BaseProvider>
@@ -300,199 +528,54 @@ export default function Reports() {
                         <Filter size={16} color="white" />
                         <Text className="text-white font-primary">Filter</Text>
                     </Pressable>
+                    {/* View Toggle */}
+                    <View className="flex-row bg-gray-100 rounded-lg">
+                        <Pressable
+                            onPress={() => setViewMode('list')}
+                            className={`p-2 rounded-lg ${
+                                viewMode === 'list'
+                                    ? 'bg-blue-600'
+                                    : 'bg-transparent'
+                            }`}
+                        >
+                            <List
+                                size={20}
+                                color={
+                                    viewMode === 'list' ? '#ffffff' : '#6b7280'
+                                }
+                            />
+                        </Pressable>
+                        <Pressable
+                            onPress={() => setViewMode('cards')}
+                            className={`p-2 rounded-lg ${
+                                viewMode === 'cards'
+                                    ? 'bg-blue-600'
+                                    : 'bg-transparent'
+                            }`}
+                        >
+                            <Grid3x3
+                                size={20}
+                                color={
+                                    viewMode === 'cards' ? '#ffffff' : '#6b7280'
+                                }
+                            />
+                        </Pressable>
+                    </View>
                 </View>
             </View>
 
-            <ScrollView
-                className="flex-1"
-                refreshControl={
-                    <RefreshControl
-                        refreshing={isRefreshing}
-                        onRefresh={handleRefresh}
-                        colors={['#2563eb']}
-                        tintColor="#2563eb"
-                    />
-                }
-            >
                 {/* Transaction List */}
-                <View className="px-6 py-4">
                     {isLoading && !isRefreshing ? (
-                        <View className="flex-1 justify-center items-center py-12">
-                            <Text className="text-gray-500 font-primary">
-                                Loading sales...
-                            </Text>
-                        </View>
+                renderLoadingComponent()
                     ) : error ? (
-                        <View className="flex-1 justify-center items-center py-12">
-                            <Text className="text-red-500 font-primary">
-                                {error}
-                            </Text>
-                        </View>
-                    ) : filteredTransactions.length === 0 ? (
-                        <View className="flex-1 justify-center items-center py-12">
-                            <Text className="text-gray-500 font-primary">
-                                No sales found
-                            </Text>
-                        </View>
-                    ) : (
-                        filteredTransactions.map((transaction) => {
-                            const dateTime = formatDate(transaction.createdAt);
-
-                            return (
-                                <Pressable
-                                    key={transaction.id}
-                                    onPress={() =>
-                                        handleTransactionPress(transaction)
-                                    }
-                                    className="p-4 mb-4 bg-white rounded-lg border border-gray-200 active:bg-gray-50"
-                                >
-                                    {/* Header Row */}
-                                    <View className="flex-row justify-between items-start mb-3">
-                                        <View className="flex-1">
-                                            <View className="flex-row justify-between items-center mb-2">
-                                                <Text className="text-sm text-gray-600 font-primary">
-                                                    Created
-                                                </Text>
-                                                <Text className="text-sm text-gray-600 font-primary">
-                                                    Customer
-                                                </Text>
-                                                <Text className="text-sm text-gray-600 font-primary">
-                                                    Items
-                                                </Text>
-                                                <Text className="text-sm text-gray-600 font-primary">
-                                                    Cost
-                                                </Text>
-                                                <Text className="text-sm text-gray-600 font-primary">
-                                                    Status
-                                                </Text>
-                                                <Text className="text-sm text-gray-600 font-primary">
-                                                    Payment
-                                                </Text>
-                                            </View>
-
-                                            <View className="flex-row justify-between items-center">
-                                                {/* Created */}
-                                                <View className="flex-1">
-                                                    <Text className="text-sm font-semibold text-gray-900 font-primary">
-                                                        {dateTime.date}
-                                                    </Text>
-                                                    <Text className="text-xs text-gray-500 font-primary">
-                                                        {dateTime.time}
-                                                    </Text>
-                                                </View>
-
-                                                {/* Customer */}
-                                                <View className="flex-1">
-                                                    <Text className="text-sm font-semibold text-gray-900 font-primary">
-                                                        {transaction.customerName ||
-                                                            'Walk-in Customer'}
-                                                    </Text>
-                                                    <Text className="text-xs text-gray-500 font-primary">
-                                                        {transaction
-                                                            .receiptOptions
-                                                            ?.phoneNumber ||
-                                                            '+27 XXX XXXX'}
-                                                    </Text>
-                                                </View>
-
-                                                {/* Items */}
-                                                <View className="flex-1">
-                                                    {transaction.items
-                                                        .slice(0, 2)
-                                                        .map((item, index) => (
-                                                            <Text
-                                                                key={index}
-                                                                className="text-xs text-gray-700 font-primary"
-                                                            >
-                                                                •{' '}
-                                                                {item.quantity}x{' '}
-                                                                {item.name}
-                                                            </Text>
-                                                        ))}
-                                                    {transaction.items.length >
-                                                        2 && (
-                                                        <Text className="text-xs text-gray-500 font-primary">
-                                                            +
-                                                            {transaction.items
-                                                                .length -
-                                                                2}{' '}
-                                                            more
-                                                        </Text>
-                                                    )}
-                                                </View>
-
-                                                {/* Cost */}
-                                                <View className="flex-1">
-                                                    <Text className="text-sm font-bold text-gray-900 font-primary">
-                                                        R
-                                                        {transaction.totalAmount.toFixed(
-                                                            2
-                                                        )}
-                                                    </Text>
-                                                </View>
-
-                                                {/* Status */}
-                                                <View className="flex-1">
-                                                    <Text
-                                                        className={`text-sm font-semibold font-primary ${getStatusColor(transaction.status)}`}
-                                                    >
-                                                        {getStatusLabel(
-                                                            transaction.status
-                                                        )}
-                                                    </Text>
-                                                </View>
-
-                                                {/* Payment */}
-                                                <View className="flex-1">
-                                                    <View className="px-2 py-1 bg-green-100 rounded">
-                                                        <Text className="text-xs font-semibold text-green-800 font-primary">
-                                                            Paid
-                                                        </Text>
-                                                    </View>
-                                                </View>
-                                            </View>
-                                        </View>
-                                    </View>
-
-                                    {/* Status Options */}
-                                    <View className="pt-3 mt-3 border-t border-gray-100">
-                                        <Text className="mb-2 text-xs text-gray-600 font-primary">
-                                            Status:
-                                        </Text>
-                                        <View className="flex-row gap-4">
-                                            {[
-                                                'Shipped',
-                                                'Not delivered',
-                                                'Delivered',
-                                                'Returned',
-                                                'Cancelled',
-                                            ].map((status) => (
-                                                <View
-                                                    key={status}
-                                                    className="flex-row gap-1 items-center"
-                                                >
-                                                    <View
-                                                        className={`w-3 h-3 rounded-full border-2 ${
-                                                            getStatusLabel(
-                                                                transaction.status
-                                                            ) === status
-                                                                ? 'bg-green-600 border-green-600'
-                                                                : 'border-gray-300'
-                                                        }`}
-                                                    />
-                                                    <Text className="text-xs text-gray-600 font-primary">
-                                                        {status}
-                                                    </Text>
-                                                </View>
-                                            ))}
-                                        </View>
-                                    </View>
-                                </Pressable>
-                            );
-                        })
-                    )}
-                </View>
-            </ScrollView>
+                renderErrorComponent()
+            ) : (
+                <FlatList
+                    {...flatListProps}
+                    ListEmptyComponent={renderEmptyComponent}
+                    className="flex-1"
+                />
+            )}
 
             {/* Filter Modal */}
             <FilterModal

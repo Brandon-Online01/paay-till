@@ -1,8 +1,9 @@
 import { Drawer } from 'expo-router/drawer';
 import { StatusBar } from 'expo-status-bar';
-import { View, Text, Pressable, Dimensions } from 'react-native';
+import { View, Text, Pressable, Dimensions, Platform } from 'react-native';
+import React, { useMemo, useCallback } from 'react';
 import {
-    Home,
+    Barcode,
     Settings,
     CirclePower,
     Receipt,
@@ -10,30 +11,31 @@ import {
 } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
 import info from '../../data/info.json';
-import { useScreenSize } from '@/utils/screen.size.util';
 
-function DrawerContent() {
+// Memoized drawer content for better performance
+const DrawerContent = React.memo(() => {
     const router = useRouter();
 
-    const navigateToSettings = () => {
+    // Memoized navigation handlers to prevent recreating functions on every render
+    const navigateToSettings = useCallback(() => {
         router.push('/(drawer)/settings');
-    };
+    }, [router]);
 
-    const navigateToTill = () => {
+    const navigateToTill = useCallback(() => {
         router.push('/(drawer)/till');
-    };
+    }, [router]);
 
-    const navigateToTransactions = () => {
+    const navigateToTransactions = useCallback(() => {
         router.push('/(drawer)/inventory');
-    };
+    }, [router]);
 
-    const navigateToReports = () => {
+    const navigateToReports = useCallback(() => {
         router.push('/(drawer)/reports');
-    };
+    }, [router]);
 
-    const handleSignOut = () => {
+    const handleSignOut = useCallback(() => {
         router.push('/');
-    };
+    }, [router]);
 
     return (
         <View className="flex-1 px-8 py-20 bg-black-900">
@@ -63,7 +65,7 @@ function DrawerContent() {
                             onPress={navigateToTill}
                             className="flex-row items-center px-4 py-3 rounded-lg hover:bg-gray-50 active:bg-gray-100"
                         >
-                            <Home size={24} color="#374151" />
+                            <Barcode size={24} color="#374151" />
                             <Text className="ml-3 text-lg text-gray-700 font-primary">
                                 {info?.navigation?.home?.label}
                             </Text>
@@ -118,38 +120,54 @@ function DrawerContent() {
             </View>
         </View>
     );
-}
+});
+
+DrawerContent.displayName = 'DrawerContent';
+
 
 export default function DrawerLayout() {
-    const screenSize = useScreenSize();
     const { width } = Dimensions.get('window');
 
-    // Calculate drawer width based on screen size
-    const getDrawerWidth = () => {
-        if (width > 480) {
-            return width * 0.3; // 50% on larger screens
+    // Memoized drawer width calculation for performance with safety checks
+    const drawerWidth = useMemo(() => {
+        // Ensure width is a valid number and greater than 0
+        const safeWidth = typeof width === 'number' && width > 0 ? width : 350; // Fallback to 350px
+        
+        if (safeWidth > 480) {
+            return Math.min(safeWidth * 0.3, 400); // Cap at 400px for very large screens
         }
-        return width * 0.83; // 83% on mobile screens
-    };
+        return safeWidth * 0.83; // 83% on mobile screens
+    }, [width]);
 
-    console.log('Screen size:', screenSize, 'Width:', width);
+    // Memoized drawer style to prevent recreation on every render
+    const drawerStyle = useMemo(() => ({
+        width: drawerWidth,
+        backgroundColor: 'transparent',
+    }), [drawerWidth]);
+
+    // Memoized screen options for performance
+    const screenOptions = useMemo(() => ({
+        headerShown: false,
+        drawerStyle,
+        overlayColor: 'rgba(0, 0, 0, 0.5)',
+        sceneStyle: {
+            backgroundColor: '#f8fafc',
+        },
+        // Performance optimizations for drawer
+        swipeEnabled: true,
+        swipeEdgeWidth: Platform.OS === 'ios' ? 50 : 20,
+        drawerType: Platform.select({
+            ios: 'slide' as const,
+            default: 'front' as const,
+        }),
+    }), [drawerStyle]);
 
     return (
         <>
             <StatusBar style="dark" />
             <Drawer
                 drawerContent={DrawerContent}
-                screenOptions={{
-                    headerShown: false, // Will be handled per page
-                    drawerStyle: {
-                        width: getDrawerWidth(),
-                        backgroundColor: 'transparent',
-                    },
-                    overlayColor: 'rgba(0, 0, 0, 0.5)',
-                    sceneStyle: {
-                        backgroundColor: '#f8fafc',
-                    },
-                }}
+                screenOptions={screenOptions}
             >
                 <Drawer.Screen
                     name="till/index"
@@ -161,6 +179,18 @@ export default function DrawerLayout() {
                     name="settings/index"
                     options={{
                         title: 'Settings',
+                    }}
+                />
+                <Drawer.Screen
+                    name="inventory/index"
+                    options={{
+                        title: 'Inventory',
+                    }}
+                />
+                <Drawer.Screen
+                    name="reports/index"
+                    options={{
+                        title: 'Reports',
                     }}
                 />
             </Drawer>

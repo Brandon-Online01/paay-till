@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, Pressable, ScrollView, Modal } from 'react-native';
 import {
     X,
@@ -8,8 +8,10 @@ import {
     Package,
     MapPin,
     Truck,
+    Image as ImageIcon,
 } from 'lucide-react-native';
 import { Transaction } from '@/types/transaction.types';
+import { TransactionService } from '@/@db';
 
 interface TransactionDetailModalProps {
     visible: boolean;
@@ -22,6 +24,35 @@ export default function TransactionDetailModal({
     transaction,
     onClose,
 }: TransactionDetailModalProps) {
+    const [enhancedItems, setEnhancedItems] = useState<any[]>([]);
+    const [loadingItems, setLoadingItems] = useState(false);
+
+    // Load enhanced transaction items when transaction changes
+    useEffect(() => {
+        if (transaction && visible && transaction.id) {
+            loadEnhancedItems();
+        }
+    }, [transaction, visible]);
+
+    const loadEnhancedItems = async () => {
+        if (!transaction?.id) return;
+
+        try {
+            setLoadingItems(true);
+            const itemsWithProducts =
+                await TransactionService.getTransactionItemsWithProducts(
+                    transaction.id
+                );
+            setEnhancedItems(itemsWithProducts);
+        } catch (error) {
+            console.error('Failed to load enhanced transaction items:', error);
+            // Fallback to original transaction items
+            setEnhancedItems([]);
+        } finally {
+            setLoadingItems(false);
+        }
+    };
+
     if (!transaction) return null;
 
     const formatDate = (dateString: string) => {
@@ -156,6 +187,16 @@ export default function TransactionDetailModal({
                                             </Text>
                                         </View>
                                     )}
+
+                                    <View className="flex-row items-center">
+                                        <Text className="text-sm font-semibold text-gray-700 mr-2 font-primary">
+                                            👨‍💼
+                                        </Text>
+                                        <Text className="text-gray-600 font-primary">
+                                            Cashier:{' '}
+                                            {transaction.cashierID || 'Unknown'}
+                                        </Text>
+                                    </View>
                                 </View>
                             </View>
 
@@ -164,69 +205,208 @@ export default function TransactionDetailModal({
                                 <Text className="text-lg font-semibold text-gray-900 mb-3 font-primary">
                                     Items Purchased
                                 </Text>
-                                {transaction.items.map((item, index) => (
-                                    <View
-                                        key={index}
-                                        className="flex-row justify-between items-center py-3 border-b border-gray-200"
-                                    >
-                                        <View className="flex-1">
-                                            <Text className="font-semibold text-gray-900 font-primary">
-                                                {item.name}
-                                            </Text>
-                                            <Text className="text-sm text-gray-600 font-primary">
-                                                Qty: {item.quantity} × R
-                                                {item.calculatedPrice?.toFixed(
-                                                    2
-                                                ) || item.price.toFixed(2)}
-                                            </Text>
-                                            {item.selectedVariants && (
-                                                <View className="mt-1">
-                                                    {item.selectedVariants
-                                                        .size && (
-                                                        <Text className="text-xs text-gray-500 font-primary">
-                                                            Size:{' '}
-                                                            {
-                                                                item
-                                                                    .selectedVariants
-                                                                    .size
-                                                            }
-                                                        </Text>
-                                                    )}
-                                                    {item.selectedVariants
-                                                        .flavor && (
-                                                        <Text className="text-xs text-gray-500 font-primary">
-                                                            Flavor:{' '}
-                                                            {
-                                                                item
-                                                                    .selectedVariants
-                                                                    .flavor
-                                                            }
-                                                        </Text>
-                                                    )}
-                                                    {item.selectedVariants
-                                                        .color && (
-                                                        <Text className="text-xs text-gray-500 font-primary">
-                                                            Color:{' '}
-                                                            {
-                                                                item
-                                                                    .selectedVariants
-                                                                    .color
-                                                            }
-                                                        </Text>
-                                                    )}
-                                                </View>
-                                            )}
-                                            {item.notes && (
-                                                <Text className="text-xs text-blue-600 mt-1 font-primary">
-                                                    Note: {item.notes}
-                                                </Text>
-                                            )}
-                                        </View>
-                                        <Text className="font-semibold text-gray-900 font-primary">
-                                            R{item.totalItemPrice.toFixed(2)}
+
+                                {loadingItems ? (
+                                    <View className="flex-row items-center justify-center py-4">
+                                        <Text className="text-gray-500 font-primary">
+                                            Loading item details...
                                         </Text>
                                     </View>
-                                ))}
+                                ) : enhancedItems.length > 0 ? (
+                                    // Enhanced items with product data
+                                    enhancedItems.map((item, index) => (
+                                        <View
+                                            key={index}
+                                            className="flex-row py-3 border-b border-gray-200"
+                                        >
+                                            {/* Product Image */}
+                                            <View className="mr-3 w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center">
+                                                {item.product?.image ? (
+                                                    <Text className="text-2xl">
+                                                        {item.product.image}
+                                                    </Text>
+                                                ) : (
+                                                    <ImageIcon
+                                                        size={20}
+                                                        color="#6b7280"
+                                                    />
+                                                )}
+                                            </View>
+
+                                            {/* Product Details */}
+                                            <View className="flex-1">
+                                                <View className="flex-row justify-between items-start">
+                                                    <View className="flex-1">
+                                                        <Text className="font-semibold text-gray-900 font-primary">
+                                                            {item.product
+                                                                ?.name ||
+                                                                'Unknown Product'}
+                                                        </Text>
+                                                        <Text className="text-sm text-gray-600 font-primary">
+                                                            Qty: {item.quantity}{' '}
+                                                            × R
+                                                            {item.calculatedPrice.toFixed(
+                                                                2
+                                                            )}
+                                                        </Text>
+
+                                                        {/* Product Category */}
+                                                        {item.product
+                                                            ?.category && (
+                                                            <Text className="text-xs text-gray-500 font-primary">
+                                                                Category:{' '}
+                                                                {
+                                                                    item.product
+                                                                        .category
+                                                                }
+                                                            </Text>
+                                                        )}
+
+                                                        {/* Selected Variants */}
+                                                        {item.selectedVariants && (
+                                                            <View className="mt-1">
+                                                                {item
+                                                                    .selectedVariants
+                                                                    .size && (
+                                                                    <Text className="text-xs text-gray-500 font-primary">
+                                                                        Size:{' '}
+                                                                        {
+                                                                            item
+                                                                                .selectedVariants
+                                                                                .size
+                                                                        }
+                                                                    </Text>
+                                                                )}
+                                                                {item
+                                                                    .selectedVariants
+                                                                    .flavor && (
+                                                                    <Text className="text-xs text-gray-500 font-primary">
+                                                                        Flavor:{' '}
+                                                                        {
+                                                                            item
+                                                                                .selectedVariants
+                                                                                .flavor
+                                                                        }
+                                                                    </Text>
+                                                                )}
+                                                                {item
+                                                                    .selectedVariants
+                                                                    .color && (
+                                                                    <Text className="text-xs text-gray-500 font-primary">
+                                                                        Color:{' '}
+                                                                        {
+                                                                            item
+                                                                                .selectedVariants
+                                                                                .color
+                                                                        }
+                                                                    </Text>
+                                                                )}
+                                                            </View>
+                                                        )}
+
+                                                        {/* Product Badge */}
+                                                        {item.product
+                                                            ?.badge && (
+                                                            <View className="mt-1">
+                                                                <View className="px-2 py-1 bg-green-100 rounded self-start">
+                                                                    <Text className="text-xs text-green-600 font-primary">
+                                                                        {
+                                                                            item
+                                                                                .product
+                                                                                .badge
+                                                                        }
+                                                                    </Text>
+                                                                </View>
+                                                            </View>
+                                                        )}
+
+                                                        {/* Notes */}
+                                                        {item.notes && (
+                                                            <Text className="text-xs text-blue-600 mt-1 font-primary">
+                                                                Note:{' '}
+                                                                {item.notes}
+                                                            </Text>
+                                                        )}
+                                                    </View>
+
+                                                    {/* Total Price */}
+                                                    <Text className="font-semibold text-gray-900 font-primary ml-2">
+                                                        R
+                                                        {item.totalPrice.toFixed(
+                                                            2
+                                                        )}
+                                                    </Text>
+                                                </View>
+                                            </View>
+                                        </View>
+                                    ))
+                                ) : (
+                                    // Fallback to original transaction items
+                                    transaction.items.map((item, index) => (
+                                        <View
+                                            key={index}
+                                            className="flex-row justify-between items-center py-3 border-b border-gray-200"
+                                        >
+                                            <View className="flex-1">
+                                                <Text className="font-semibold text-gray-900 font-primary">
+                                                    {item.name}
+                                                </Text>
+                                                <Text className="text-sm text-gray-600 font-primary">
+                                                    Qty: {item.quantity} × R
+                                                    {item.calculatedPrice?.toFixed(
+                                                        2
+                                                    ) || item.price.toFixed(2)}
+                                                </Text>
+                                                {item.selectedVariants && (
+                                                    <View className="mt-1">
+                                                        {item.selectedVariants
+                                                            .size && (
+                                                            <Text className="text-xs text-gray-500 font-primary">
+                                                                Size:{' '}
+                                                                {
+                                                                    item
+                                                                        .selectedVariants
+                                                                        .size
+                                                                }
+                                                            </Text>
+                                                        )}
+                                                        {item.selectedVariants
+                                                            .flavor && (
+                                                            <Text className="text-xs text-gray-500 font-primary">
+                                                                Flavor:{' '}
+                                                                {
+                                                                    item
+                                                                        .selectedVariants
+                                                                        .flavor
+                                                                }
+                                                            </Text>
+                                                        )}
+                                                        {item.selectedVariants
+                                                            .color && (
+                                                            <Text className="text-xs text-gray-500 font-primary">
+                                                                Color:{' '}
+                                                                {
+                                                                    item
+                                                                        .selectedVariants
+                                                                        .color
+                                                                }
+                                                            </Text>
+                                                        )}
+                                                    </View>
+                                                )}
+                                                {item.notes && (
+                                                    <Text className="text-xs text-blue-600 mt-1 font-primary">
+                                                        Note: {item.notes}
+                                                    </Text>
+                                                )}
+                                            </View>
+                                            <Text className="font-semibold text-gray-900 font-primary">
+                                                R
+                                                {item.totalItemPrice.toFixed(2)}
+                                            </Text>
+                                        </View>
+                                    ))
+                                )}
                             </View>
 
                             {/* Payment Methods */}

@@ -20,20 +20,23 @@ const queryClient = new QueryClient();
 
 export default function RootLayout() {
     useEffect(() => {
-        // Initialize the transaction database when the app starts
+        // Initialize all database services when the app starts
         const initializeDatabase = async () => {
             try {
-                const { TransactionService } = await import(
-                    '../@db/transaction.service'
-                );
-                await TransactionService.initialize();
+                const { initializeDatabase } = await import('../@db');
+                await initializeDatabase({
+                    runMigrations: true, // Run product migrations
+                    forceMigrations: true, // Force migration to add missing columns
+                    showStatus: true, // Show status to see what's happening
+                });
+                console.log('✅ Database initialization completed');
             } catch (error) {
                 console.error(
                     'Failed to initialize database on app startup:',
                     error
                 );
                 // Don't crash the app if database initialization fails
-                // The database will be initialized on first transaction attempt
+                // The database will be initialized on first usage attempt
             }
         };
 

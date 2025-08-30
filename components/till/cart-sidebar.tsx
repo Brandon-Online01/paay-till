@@ -2,13 +2,14 @@ import {
     View,
     Text,
     ScrollView,
+    FlatList,
     Pressable,
     TextInput,
     Modal,
     Animated,
     ActivityIndicator,
 } from 'react-native';
-import { useState, useRef } from 'react';
+import { useState, useRef, useCallback } from 'react';
 import {
     Minus,
     Plus,
@@ -67,7 +68,10 @@ export default function CartSidebar() {
 
     // Void token modal state
     const [showVoidModal, setShowVoidModal] = useState(false);
-    const [itemToVoid, setItemToVoid] = useState<{id: string, name: string} | null>(null);
+    const [itemToVoid, setItemToVoid] = useState<{
+        id: string;
+        name: string;
+    } | null>(null);
 
     // Receipt options state
     const [receiptOptions, setReceiptOptions] = useState({
@@ -126,7 +130,7 @@ export default function CartSidebar() {
         const code = promoCode.toLowerCase();
 
         // Simple promo logic - in real app this would be more sophisticated
-        if (code === 'save10' || code === 'paay@2025') {
+        if (code === 'save10' || code === 'orrbit-pos@2025') {
             const discountAmount = subtotal * 0.1;
             applyDiscount(discountAmount);
             setIsPromoApplied(true);
@@ -433,11 +437,19 @@ export default function CartSidebar() {
     };
 
     /**
-     * Validate phone number (South African format)
+     * Validate phone number (South African format) with enhanced flexibility
      */
     const validatePhoneNumber = (phone: string): boolean => {
-        const phoneRegex = /^(\+27|0)[6-8][0-9]{8}$/;
-        return phoneRegex.test(phone.replace(/\s+/g, ''));
+        // Remove all non-digit characters except + at the start
+        const cleanPhone = phone.replace(/[\s\-\(\)]/g, '');
+
+        // South African mobile numbers:
+        // - 0XX XXX XXXX (where XX is 6-8 for mobile)
+        // - +27 XX XXX XXXX (where XX is 6-8 for mobile)
+        // - 27 XX XXX XXXX (without +)
+        const phoneRegex = /^(\+?27|0)[6-8][0-9]{8}$/;
+
+        return phoneRegex.test(cleanPhone);
     };
 
     /**
@@ -470,16 +482,80 @@ export default function CartSidebar() {
     };
 
     /**
-     * Handle receipt contact change with validation
+     * Format phone number as user types
+     */
+    const formatPhoneNumber = (value: string): string => {
+        // Remove all non-digit characters except + at start
+        const cleanValue = value.replace(/[^\d+]/g, '');
+
+        if (cleanValue.startsWith('+27')) {
+            // Format: +27 XX XXX XXXX
+            const digits = cleanValue.slice(3);
+            if (digits.length <= 2) return `+27 ${digits}`;
+            if (digits.length <= 5)
+                return `+27 ${digits.slice(0, 2)} ${digits.slice(2)}`;
+            return `+27 ${digits.slice(0, 2)} ${digits.slice(2, 5)} ${digits.slice(5, 9)}`;
+        } else if (cleanValue.startsWith('27')) {
+            // Format: 27 XX XXX XXXX
+            const digits = cleanValue.slice(2);
+            if (digits.length <= 2) return `27 ${digits}`;
+            if (digits.length <= 5)
+                return `27 ${digits.slice(0, 2)} ${digits.slice(2)}`;
+            return `27 ${digits.slice(0, 2)} ${digits.slice(2, 5)} ${digits.slice(5, 9)}`;
+        } else if (cleanValue.startsWith('0')) {
+            // Format: 0XX XXX XXXX
+            if (cleanValue.length <= 3) return cleanValue;
+            if (cleanValue.length <= 6)
+                return `${cleanValue.slice(0, 3)} ${cleanValue.slice(3)}`;
+            return `${cleanValue.slice(0, 3)} ${cleanValue.slice(3, 6)} ${cleanValue.slice(6, 10)}`;
+        }
+
+        return cleanValue.slice(0, 15); // Max length limit
+    };
+
+    /**
+     * Handle receipt contact change with real-time validation and formatting
      */
     const handleReceiptContactChange = (
         field: 'phoneNumber' | 'email',
         value: string
     ) => {
-        setReceiptContact((prev) => ({ ...prev, [field]: value }));
+        let processedValue = value;
 
-        // Clear errors on change
-        setReceiptErrors((prev) => ({ ...prev, [field]: '' }));
+        // Format phone number as user types
+        if (field === 'phoneNumber') {
+            processedValue = formatPhoneNumber(value);
+        }
+
+        setReceiptContact((prev) => ({ ...prev, [field]: processedValue }));
+
+        // Real-time validation as user types
+        const errors = { ...receiptErrors };
+
+        if (field === 'phoneNumber' && processedValue.trim()) {
+            // Clean the input for validation (remove spaces, dashes, etc)
+            const cleanNumber = processedValue.replace(/[\s\-\(\)]/g, '');
+            if (cleanNumber.length > 3 && !validatePhoneNumber(cleanNumber)) {
+                errors.phoneNumber = 'Format: 071 234 5678 or +27 71 234 5678';
+            } else {
+                errors.phoneNumber = '';
+            }
+        } else if (field === 'email' && processedValue.trim()) {
+            // Basic email format check while typing
+            if (
+                processedValue.includes('@') &&
+                !validateEmail(processedValue)
+            ) {
+                errors.email = 'Please enter a valid email address';
+            } else {
+                errors.email = '';
+            }
+        } else {
+            // Clear error if field is empty
+            errors[field] = '';
+        }
+
+        setReceiptErrors(errors);
     };
 
     /**
@@ -538,16 +614,16 @@ export default function CartSidebar() {
         if (itemToVoid) {
             // Remove the item from cart
             removeItem(itemToVoid.id);
-            
+
             // Log additional void information
             console.log('🗑️ VOID COMPLETED - Item removed from cart:', {
                 itemId: itemToVoid.id,
                 itemName: itemToVoid.name,
                 timestamp: new Date().toISOString(),
                 cartTotal: total,
-                remainingItems: items.length - 1
+                remainingItems: items.length - 1,
             });
-            
+
             // Reset void state
             setItemToVoid(null);
             setShowVoidModal(false);
@@ -562,6 +638,121 @@ export default function CartSidebar() {
         setShowVoidModal(false);
     };
 
+    /**
+     * Optimized render function for cart items
+     */
+    const renderCartItem = useCallback(({ item, index }) => {
+        // Validate item data before rendering
+        if (!item?.id || !item?.name || typeof item?.price !== 'number') {
+            console.warn('Invalid item data:', item);
+            return null;
+        }
+
+        return (
+            <View
+                className="relative flex-row items-center p-3 mb-2 bg-white rounded border border-gray-200"
+            >
+                {/* Item Image */}
+                <View className="justify-center items-center mr-3 w-14 h-14 bg-gray-100 rounded-lg">
+                    <Text className="text-xl font-primary">
+                        {item.image}
+                    </Text>
+                </View>
+
+                {/* Item Details */}
+                <View className="flex-1">
+                    <Text className="font-semibold text-gray-900 text-md font-primary">
+                        {item.name}
+                    </Text>
+                    <Text className="text-sm text-gray-500 font-primary">
+                        {symbol}
+                        {(item.calculatedPrice ?? item.price).toFixed(2)}
+                    </Text>
+                    {item.selectedVariants && (
+                        <View className="mt-1">
+                            {item.selectedVariants.size && (
+                                <Text className="text-xs text-purple-600 font-primary">
+                                    Size: {item.selectedVariants.size}
+                                </Text>
+                            )}
+                            {item.selectedVariants.flavor && (
+                                <Text className="text-xs text-green-600 font-primary">
+                                    Flavor: {item.selectedVariants.flavor}
+                                </Text>
+                            )}
+                            {item.selectedVariants.color && (
+                                <Text className="text-xs text-blue-600 font-primary">
+                                    Color: {item.selectedVariants.color}
+                                </Text>
+                            )}
+                        </View>
+                    )}
+                    {item.notes && (
+                        <Text className="text-xs text-blue-600 font-primary">
+                            {item.notes}
+                        </Text>
+                    )}
+                </View>
+
+                {/* Quantity Controls */}
+                <View className="flex-row items-center">
+                    <Pressable
+                        onPress={() => updateQuantity(item.id, Math.max(1, item.quantity - 1))}
+                        className="justify-center items-center w-8 h-8 bg-red-500 rounded-full"
+                    >
+                        <Minus size={16} color="#ffffff" />
+                    </Pressable>
+
+                    <TextInput
+                        value={item.quantity.toString()}
+                        onChangeText={(value) => {
+                            const numValue = parseInt(value) || 1;
+                            updateQuantity(item.id, Math.max(1, numValue));
+                        }}
+                        keyboardType="numeric"
+                        className="flex justify-center items-center p-2 mx-2 w-16 text-lg font-semibold text-center text-gray-900 bg-gray-100 rounded border border-gray-200/50 outline outline-blue-400 font-primary"
+                        selectTextOnFocus
+                    />
+
+                    <Pressable
+                        onPress={() => updateQuantity(item.id, item.quantity + 1)}
+                        className="justify-center items-center w-8 h-8 bg-green-500 rounded-full"
+                    >
+                        <Plus size={16} color="white" />
+                    </Pressable>
+                </View>
+
+                {/* Remove Button - Now requires void authorization */}
+                <Pressable
+                    onPress={() => handleVoidItemRequest(item.id, item.name)}
+                    className="flex justify-center items-center p-2 ml-4"
+                >
+                    <X size={30} color="red" />
+                </Pressable>
+            </View>
+        );
+    }, [symbol, updateQuantity, handleVoidItemRequest]);
+
+    /**
+     * Optimized key extractor for FlatList
+     */
+    const keyExtractor = useCallback((item, index) => `${item.id}-${index}`, []);
+
+    /**
+     * Empty component for cart
+     */
+    const renderEmptyCart = useCallback(() => (
+        <View className="flex-1 justify-center items-center py-20">
+            <Text className="mb-4 text-4xl font-primary">🛒</Text>
+            <Text className="mb-2 text-lg font-bold text-gray-600 font-primary">
+                No Item Selected
+            </Text>
+            <Text className="text-center text-gray-500 font-primary">
+                Add items from the menu to get started
+            </Text>
+        </View>
+    ), []);
+
     return (
         <View className="flex-1 p-1">
             {/* Header */}
@@ -573,155 +764,20 @@ export default function CartSidebar() {
             </View>
 
             {/* Cart Items */}
-            <ScrollView className="flex-1 p-2">
-                {items.length === 0 ? (
-                    <View className="flex-1 justify-center items-center py-20">
-                        <Text className="mb-4 text-4xl font-primary">🛒</Text>
-                        <Text className="mb-2 text-lg font-bold text-gray-600 font-primary">
-                            No Item Selected
-                        </Text>
-                        <Text className="text-center text-gray-500 font-primary">
-                            Add items from the menu to get started
-                        </Text>
-                    </View>
-                ) : (
-                    <View className="flex flex-col gap-2 p-1 w-full">
-                        {items.map((item, index) => {
-                            // Validate item data before rendering
-                            if (
-                                !item?.id ||
-                                !item?.name ||
-                                typeof item?.price !== 'number'
-                            ) {
-                                console.warn('Invalid item data:', item);
-                                return null;
-                            }
-
-                            return (
-                                <View
-                                    key={`${item.id}-${index}`}
-                                    className="relative flex-row items-center p-3 bg-white rounded border border-gray-200"
-                                >
-                                    {/* Item Image */}
-                                    <View className="justify-center items-center mr-3 w-14 h-14 bg-gray-100 rounded-lg">
-                                        <Text className="text-xl font-primary">
-                                            {item.image}
-                                        </Text>
-                                    </View>
-
-                                    {/* Item Details */}
-                                    <View className="flex-1">
-                                        <Text className="font-semibold text-gray-900 text-md font-primary">
-                                            {item.name}
-                                        </Text>
-                                        <Text className="text-sm text-gray-500 font-primary">
-                                            {symbol}
-                                            {(
-                                                item.calculatedPrice ??
-                                                item.price
-                                            ).toFixed(2)}
-                                        </Text>
-                                        {item.selectedVariants && (
-                                            <View className="mt-1">
-                                                {item.selectedVariants.size && (
-                                                    <Text className="text-xs text-purple-600 font-primary">
-                                                        Size:{' '}
-                                                        {
-                                                            item
-                                                                .selectedVariants
-                                                                .size
-                                                        }
-                                                    </Text>
-                                                )}
-                                                {item.selectedVariants
-                                                    .flavor && (
-                                                    <Text className="text-xs text-green-600 font-primary">
-                                                        Flavor:{' '}
-                                                        {
-                                                            item
-                                                                .selectedVariants
-                                                                .flavor
-                                                        }
-                                                    </Text>
-                                                )}
-                                                {item.selectedVariants
-                                                    .color && (
-                                                    <Text className="text-xs text-blue-600 font-primary">
-                                                        Color:{' '}
-                                                        {
-                                                            item
-                                                                .selectedVariants
-                                                                .color
-                                                        }
-                                                    </Text>
-                                                )}
-                                            </View>
-                                        )}
-                                        {item.notes && (
-                                            <Text className="text-xs text-blue-600 font-primary">
-                                                {item.notes}
-                                            </Text>
-                                        )}
-                                    </View>
-
-                                    {/* Quantity Controls */}
-                                    <View className="flex-row items-center">
-                                        <Pressable
-                                            onPress={() =>
-                                                updateQuantity(
-                                                    item.id,
-                                                    Math.max(
-                                                        1,
-                                                        item.quantity - 1
-                                                    )
-                                                )
-                                            }
-                                            className="justify-center items-center w-8 h-8 bg-red-500 rounded-full"
-                                        >
-                                            <Minus size={16} color="#ffffff" />
-                                        </Pressable>
-
-                                        <TextInput
-                                            value={item.quantity.toString()}
-                                            onChangeText={(value) => {
-                                                const numValue =
-                                                    parseInt(value) || 1;
-                                                updateQuantity(
-                                                    item.id,
-                                                    Math.max(1, numValue)
-                                                );
-                                            }}
-                                            keyboardType="numeric"
-                                            className="flex justify-center items-center p-2 mx-2 w-16 text-lg font-semibold text-center text-gray-900 bg-gray-100 rounded border border-gray-200/50 outline outline-blue-400 font-primary"
-                                            selectTextOnFocus
-                                        />
-
-                                        <Pressable
-                                            onPress={() =>
-                                                updateQuantity(
-                                                    item.id,
-                                                    item.quantity + 1
-                                                )
-                                            }
-                                            className="justify-center items-center w-8 h-8 bg-green-500 rounded-full"
-                                        >
-                                            <Plus size={16} color="white" />
-                                        </Pressable>
-                                    </View>
-
-                                    {/* Remove Button - Now requires void authorization */}
-                                    <Pressable
-                                        onPress={() => handleVoidItemRequest(item.id, item.name)}
-                                        className="flex justify-center items-center p-2 ml-4"
-                                    >
-                                        <X size={30} color="red" />
-                                    </Pressable>
-                                </View>
-                            );
-                        })}
-                    </View>
-                )}
-            </ScrollView>
+            <FlatList
+                data={items}
+                renderItem={renderCartItem}
+                keyExtractor={keyExtractor}
+                ListEmptyComponent={renderEmptyCart}
+                className="flex-1"
+                contentContainerStyle={{ padding: 8, paddingBottom: 16 }}
+                showsVerticalScrollIndicator={false}
+                removeClippedSubviews={false} // Keep for better UX
+                initialNumToRender={10}
+                maxToRenderPerBatch={5}
+                windowSize={10}
+                updateCellsBatchingPeriod={50}
+            />
 
             {/* Footer - Totals and Checkout */}
             {items.length > 0 && (
@@ -1391,7 +1447,7 @@ export default function CartSidebar() {
                                                                             value
                                                                         )
                                                                     }
-                                                                    placeholder="0712345678"
+                                                                    placeholder="071 234 5678"
                                                                     keyboardType="phone-pad"
                                                                     className={`p-3 rounded-lg border font-primary ${
                                                                         receiptErrors.phoneNumber
